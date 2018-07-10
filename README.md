@@ -1,4 +1,4 @@
-# Swolhub 
+# Swol
 
 ## Short Description of App
 
@@ -10,7 +10,8 @@
 ## Core User Stories
 
 * Location-based: 
-* Feed-based: 
+* Feed-based
+![feed_preview](feed_1.png)
 * Add your own workout to map (will end up in feed as well)
 * Add your own workout to feed
 
