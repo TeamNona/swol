@@ -8,11 +8,11 @@ public class User extends ParseObject {
 
     // declare database fields
 
-    public String KEY_USERNAME = "username";
+    private static final String KEY_USERNAME = "username";
 
-    public String KEY_PASSWORD = "password";
+    private static final String KEY_PASSWORD = "password";
 
-    public String KEY_EMAIL = "email";
+    private static final String KEY_EMAIL = "email";
 
     // define setters and getters
 

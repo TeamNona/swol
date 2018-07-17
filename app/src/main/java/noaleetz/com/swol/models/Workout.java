@@ -15,21 +15,23 @@ public class Workout extends ParseObject{
 
     // declare database fields
 
-    public String KEY_NAME = "eventName";
+    private static final String KEY_NAME = "eventName";
 
-    public String KEY_DESCRIPTION = "eventDescription";
+    private static final String KEY_DESCRIPTION = "eventDescription";
 
-    public String KEY_MEDIA = "media";
+    private static final String KEY_MEDIA = "media";
 
-    public String KEY_TIME = "eventTime";
+    private static final String KEY_TIME = "eventTime";
 
-    public String KEY_LOCATION = "eventLocation";
+    private static final String KEY_LOCATION = "eventLocation";
 
-    public String KEY_USER = "user";
+    private static final String KEY_USER = "user";
 
-    public String KEY_PARTICIPANTS = "eventParticipants";
+    private static final String KEY_PARTICIPANTS = "eventParticipants";
 
-    public String KEY_TAGS = "tags";
+    private static final String KEY_TAGS = "tags";
+
+    private static final String KEY_ID = "objectId";
 
     // define setters and getters
 
@@ -95,6 +97,10 @@ public class Workout extends ParseObject{
 
     public void setTags(JSONArray tags) {
         put(KEY_TAGS, tags);
+    }
+
+    public String getID() {
+        return (String) get(KEY_ID);
     }
 
     @Override
