@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+
+
+        <group android:checkableBehavior="single">
+            <item
+                android:id="@+id/nav_feed_fragment"
+                app:srcCompat="@drawable/ic_home"
+                android:checked="true"
+                android:title="Feed" />
+            <item
+                android:id="@+id/nav_map_fragment"
+                app:srcCompat="@drawable/ic_location"
+                android:title="Near Me" />
+            <item
+                android:id="@+id/nav_profile_fragment"
+                app:srcCompat="@drawable/ic_person"
+                android:title="My Profile" />
+        </group>
+
+
+</menu>
