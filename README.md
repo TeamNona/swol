@@ -9,9 +9,10 @@
 
 ## Core User Stories
 
-* Location-based: 
+* Location-based
+<img src=map-popup.png width="300"> <img src=Map-sidemenu.png width="300">
 * Feed-based
-![feed_preview](feed_1.png)
+<img src=feed_1.png width="300">
 * Add your own workout to map (will end up in feed as well)
 * Add your own workout to feed
 
