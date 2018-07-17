@@ -10,6 +10,7 @@
 ## Core User Stories
 
 * Location-based
+
 <img src=map-popup.png width="300"> <img src=Map-sidemenu.png width="300">
 * Feed-based
 <img src=feed_1.png width="300">
