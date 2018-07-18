@@ -1,9 +1,13 @@
 package noaleetz.com.swol.models;
 
+import android.text.format.DateUtils;
+
+import com.google.android.gms.maps.model.LatLng;
 import com.parse.ParseClassName;
 import com.parse.ParseFile;
 import com.parse.ParseGeoPoint;
 import com.parse.ParseObject;
+import com.parse.ParseQuery;
 import com.parse.ParseUser;
 
 import org.json.JSONArray;
@@ -107,4 +111,38 @@ public class Workout extends ParseObject{
     public Date getCreatedAt() {
         return super.getCreatedAt();
     }
+
+    // helper methods for other functions
+
+    public LatLng getLatLng() { final ParseGeoPoint loc = getLocation(); return new LatLng(loc.getLatitude(), loc.getLongitude());}
+
+    public String getTimeUntil() {
+        String relativeDate;
+        long dateMillis = getTime().getTime();
+        relativeDate = DateUtils.getRelativeTimeSpanString(dateMillis, System.currentTimeMillis(), DateUtils.SECOND_IN_MILLIS).toString();
+        return relativeDate;
+    }
+
+    public static class Query extends ParseQuery<Workout> {
+        public Query() {
+            super(Workout.class);
+        }
+        public Query getTop(){
+            setLimit(20);
+            return this;
+        }
+        public Query withUser() {
+            include("User");
+            return this;
+        }
+        public Query orderByLastCreated() {
+            orderByDescending("createdAt");
+            return this;
+        }
+
+        public Query getForUser(ParseUser currentUser) {
+            whereEqualTo(KEY_USER, currentUser);
+            return this;
+        }
+
 }

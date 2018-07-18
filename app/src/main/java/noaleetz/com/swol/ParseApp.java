@@ -3,7 +3,9 @@ package noaleetz.com.swol;
 import android.app.Application;
 
 import com.parse.Parse;
+import com.parse.ParseObject;
 
+import noaleetz.com.swol.models.Workout;
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
 
@@ -34,6 +36,7 @@ public class ParseApp extends Application{
                 .clientKey("PupPupPuppies")
                 .server("http://teamnona-swol.herokuapp.com/parse")
                 .build();
+        ParseObject.registerSubclass(Workout.class);
 
         Parse.initialize(configuration);
     }
