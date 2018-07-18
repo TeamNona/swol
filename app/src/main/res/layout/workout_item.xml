@@ -5,6 +5,7 @@
     android:id="@+id/card_view"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:layout_margin="5dp"
     android:clickable="true"
     android:foreground="?android:attr/selectableItemBackground"
     card_view:cardBackgroundColor="@android:color/white"
@@ -13,7 +14,6 @@
 
 
     <RelativeLayout
-        android:id="@+id/btDetail"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
@@ -87,7 +87,7 @@
         </LinearLayout>
 
         <ImageView
-            android:id="@+id/imageView"
+            android:id="@+id/ivDetail"
             android:layout_width="90dp"
             android:layout_height="73dp"
             android:layout_below="@+id/LlTextViews"

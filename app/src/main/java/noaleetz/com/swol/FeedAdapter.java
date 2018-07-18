@@ -35,6 +35,7 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
     public FeedAdapter(List<Workout> posts) {
         mposts = posts;
     }
+
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -72,7 +73,11 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
 
         holder.tvDescription.setText(post.getDescription());
 //        holder.tvParticipants.setText(post.getParticipants());
-        holder.tvCreatedBy.setText(post.getUser().getUsername());
+        try {
+            holder.tvCreatedBy.setText(post.getUser().fetchIfNeeded().getUsername());
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
 //        holder.tvTime.setText(post.getTime());
 
 
@@ -94,8 +99,8 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         // define and reference all the Views defined in our workout_item.xml file
-        @BindView(R.id.btDetail)
-        Button btDetail;
+        @BindView(R.id.ivDetail)
+        ImageView ivDetail;
         @BindView(R.id.ivWorkoutImage)
         ImageView ivWorkoutImage;
         @BindView(R.id.tvWorkoutTitle)
@@ -119,7 +124,7 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
             super(itemView);
 
             itemView.setOnClickListener(this);
-            ButterKnife.bind(itemView);
+            ButterKnife.bind(this,itemView);
 
 
         }
