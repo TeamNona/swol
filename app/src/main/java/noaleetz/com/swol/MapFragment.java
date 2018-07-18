@@ -7,7 +7,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,8 +23,11 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.parse.FindCallback;
+import com.parse.ParseException;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import noaleetz.com.swol.models.Workout;
 
@@ -36,6 +39,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
 
 
     ArrayList<Workout> workouts;
+    private static final String TAG = "MapFragment";
+    private int counter;
 
     GoogleMap map;
 
@@ -57,6 +62,10 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
 
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map_fragment);
         mapFragment.getMapAsync(this);
+
+        workouts = new ArrayList<>();
+
+        loadTopWorkouts();
 
     }
 
@@ -103,9 +112,16 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
     // Fires when a long press happens on the map
     @Override
     public void onMapLongClick(final LatLng point) {
-        Toast.makeText(getContext(), "Long Press", Toast.LENGTH_LONG).show();
-        // Custom code here...
-        showAlertDialogForPoint(point);
+        counter--;
+        if (counter >= 0) {
+            Toast.makeText(getContext(), "New Pin [" + counter + "] @ " + workouts.get(counter).getLatLng().toString(), Toast.LENGTH_LONG).show();
+            createPin(map, workouts.get(counter));
+        } else showAlertDialogForPoint(point);
+//         Custom code here...
+
+
+        // this is a test just for checking if loading the data points work
+
     }
 
     // Display the alert that adds the marker
@@ -162,7 +178,27 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         MarkerOptions option = new MarkerOptions();
         option.position(loc).title(workout.getName()).snippet(workout.getTimeUntil());
         map.addMarker(option);
-//        map.animateCamera(CameraUpdateFactory.newLatLng(loc));
+        map.animateCamera(CameraUpdateFactory.newLatLng(loc));
+
+    }
+
+    public void loadTopWorkouts() {
+        final Workout.Query postQuery = new Workout.Query();
+        postQuery.getTop().withUser().orderByLastCreated();
+
+        postQuery.findInBackground(new FindCallback<Workout>() {
+            @Override
+            public void done(List<Workout> objects, ParseException e) {
+                if (e == null) {
+                    Log.d(TAG, Integer.toString(objects.size()));
+                    workouts.clear();
+                    workouts.addAll(objects);
+                    counter = objects.size(); // reason this isn't -1 is because there is alread one in the long click
+                } else {
+                    e.printStackTrace();
+                }
+            }
+        });
 
     }
 }
