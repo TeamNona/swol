@@ -4,6 +4,7 @@ import com.parse.ParseClassName;
 import com.parse.ParseFile;
 import com.parse.ParseGeoPoint;
 import com.parse.ParseObject;
+import com.parse.ParseQuery;
 import com.parse.ParseUser;
 
 import org.json.JSONArray;
@@ -106,5 +107,28 @@ public class Workout extends ParseObject{
     @Override
     public Date getCreatedAt() {
         return super.getCreatedAt();
+    }
+
+    public static class Query extends ParseQuery<Workout> {
+        public Query() {
+            super(Workout.class);
+        }
+        public Query getTop(){
+            setLimit(20);
+            return this;
+        }
+        public Query withUser() {
+            include("User");
+            return this;
+        }
+        public Query orderByLastCreated() {
+            orderByDescending("createdAt");
+            return this;
+        }
+
+        public Query getForUser(ParseUser currentUser) {
+            whereEqualTo(KEY_USER, currentUser);
+            return this;
+        }
     }
 }
