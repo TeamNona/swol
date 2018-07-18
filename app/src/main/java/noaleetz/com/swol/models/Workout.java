@@ -127,14 +127,17 @@ public class Workout extends ParseObject{
         public Query() {
             super(Workout.class);
         }
-        public Query getTop(){
+
+        public Query getTop() {
             setLimit(20);
             return this;
         }
+
         public Query withUser() {
             include("User");
             return this;
         }
+
         public Query orderByLastCreated() {
             orderByDescending("createdAt");
             return this;
@@ -144,5 +147,6 @@ public class Workout extends ParseObject{
             whereEqualTo(KEY_USER, currentUser);
             return this;
         }
+    }
 
 }
