@@ -1,6 +1,7 @@
 package noaleetz.com.swol.models;
 
 import com.parse.ParseClassName;
+import com.parse.ParseFile;
 import com.parse.ParseObject;
 
 @ParseClassName("User")
@@ -13,6 +14,12 @@ public class User extends ParseObject {
     private static final String KEY_PASSWORD = "password";
 
     private static final String KEY_EMAIL = "email";
+
+    private static final String KEY_FIRST = "firstName";
+
+    private static final String KEY_LAST = "lastName";
+
+    private static final String KEY_PROFILE_PICTURE = "profilePicture";
 
     // define setters and getters
 
@@ -40,6 +47,28 @@ public class User extends ParseObject {
         put(KEY_EMAIL, email);
     }
 
+    public String getFirstName() {
+        return getString(KEY_FIRST);
+    }
 
+    public void setFirstName(String firstName) {
+        put(KEY_FIRST, firstName);
+    }
+
+    public String getLastName() {
+        return getString(KEY_LAST);
+    }
+
+    public void setLastName(String lastName) {
+        put(KEY_LAST, lastName);
+    }
+
+    public ParseFile getProfilePicture () {
+        return getParseFile(KEY_PROFILE_PICTURE);
+    }
+
+    public void setProfilePicture (ParseFile profilePicture) {
+        put(KEY_PROFILE_PICTURE, profilePicture);
+    }
 
 }
