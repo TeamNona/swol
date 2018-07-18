@@ -111,7 +111,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
     // Display the alert that adds the marker
     private void showAlertDialogForPoint(final LatLng point) {
         // inflate message_item.xml view
-        View  messageView = LayoutInflater.from(getContext()).
+        View messageView = LayoutInflater.from(getContext()).
                 inflate(R.layout.message_item, null);
         // Create alert dialog builder
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getContext());
@@ -146,7 +146,9 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         // Configure dialog button (Cancel)
         alertDialog.setButton(DialogInterface.BUTTON_NEGATIVE, "Cancel",
                 new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) { dialog.cancel(); }
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.cancel();
+                    }
                 });
 
         // Display the dialog
@@ -163,22 +165,4 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
 //        map.animateCamera(CameraUpdateFactory.newLatLng(loc));
 
     }
-
-    private void loadTopWorkouts() {
-        final Workout.Query postQuery = new Workout.Query();
-        postQuery.getTop().withUser().recentFirst();
-        postQuery.findInBackground(new FindCallback<Post>() {
-            @Override
-            public void done(List<Post> objects, ParseException e) {
-                if (e == null) {
-                    for (int i = 0; i < objects.size(); i++) {
-                        posts.add(objects.get(i));
-                        postAdapter.notifyItemInserted(posts.size() - 1);
-                    }
-                    +                    swipeContainer.setRefreshing(false);
-                } else {
-                    e.printStackTrace();
-                }
-
-
 }
