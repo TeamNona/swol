@@ -13,7 +13,10 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
+import com.parse.Parse;
 import com.parse.ParseException;
+import com.parse.ParseGeoPoint;
+import com.parse.ParseUser;
 
 import org.parceler.Parcels;
 import org.w3c.dom.Text;
@@ -69,20 +72,29 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
         }
 
         holder.tvWorkoutTitle.setText(post.getName());
-//        holder.tvLocation.setText(post.getLocation());
+
+        // TODO- set icons and text in layout
+
+        holder.tvLocation.setText(distanceFrom(post.getLocation()) + " mile(s) from you");
 
         holder.tvDescription.setText(post.getDescription());
 //        holder.tvParticipants.setText(post.getParticipants());
         try {
-            holder.tvCreatedBy.setText(post.getUser().fetchIfNeeded().getUsername());
+            holder.tvCreatedBy.setText("Created By " + post.getUser().fetchIfNeeded().getUsername());
         } catch (ParseException e) {
             e.printStackTrace();
         }
-//        holder.tvTime.setText(post.getTime());
+        holder.tvTime.setText(post.getTimeUntil());
 
 
+    }
 
+    // TODO- Configure current location accuracy
 
+    public String distanceFrom(ParseGeoPoint workoutLocation){
+        ParseGeoPoint userLocation = ParseUser.getCurrentUser().getParseGeoPoint("currentLocation");
+        double distance = workoutLocation.distanceInMilesTo(userLocation);
+        return Double.toString(Math.round(distance));
 
     }
 
@@ -90,6 +102,7 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
     public int getItemCount() {
 
         return mposts.size();    }
+
 
 
 

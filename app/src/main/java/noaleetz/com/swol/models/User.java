@@ -2,6 +2,7 @@ package noaleetz.com.swol.models;
 
 import com.parse.ParseClassName;
 import com.parse.ParseFile;
+import com.parse.ParseGeoPoint;
 import com.parse.ParseObject;
 
 @ParseClassName("User")
@@ -20,6 +21,9 @@ public class User extends ParseObject {
     private static final String KEY_LAST = "lastName";
 
     private static final String KEY_PROFILE_PICTURE = "profilePicture";
+
+    private static final String KEY_CURRENTLOCATION= "currentLocation";
+
 
     // define setters and getters
 
@@ -70,5 +74,9 @@ public class User extends ParseObject {
     public void setProfilePicture (ParseFile profilePicture) {
         put(KEY_PROFILE_PICTURE, profilePicture);
     }
+
+    public void setCurrentLocation(ParseGeoPoint currentLocation) { put(KEY_CURRENTLOCATION,currentLocation); }
+
+    public ParseGeoPoint getCurrentLocation() {return getParseGeoPoint(KEY_CURRENTLOCATION);}
 
 }
