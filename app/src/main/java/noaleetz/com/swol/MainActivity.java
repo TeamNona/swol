@@ -1,5 +1,6 @@
 package noaleetz.com.swol;
 
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.location.Location;
 import android.os.Bundle;
@@ -16,6 +17,7 @@ import android.view.MenuItem;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.parse.ParseUser;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -97,6 +99,10 @@ public class MainActivity extends AppCompatActivity {
             case R.id.nav_profile_fragment:
                 fragmentClass = ProfileFragment.class;
                 break;
+            case R.id.nav_logout:
+                ParseUser.logOut();
+                startActivity(new Intent(this, DispatchActivity.class));
+                finish();
             default:
                 fragmentClass = FeedFragment.class;
         }
