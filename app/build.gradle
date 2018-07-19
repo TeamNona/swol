@@ -20,7 +20,7 @@ android {
 }
 
 ext {
-    googlePlayVersion = "15.0.0"
+    googlePlayVersion = "15.0.1"
 }
 
 dependencies {
@@ -54,6 +54,7 @@ dependencies {
     // google maps
     implementation "com.google.android.gms:play-services-maps:$googlePlayVersion"
     implementation "com.google.android.gms:play-services-location:$googlePlayVersion"
+    implementation "com.google.android.gms:play-services-places:$googlePlayVersion"
 
     // for the widget dependency
     implementation "com.github.parse-community.ParseUI-Android:widget:0.0.3"
