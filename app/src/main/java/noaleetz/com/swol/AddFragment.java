@@ -5,6 +5,7 @@ import android.annotation.SuppressLint;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.TimePickerDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -31,9 +32,11 @@ import com.google.android.gms.location.places.ui.PlaceAutocompleteFragment;
 import com.google.android.gms.location.places.ui.PlaceSelectionListener;
 import com.google.android.gms.location.places.ui.SupportPlaceAutocompleteFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.parse.ParseException;
 import com.parse.ParseFile;
 import com.parse.ParseGeoPoint;
 import com.parse.ParseUser;
+import com.parse.SaveCallback;
 
 import org.json.JSONArray;
 
@@ -63,11 +66,12 @@ public class AddFragment extends Fragment{
     Button postButton;
     EditText etName;
     EditText etDescription;
-    EditText tags;
+    EditText etTags;
     TextView tvDate;
     TextView tvTime;
     Date Date;
     ParseGeoPoint postLocation;
+    ParseFile media;
     int postYear;
     int postMonth;
     int postDay;
@@ -115,9 +119,10 @@ public class AddFragment extends Fragment{
         tvDate = view.findViewById(R.id.tvDate);
         tvTime = view.findViewById(R.id.tvTime);
 
-        Calendar calendar = Calendar.getInstance();
-        calendar.set(postYear, postMonth, postDay, postHour, postMinute);
-        Date = calendar.getTime();
+        etTags = view.findViewById(R.id.etTags);
+
+        String test = etTags.getText().toString();
+        String[] tags = test.split(" ");
 
 
         SupportPlaceAutocompleteFragment autocompleteFragment = (SupportPlaceAutocompleteFragment)
@@ -141,14 +146,37 @@ public class AddFragment extends Fragment{
             }
         });
 
+
         postButton = view.findViewById(R.id.btnPost);
         postButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
+                // get the final choice of date
+                Calendar calendar = Calendar.getInstance();
+                calendar.set(postYear, postMonth, postDay, postHour, postMinute);
+                Date = calendar.getTime();
+
+
+
                 final String name = etName.getText().toString();
                 final String description = etDescription.getText().toString();
                 final Date date = Date;
                 final ParseGeoPoint location = postLocation;
+
+                // get the final tags
+                final JSONArray tags = new JSONArray();
+                String getTags = etTags.getText().toString();
+                String[] gotTags = getTags.split(" ");
+                for (int i = 0; i < gotTags.length; i++) {
+                    tags.put(gotTags[i]);
+                }
+
+                // populate participants
+                final JSONArray participants = new JSONArray();
+                participants.put(currentUser.getObjectId().toString());
+
+                createNewWorkout(name, description, date, location, participants, tags);
 
 
             }
@@ -157,7 +185,7 @@ public class AddFragment extends Fragment{
 
     }
 
-    private void createNewWorkout(String name, String description, Date time, ParseGeoPoint location, ParseFile media, JSONArray participants, JSONArray tags) {
+    private void createNewWorkout(String name, String description, Date time, ParseGeoPoint location, JSONArray participants, JSONArray tags) {
 
         // create a new event
         Workout workout = new Workout();
@@ -166,11 +194,23 @@ public class AddFragment extends Fragment{
         workout.setName(name);
         workout.setDescription(description);
         workout.setLocation(location);
-        workout.setMedia(media);
+        // workout.setMedia(media);
         workout.setParticipants(participants);
         workout.setTime(time);
         workout.setTags(tags);
         workout.setUser(currentUser);
+
+        workout.saveInBackground(new SaveCallback() {
+            @Override
+            public void done(ParseException e) {
+                if (e == null) {
+                    Log.d("AddFragment", "Create post successful");
+
+                } else {
+                    e.printStackTrace();
+                }
+            }
+        });
     }
 
 
@@ -193,7 +233,12 @@ public class AddFragment extends Fragment{
         public void onTimeSet(TimePicker timePicker, int hour, int minute) {
             postHour = hour;
             postMinute = minute;
-            tvTime.setText(String.valueOf(hour) + ":" + String.valueOf(minute));
+            if (minute < 10) {
+                tvTime.setText(String.valueOf(hour) + ":0" + String.valueOf(minute));
+            } else {
+                tvTime.setText(String.valueOf(hour) + ":" + String.valueOf(minute));
+            }
+
 
         }
     };
@@ -219,7 +264,7 @@ public class AddFragment extends Fragment{
             postYear = year;
             postMonth = monthOfYear;
             postDay = dayOfMonth;
-            tvDate.setText(String.valueOf(dayOfMonth) + "/" + String.valueOf(monthOfYear + 1) + "/" + String.valueOf(year));
+            tvDate.setText(String.valueOf(monthOfYear + 1) + "/" + String.valueOf(dayOfMonth) + "/" + String.valueOf(year));
         }
     };
 
