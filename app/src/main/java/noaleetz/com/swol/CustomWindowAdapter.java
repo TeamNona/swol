@@ -1,11 +1,17 @@
 package noaleetz.com.swol;
 
+import android.os.Parcelable;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.Marker;
+import com.parse.ParseException;
+
+import org.parceler.Parcels;
 
 class CustomWindowAdapter implements GoogleMap.InfoWindowAdapter {
     LayoutInflater mInflater;
@@ -20,11 +26,20 @@ class CustomWindowAdapter implements GoogleMap.InfoWindowAdapter {
         // Getting view from the layout file
         View v = mInflater.inflate(R.layout.custom_info_window, null);
         // Populate fields
-        TextView title = (TextView) v.findViewById(R.id.tv_info_window_title);
-        title.setText(marker.getTitle());
 
-        TextView description = (TextView) v.findViewById(R.id.tv_info_window_description);
-        description.setText(marker.getSnippet());
+        MapFragment.MarkerData data = Parcels.unwrap( (Parcelable) marker.getTag());
+
+        TextView tvInfoTitle = v.findViewById(R.id.tvInfoTitle);
+        tvInfoTitle.setText(data.getTitle());
+
+        TextView tvCreatedBy = v.findViewById(R.id.tvInfoCreatedBy);
+        tvCreatedBy.setText("Created By: "+ data.getCreatedBy());
+
+        TextView tvInfoTimeUntil = v.findViewById(R.id.tvInfoTimeUntil);
+        tvInfoTimeUntil.setText(data.getTimeUntil());
+
+        ImageView ivInfoImage = v.findViewById(R.id.ivInfoImage);
+        Glide.with(v).load(data.getImage()).into(ivInfoImage);
         // Return info window contents
         return v;
     }

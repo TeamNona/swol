@@ -10,7 +10,7 @@
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
-    <string name="google_maps_api_key">AIzaSyASvrtBPVHnB7JPhuIwwFQFlfPG2FFuWlo</string>
+    <string name="google_maps_api_key">AIzaSyClKI-QQCyzu0yuZ_MrdGi7CG1uE04zsZw</string>
     <string name="title_activity_maps">Map</string>
     <string name="location_permission_denied">Permission to access location was denied</string>
     <string name="location_text">"Latitude: %1$.4f \n Longitude: %2$.4f\n Timestamp: %3$tr"</string>

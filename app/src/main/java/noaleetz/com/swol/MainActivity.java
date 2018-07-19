@@ -90,6 +90,7 @@ public class MainActivity extends AppCompatActivity {
 
 
 
+
     }
 
     private void getLocation() {
@@ -127,6 +128,10 @@ public class MainActivity extends AppCompatActivity {
                         }
                     });
         }
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        fragmentManager.beginTransaction().replace(R.id.flContent, new FeedFragment()).commit();
+
+
     }
 
     @Override
