@@ -58,6 +58,9 @@ public class MainActivity extends AppCompatActivity {
             mCurrentLocation = savedInstanceState.getParcelable(KEY_LOCATION);
         }
 
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        fragmentManager.beginTransaction().replace(R.id.flContent, new FeedFragment()).commit();
+
     }
     private ActionBarDrawerToggle setupDrawerToggle() {
         // NOTE: Make sure you pass in a valid toolbar reference.  ActionBarDrawToggle() does not require it
