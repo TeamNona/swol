@@ -60,8 +60,6 @@ public class MainActivity extends AppCompatActivity {
     Toolbar toolbar;
     @BindView(R.id.nvView)
     NavigationView nvDrawer;
-    @BindView(R.id.fabAdd)
-    FloatingActionButton fabAdd;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -119,6 +117,8 @@ public class MainActivity extends AppCompatActivity {
                                 currentGeoPoint = new ParseGeoPoint(mLastLocation.getLatitude(), mLastLocation.getLongitude());
                                 Log.d(TAG,currentGeoPoint.toString());
                                 ParseUser.getCurrentUser().put("currentLocation",currentGeoPoint);
+                                ParseUser.getCurrentUser().saveInBackground();
+
 
                             }
                             else{
