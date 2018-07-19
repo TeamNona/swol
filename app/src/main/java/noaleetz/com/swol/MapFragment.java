@@ -3,6 +3,7 @@ package noaleetz.com.swol;
 
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -28,6 +29,10 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.parse.FindCallback;
 import com.parse.ParseException;
 
+import org.parceler.Parcel;
+import org.parceler.Parcels;
+
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -71,7 +76,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
 
         mapFragment.getMapAsync(this);
 
-
         workouts = new ArrayList<>();
 
         loadTopWorkouts();
@@ -81,6 +85,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
     @Override
     public void onMapReady(GoogleMap googleMap) {
         loadMap(googleMap);
+        map.setInfoWindowAdapter(new CustomWindowAdapter(getLayoutInflater()));
 
 // map = googleMap;
 //
@@ -97,6 +102,28 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
             // Attach long click listener to the map here
             map.setOnMapLongClickListener(this);
 //            map.setInfoWindowAdapter(new CustomWindowAdapter(getLayoutInflater()));
+
+            //TODO: remove this hackey stuff https://guides.codepath.com/android/Google-Maps-API-v2-Usage#customize-infowindow
+            map.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+
+                @Override
+                public boolean onMarkerClick(final Marker mark) {
+
+
+                    mark.showInfoWindow();
+
+                    final Handler handler = new Handler();
+                    handler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            mark.showInfoWindow();
+
+                        }
+                    }, 200);
+
+                    return true;
+                }
+            });
         }
 
     }
@@ -132,6 +159,10 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         // this is a test just for checking if loading the data points work
 
     }
+
+
+
+
 
     // Display the alert that adds the marker
     private void showAlertDialogForPoint(final LatLng point) {
@@ -183,10 +214,25 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
     private void createPin(GoogleMap googleMap, Workout workout) {
         map = googleMap;
 
+        Marker pin;
+
         LatLng loc = workout.getLatLng();
         MarkerOptions option = new MarkerOptions();
-        option.position(loc).title(workout.getName()).snippet(workout.getTimeUntil());
-        map.addMarker(option);
+        option.position(loc);
+
+        pin = map.addMarker(option);
+
+        try {
+            MarkerData data = new MarkerData(workout.getName(),
+                    workout.getUser().fetchIfNeeded().getUsername(),
+                    workout.getTimeUntil(),
+                    workout.getMedia().getFile());
+
+            pin.setTag(Parcels.wrap(data));
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
         map.animateCamera(CameraUpdateFactory.newLatLng(loc));
 
     }
@@ -209,5 +255,38 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
             }
         });
 
+    }
+
+    // this exists to pass extra data to the window adapter
+    @Parcel
+    public static class MarkerData {
+
+        String title, createdBy, timeUntil;
+        File image;
+
+        public MarkerData() {}
+
+        public MarkerData(String title, String createdBy, String timeUntil, File image){
+            this.title = title;
+            this.createdBy = createdBy;
+            this.timeUntil = timeUntil;
+            this.image = image;
+        }
+
+        public String getTitle() {
+            return title;
+        }
+
+        public String getCreatedBy() {
+            return createdBy;
+        }
+
+        public String getTimeUntil() {
+            return timeUntil;
+        }
+
+        public File getImage() {
+            return image;
+        }
     }
 }
