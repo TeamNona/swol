@@ -64,3 +64,6 @@ fastlane/Preview.html
 fastlane/screenshots
 fastlane/test_output
 fastlane/readme.md
+
+# because macOS
+*.DS_Store
