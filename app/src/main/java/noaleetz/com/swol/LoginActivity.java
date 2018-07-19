@@ -12,6 +12,7 @@ import com.parse.LogInCallback;
 import com.parse.ParseException;
 import com.parse.ParseUser;
 import com.parse.SignUpCallback;
+import com.parse.ui.login.ParseLoginBuilder;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -116,6 +117,7 @@ public class LoginActivity extends AppCompatActivity {
 
             }
         });
+
     }
 
     private void login(String username, String password) {
