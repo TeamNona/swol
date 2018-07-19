@@ -54,4 +54,9 @@ dependencies {
     // google maps
     implementation "com.google.android.gms:play-services-maps:$googlePlayVersion"
     implementation "com.google.android.gms:play-services-location:$googlePlayVersion"
+
+    // for the widget dependency
+    implementation "com.github.parse-community.ParseUI-Android:widget:0.0.3"
+    // for the login dependency
+    implementation "com.github.parse-community.ParseUI-Android:login:0.0.3"
 }
