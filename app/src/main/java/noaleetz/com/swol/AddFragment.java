@@ -8,6 +8,7 @@ import android.app.TimePickerDialog;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -20,6 +21,7 @@ import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.TimePicker;
 
@@ -57,6 +59,9 @@ public class AddFragment extends Fragment{
 
     @BindView(R.id.btCancel)
     ImageView btCancel;
+
+
+    FloatingActionButton fab;
     
     // keep track of who is logged on
     private ParseUser currentUser = ParseUser.getCurrentUser();
@@ -102,6 +107,9 @@ public class AddFragment extends Fragment{
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        fab = (FloatingActionButton) getActivity().findViewById(R.id.fab);
+
 
 
         addTime = view.findViewById(R.id.btnTime);
@@ -162,16 +170,21 @@ public class AddFragment extends Fragment{
                 final Date date = Date;
                 final ParseGeoPoint location = postLocation;
 
+                FragmentManager fm = getActivity().getSupportFragmentManager();
+                fab.show();
+                fm.popBackStackImmediate();
+
+
 
             }
         });
-        btCancel.getWidth();
 
         btCancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
                 FragmentManager fm = getActivity().getSupportFragmentManager();
+                fab.show();
                 fm.popBackStackImmediate();
 
             }

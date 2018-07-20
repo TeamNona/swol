@@ -146,6 +146,9 @@ public class MainActivity extends AppCompatActivity {
 
                             }
                             else{
+
+                                // TODO- handle null location
+
                                 Log.d(TAG,"location is found to be null");
                             }
                         }
