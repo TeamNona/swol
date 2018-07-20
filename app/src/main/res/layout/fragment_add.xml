@@ -113,7 +113,7 @@
         android:layout_alignEnd="@+id/btnTime"
         android:layout_alignTop="@+id/textView5"
         android:ems="10"
-        android:hint="TODO - figure out tagging situation"
+        android:hint="example: #run #cardio"
         android:inputType="textPersonName" />
 
     <Button
@@ -178,7 +178,7 @@
         android:layout_alignParentBottom="true"
         android:layout_marginBottom="78dp"
         android:layout_marginEnd="-11dp"
-        android:src="@color/colorPrimary" />
+        android:src="@drawable/ic_directions_run_black_24dp" />
 
     <EditText
         android:id="@+id/etDescription"

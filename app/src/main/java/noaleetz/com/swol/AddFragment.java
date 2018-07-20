@@ -5,12 +5,20 @@ import android.annotation.SuppressLint;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.TimePickerDialog;
+import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.FileProvider;
 import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -19,9 +27,11 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.TimePicker;
 
+import com.bumptech.glide.Glide;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.places.GeoDataClient;
@@ -40,6 +50,9 @@ import com.parse.SaveCallback;
 
 import org.json.JSONArray;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -72,11 +85,21 @@ public class AddFragment extends Fragment{
     Date Date;
     ParseGeoPoint postLocation;
     ParseFile media;
+    ImageView post;
     int postYear;
     int postMonth;
     int postDay;
     int postHour;
     int postMinute;
+
+    // media
+    private static final int RESULT_OK = -1;
+    Bitmap image;
+    File photoFile;
+    public String photoFileName = "photo.jpg";
+    public final String APP_TAG = "Swol";
+
+    private static int RESULT_LOAD_IMAGE = 1;
 
 
     public AddFragment() {
@@ -120,13 +143,13 @@ public class AddFragment extends Fragment{
         tvTime = view.findViewById(R.id.tvTime);
 
         etTags = view.findViewById(R.id.etTags);
-
         String test = etTags.getText().toString();
         String[] tags = test.split(" ");
 
 
         SupportPlaceAutocompleteFragment autocompleteFragment = (SupportPlaceAutocompleteFragment)
                 getChildFragmentManager().findFragmentById(R.id.place_autocomplete_fragment);
+
 
         autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
             @Override
@@ -143,6 +166,19 @@ public class AddFragment extends Fragment{
             public void onError(Status status) {
                 // TODO: Handle the error.
                 Log.i(TAG, "An error occurred: " + status);
+            }
+        });
+
+        post = view.findViewById(R.id.ivMedia);
+        upload = view.findViewById(R.id.btnUpload);
+        upload.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent i = new Intent(
+                        Intent.ACTION_PICK,
+                        android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+
+                startActivityForResult(i, RESULT_LOAD_IMAGE);
             }
         });
 
@@ -167,7 +203,7 @@ public class AddFragment extends Fragment{
                 // get the final tags
                 final JSONArray tags = new JSONArray();
                 String getTags = etTags.getText().toString();
-                String[] gotTags = getTags.split(" ");
+                String[] gotTags = getTags.split(" #");
                 for (int i = 0; i < gotTags.length; i++) {
                     tags.put(gotTags[i]);
                 }
@@ -176,7 +212,11 @@ public class AddFragment extends Fragment{
                 final JSONArray participants = new JSONArray();
                 participants.put(currentUser.getObjectId().toString());
 
-                createNewWorkout(name, description, date, location, participants, tags);
+                // get media
+                final File file =  new File(String.valueOf(photoFile));
+                final ParseFile media = new ParseFile(file);
+
+                createNewWorkout(name, description, date, location, media, participants, tags);
 
 
             }
@@ -185,7 +225,7 @@ public class AddFragment extends Fragment{
 
     }
 
-    private void createNewWorkout(String name, String description, Date time, ParseGeoPoint location, JSONArray participants, JSONArray tags) {
+    private void createNewWorkout(String name, String description, Date time, ParseGeoPoint location, ParseFile media, JSONArray participants, JSONArray tags) {
 
         // create a new event
         Workout workout = new Workout();
@@ -193,8 +233,8 @@ public class AddFragment extends Fragment{
         // populate all of the fields
         workout.setName(name);
         workout.setDescription(description);
-        workout.setLocation(location);
-        // workout.setMedia(media);
+        //workout.setLocation(location);
+        workout.setMedia(media);
         workout.setParticipants(participants);
         workout.setTime(time);
         workout.setTags(tags);
@@ -208,9 +248,11 @@ public class AddFragment extends Fragment{
 
                 } else {
                     e.printStackTrace();
+                    Log.e("no", "no");
                 }
             }
         });
+
     }
 
 
@@ -269,6 +311,44 @@ public class AddFragment extends Fragment{
     };
 
 
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        //GETTING IMAGE FROM GALLERY
+        if (requestCode == RESULT_LOAD_IMAGE && resultCode == RESULT_OK && null != data) {
+            Uri selectedImage = data.getData();
+            photoFile = getPhotoFileUri(photoFileName);
+
+            Bitmap bitmap;
+            try {
+                //..bitmap = BitmapFactory.decodeStream(context.getContentResolver().openInputStream(selectedImage));
+                bitmap = MediaStore.Images.Media.getBitmap(getActivity().getApplicationContext().getContentResolver(), selectedImage);
+                post.setImageBitmap(bitmap);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+        }
+    }
+
+    // Returns the File for a photo stored on disk given the fileName
+    public File getPhotoFileUri(String fileName) {
+        // Get safe storage directory for photos
+        // Use `getExternalFilesDir` on Context to access package-specific directories.
+        // This way, we don't need to request external read/write runtime permissions.
+        File mediaStorageDir = new File(getContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES), APP_TAG);
+
+        // Create the storage directory if it does not exist
+        if (!mediaStorageDir.exists() && !mediaStorageDir.mkdirs()){
+            Log.d(APP_TAG, "failed to create directory");
+        }
+
+        // Return the file target for the photo based on filename
+        File file = new File(mediaStorageDir.getPath() + File.separator + fileName);
+
+        return file;
+    }
 
 
 

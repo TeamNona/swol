@@ -188,7 +188,7 @@ public class MainActivity extends AppCompatActivity {
                 fragmentClass = MapFragment.class;
                 break;
             case R.id.nav_profile_fragment:
-                fragmentClass = ProfileFragment.class;
+                fragmentClass = AddFragment.class;
                 break;
             default:
                 fragmentClass = FeedFragment.class;
