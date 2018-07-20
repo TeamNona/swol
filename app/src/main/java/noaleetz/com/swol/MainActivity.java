@@ -11,6 +11,7 @@ import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
@@ -19,6 +20,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -65,6 +67,16 @@ public class MainActivity extends AppCompatActivity {
     @BindView(R.id.nvView)
     NavigationView nvDrawer;
 
+    @OnClick(R.id.fab)
+    public void onClick(View view) {
+        fab.hide();
+        AddFragment addfragment = new AddFragment();
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.flContent,addfragment).addToBackStack(null);
+        transaction.commit();
+
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -83,12 +95,12 @@ public class MainActivity extends AppCompatActivity {
 
         getLocation();
 
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
 
-            }
-        });
+
+
+
+
+
 
 
         // i have no idea what this does but if it ain't broke don't fix it

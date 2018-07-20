@@ -10,6 +10,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -18,6 +19,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.TimePicker;
 
@@ -40,6 +42,9 @@ import org.json.JSONArray;
 import java.util.Calendar;
 import java.util.Date;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import butterknife.Unbinder;
 import noaleetz.com.swol.models.Workout;
 
 import static android.support.constraint.Constraints.TAG;
@@ -50,7 +55,8 @@ import static android.support.constraint.Constraints.TAG;
  */
 public class AddFragment extends Fragment{
 
-
+    @BindView(R.id.btCancel)
+    ImageView btCancel;
     
     // keep track of who is logged on
     private ParseUser currentUser = ParseUser.getCurrentUser();
@@ -74,6 +80,9 @@ public class AddFragment extends Fragment{
     int postHour;
     int postMinute;
 
+    private Unbinder unbinder;
+
+
 
     public AddFragment() {
         // Required empty public constructor
@@ -83,8 +92,11 @@ public class AddFragment extends Fragment{
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_add, container, false);
+        unbinder = ButterKnife.bind(this, view);
+
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_add, container, false);
+        return view;
     }
 
     @Override
@@ -150,6 +162,17 @@ public class AddFragment extends Fragment{
                 final Date date = Date;
                 final ParseGeoPoint location = postLocation;
 
+
+            }
+        });
+        btCancel.getWidth();
+
+        btCancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                FragmentManager fm = getActivity().getSupportFragmentManager();
+                fm.popBackStackImmediate();
 
             }
         });
