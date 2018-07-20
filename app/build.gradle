@@ -60,4 +60,10 @@ dependencies {
     implementation "com.github.parse-community.ParseUI-Android:widget:0.0.3"
     // for the login dependency
     implementation "com.github.parse-community.ParseUI-Android:login:0.0.3"
+
+    // FB login
+    implementation 'com.facebook.android:facebook-android-sdk:[4,5)'
+    implementation rootProject.ext.parseFacebookUtils
+    implementation rootProject.ext.parse
+
 }

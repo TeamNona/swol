@@ -20,9 +20,15 @@ allprojects {
         google()
         jcenter()
         maven { url "https://jitpack.io" }
+        mavenCentral()
     }
 }
 
 task clean(type: Delete) {
     delete rootProject.buildDir
+}
+
+ext {
+    parse = 'com.parse:parse-android:1.17.3'
+    parseFacebookUtils = 'com.github.parse-community:ParseFacebookUtils-Android:1.11.1'
 }
