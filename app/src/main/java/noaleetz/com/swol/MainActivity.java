@@ -12,6 +12,7 @@ import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
@@ -19,6 +20,8 @@ import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
 import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -55,12 +58,25 @@ public class MainActivity extends AppCompatActivity {
     public static final int REQUEST_LOCATION_PERMISSION = 1;
     ParseGeoPoint currentGeoPoint;
 
+    @BindView(R.id.fab)
+    FloatingActionButton fab;
+
     @BindView(R.id.drawer_layout)
     DrawerLayout mDrawer;
     @BindView(R.id.toolbar)
     Toolbar toolbar;
     @BindView(R.id.nvView)
     NavigationView nvDrawer;
+
+    @OnClick(R.id.fab)
+    public void onClick(View view) {
+        fab.hide();
+        AddFragment addfragment = new AddFragment();
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.flContent,addfragment).addToBackStack(null);
+        transaction.commit();
+
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,6 +95,13 @@ public class MainActivity extends AppCompatActivity {
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
         getLocation();
+
+
+
+
+
+
+
 
 
         // i have no idea what this does but if it ain't broke don't fix it
@@ -124,6 +147,9 @@ public class MainActivity extends AppCompatActivity {
 
                             }
                             else{
+
+                                // TODO- handle null location
+
                                 Log.d(TAG,"location is found to be null");
                             }
                         }
@@ -179,9 +205,11 @@ public class MainActivity extends AppCompatActivity {
         Class fragmentClass;
         switch(menuItem.getItemId()) {
             case R.id.nav_feed_fragment:
+                fab.show();
                 fragmentClass = FeedFragment.class;
                 break;
             case R.id.nav_map_fragment:
+                fab.show();
                 // if there is no api key, then throw this exception
                 if (TextUtils.isEmpty(getResources().getString(R.string.google_maps_api_key))) {
                     throw new IllegalStateException("You forgot to supply a Google Maps API key");
@@ -189,6 +217,7 @@ public class MainActivity extends AppCompatActivity {
                 fragmentClass = MapFragment.class;
                 break;
             case R.id.nav_profile_fragment:
+                fab.hide();
                 fragmentClass = ProfileFragment.class;
                 break;
             case R.id.nav_logout:
