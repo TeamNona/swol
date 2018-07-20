@@ -1,5 +1,6 @@
 package noaleetz.com.swol;
 
+import android.content.Intent;
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
@@ -219,6 +220,10 @@ public class MainActivity extends AppCompatActivity {
                 fab.hide();
                 fragmentClass = ProfileFragment.class;
                 break;
+            case R.id.nav_logout:
+                ParseUser.logOut();
+                startActivity(new Intent(this, DispatchActivity.class));
+                finish();
             default:
                 fragmentClass = FeedFragment.class;
         }
