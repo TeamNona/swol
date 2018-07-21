@@ -59,10 +59,12 @@
         android:id="@+id/etName"
         android:layout_width="259dp"
         android:layout_height="wrap_content"
+        android:layout_above="@+id/textView2"
         android:layout_alignParentEnd="true"
         android:layout_alignParentTop="true"
         android:layout_marginEnd="17dp"
         android:layout_marginTop="16dp"
+        android:layout_marginBottom="-74dp"
         android:ems="10"
         android:hint="Give your workout a name."
         android:inputType="textPersonName" />
@@ -87,11 +89,12 @@
         android:textAllCaps="false" />
 
     <TextView
-        android:id="@+id/textView"
+        android:id="@+id/tvWorkoutName"
         android:layout_width="90dp"
         android:layout_height="wrap_content"
+        android:layout_above="@+id/textView2"
         android:layout_alignParentStart="true"
-        android:layout_alignTop="@+id/etName"
+        android:layout_marginBottom="-74dp"
         android:text="Workout Name:"
         android:textAlignment="center"
         android:textSize="18sp"
@@ -150,9 +153,12 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="17dp"
+        android:layout_marginBottom="12dp"
+        android:fadeScrollbars="true"
+        android:isScrollContainer="true"
         android:text="Share your workout."
-        android:textAllCaps="false" />
+        android:textAllCaps="false"
+        android:verticalScrollbarPosition="right" />
 
     <TextView
         android:id="@+id/tvDate"
@@ -189,5 +195,14 @@
         android:ems="10"
         android:hint="Target audience? Intensity levels?"
         android:inputType="textMultiLine" />
+
+    <ImageView
+        android:id="@+id/btCancel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:clickable="true"
+        app:srcCompat="@drawable/ic_cancel_black_24dp" />
 
 </RelativeLayout>

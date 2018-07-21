@@ -6,6 +6,12 @@
     <string name="title_notifications">Notifications</string>
     <string name="drawer_open">Open navigation drawer</string>
     <string name="drawer_close">Close navigation drawer</string>
+    <string name="facebook_app_id">412258572515690</string>
+    <string name="fb_login_protocol_scheme">fb412258572515690</string>
+    <string-array name="my_facebook_permissions">
+        <item>public_profile</item>
+        <item>user_friends</item>
+    </string-array>
 
 
     <!-- TODO: Remove or change this placeholder text -->
