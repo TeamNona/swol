@@ -18,6 +18,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.FileProvider;
 import android.text.format.DateFormat;
 import android.util.Log;
@@ -50,9 +51,13 @@ import com.parse.SaveCallback;
 
 import org.json.JSONArray;
 
+import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -98,8 +103,8 @@ public class AddFragment extends Fragment{
     File photoFile;
     public String photoFileName = "photo.jpg";
     public final String APP_TAG = "Swol";
-
     private static int RESULT_LOAD_IMAGE = 1;
+    Bitmap bitmap;
 
 
     public AddFragment() {
@@ -141,15 +146,11 @@ public class AddFragment extends Fragment{
         etDescription = view.findViewById(R.id.etDescription);
         tvDate = view.findViewById(R.id.tvDate);
         tvTime = view.findViewById(R.id.tvTime);
-
         etTags = view.findViewById(R.id.etTags);
-        String test = etTags.getText().toString();
-        String[] tags = test.split(" ");
 
 
         SupportPlaceAutocompleteFragment autocompleteFragment = (SupportPlaceAutocompleteFragment)
                 getChildFragmentManager().findFragmentById(R.id.place_autocomplete_fragment);
-
 
         autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
             @Override
@@ -203,7 +204,7 @@ public class AddFragment extends Fragment{
                 // get the final tags
                 final JSONArray tags = new JSONArray();
                 String getTags = etTags.getText().toString();
-                String[] gotTags = getTags.split(" #");
+                String[] gotTags = getTags.split(" ");
                 for (int i = 0; i < gotTags.length; i++) {
                     tags.put(gotTags[i]);
                 }
@@ -213,11 +214,34 @@ public class AddFragment extends Fragment{
                 participants.put(currentUser.getObjectId().toString());
 
                 // get media
+                // Locate the image in res >
+                //Bitmap bitmap = BitmapFactory.decodeFile("picturePath");
+                // Convert it to byte
+                //ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                // Compress image to lower quality scale 1 - 100
+                //bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+
+                /*Object image = null;
+                try {
+                    String path = null;
+                    image = readInFile(path);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                } */
+
+                // Create the ParseFile
+                //ParseFile file = new ParseFile("picturePath", (byte[]) image);
+                // Upload the image into Parse Cloud
+                //file.saveInBackground();
+
+                // get media
                 final File file =  new File(String.valueOf(photoFile));
                 final ParseFile media = new ParseFile(file);
+                final ParseFile lastshot = conversionBitmapParseFile(bitmap);
 
-                createNewWorkout(name, description, date, location, media, participants, tags);
+                media.saveInBackground();
 
+                createNewWorkout(name, description, date, location, lastshot, participants, tags);
 
             }
         });
@@ -233,7 +257,7 @@ public class AddFragment extends Fragment{
         // populate all of the fields
         workout.setName(name);
         workout.setDescription(description);
-        //workout.setLocation(location);
+        workout.setLocation(location);
         workout.setMedia(media);
         workout.setParticipants(participants);
         workout.setTime(time);
@@ -320,7 +344,6 @@ public class AddFragment extends Fragment{
             Uri selectedImage = data.getData();
             photoFile = getPhotoFileUri(photoFileName);
 
-            Bitmap bitmap;
             try {
                 //..bitmap = BitmapFactory.decodeStream(context.getContentResolver().openInputStream(selectedImage));
                 bitmap = MediaStore.Images.Media.getBitmap(getActivity().getApplicationContext().getContentResolver(), selectedImage);
@@ -328,6 +351,18 @@ public class AddFragment extends Fragment{
             } catch (IOException e) {
                 e.printStackTrace();
             }
+            /*Uri selectedImage = data.getData();
+            String[] filePathColumn = { MediaStore.Images.Media.DATA };
+
+            Cursor cursor = getActivity().getContentResolver().query(selectedImage,
+                    filePathColumn, null, null, null);
+            cursor.moveToFirst();
+
+            int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+            String picturePath = cursor.getString(columnIndex);
+            cursor.close();
+
+            post.setImageBitmap(BitmapFactory.decodeFile(picturePath)); */
 
         }
     }
@@ -348,6 +383,31 @@ public class AddFragment extends Fragment{
         File file = new File(mediaStorageDir.getPath() + File.separator + fileName);
 
         return file;
+    }
+
+    private byte[] readInFile(String path) throws IOException {
+        // TODO Auto-generated method stub
+        byte[] data = null;
+        File file = new File(path);
+        InputStream input_stream = new BufferedInputStream(new FileInputStream(
+                file));
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        data = new byte[16384]; // 16K
+        int bytes_read;
+        while ((bytes_read = input_stream.read(data, 0, data.length)) != -1) {
+            buffer.write(data, 0, bytes_read);
+        }
+        input_stream.close();
+        return buffer.toByteArray();
+
+    }
+
+    public ParseFile conversionBitmapParseFile(Bitmap imageBitmap){
+        ByteArrayOutputStream byteArrayOutputStream=new ByteArrayOutputStream();
+        imageBitmap.compress(Bitmap.CompressFormat.PNG,100,byteArrayOutputStream);
+        byte[] imageByte = byteArrayOutputStream.toByteArray();
+        ParseFile parseFile = new ParseFile("image_file.png",imageByte);
+        return parseFile;
     }
 
 
