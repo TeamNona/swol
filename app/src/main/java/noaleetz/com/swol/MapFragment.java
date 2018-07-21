@@ -243,7 +243,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
                     workouts.clear();
                     workouts.addAll(objects);
 
-                    workoutBounds = new LatLngBounds(workouts.get(0).getLatLng(), workouts.get(0).getLatLng());
+                    LatLng currLatLng = new LatLng(currentGeoPoint.getLatitude(), currentGeoPoint.getLongitude());
+                    workoutBounds = new LatLngBounds(currLatLng, currLatLng);
                     Toast.makeText(getContext(), "Workouts Size: " + workouts.size(), Toast.LENGTH_SHORT).show();
                     for (int i = 0; i < workouts.size(); i++) {
                         Workout workout = workouts.get(i);
