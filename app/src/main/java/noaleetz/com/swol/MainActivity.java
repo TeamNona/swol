@@ -216,7 +216,7 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case R.id.nav_profile_fragment:
                 fab.hide();
-                fragmentClass = ProfileFragment.class;
+                fragmentClass = AddFragment.class;
                 break;
             case R.id.nav_logout:
                 ParseUser.logOut();
