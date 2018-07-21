@@ -107,8 +107,13 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
     @Override
     public void onMapReady(GoogleMap googleMap) {
         loadMap(googleMap);
+        // TODO: enable this when you remove creating pins with long press
         map.setInfoWindowAdapter(new CustomWindowAdapter(getLayoutInflater()));
         //TODO: experiment with the ParseGeoPoint.getLocation thingy
+
+        // Make sure we have the permissions
+        getLocationPermission();
+
         // Turn on the My Location layer and the related control on the map.
         updateLocationUI();
 
@@ -130,8 +135,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         if (map != null) {
             // Attach long click listener to the map here
             map.setOnMapLongClickListener(this);
-            // TODO: enable this when you remove creating pins with long press
-//            map.setInfoWindowAdapter(new CustomWindowAdapter(getLayoutInflater()));
 
             //TODO: remove this hackey stuff https://guides.codepath.com/android/Google-Maps-API-v2-Usage#customize-infowindow
             map.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
