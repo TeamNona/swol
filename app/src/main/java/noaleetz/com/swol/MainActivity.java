@@ -1,5 +1,6 @@
 package noaleetz.com.swol;
 
+
 import android.content.Intent;
 import android.Manifest;
 import android.content.pm.PackageManager;
@@ -55,6 +56,7 @@ public class MainActivity extends AppCompatActivity {
     private final static String KEY_LOCATION = "location";
     private FusedLocationProviderClient mFusedLocationClient;
 
+
     public static final int REQUEST_LOCATION_PERMISSION = 1;
     ParseGeoPoint currentGeoPoint;
 
@@ -95,12 +97,6 @@ public class MainActivity extends AppCompatActivity {
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
         getLocation();
-
-
-
-
-
-
 
 
 
@@ -148,6 +144,7 @@ public class MainActivity extends AppCompatActivity {
                             }
                             else{
 
+
                                 // TODO- handle null location
 
                                 Log.d(TAG,"location is found to be null");
@@ -157,6 +154,7 @@ public class MainActivity extends AppCompatActivity {
         }
         FragmentManager fragmentManager = getSupportFragmentManager();
         fragmentManager.beginTransaction().replace(R.id.flContent, new FeedFragment()).commit();
+
 
 
     }
