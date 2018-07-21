@@ -16,9 +16,7 @@ public class User extends ParseObject {
 
     private static final String KEY_EMAIL = "email";
 
-    private static final String KEY_FIRST = "firstName";
-
-    private static final String KEY_LAST = "lastName";
+    private static final String KEY_NAME = "name";
 
     private static final String KEY_PROFILE_PICTURE = "profilePicture";
 
@@ -51,21 +49,14 @@ public class User extends ParseObject {
         put(KEY_EMAIL, email);
     }
 
-    public String getFirstName() {
-        return getString(KEY_FIRST);
+    public String getName() {
+        return getString(KEY_NAME);
     }
 
-    public void setFirstName(String firstName) {
-        put(KEY_FIRST, firstName);
+    public void setName(String name) {
+        put(KEY_NAME, name);
     }
 
-    public String getLastName() {
-        return getString(KEY_LAST);
-    }
-
-    public void setLastName(String lastName) {
-        put(KEY_LAST, lastName);
-    }
 
     public ParseFile getProfilePicture () {
         return getParseFile(KEY_PROFILE_PICTURE);
