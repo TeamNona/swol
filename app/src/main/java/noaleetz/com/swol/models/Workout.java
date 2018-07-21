@@ -112,6 +112,10 @@ public class Workout extends ParseObject{
         return super.getCreatedAt();
     }
 
+    public Boolean isInRange(ParseGeoPoint other, double maxRange) {
+        return getLocation().distanceInMilesTo(other) < maxRange;
+    }
+
     // helper methods for other functions
 
     public LatLng getLatLng() { final ParseGeoPoint loc = getLocation(); return new LatLng(loc.getLatitude(), loc.getLongitude());}
@@ -145,6 +149,11 @@ public class Workout extends ParseObject{
 
         public Query getForUser(ParseUser currentUser) {
             whereEqualTo(KEY_USER, currentUser);
+            return this;
+        }
+
+        public Query getWithinRange(ParseGeoPoint currentLocation, double maxRange) {
+            whereWithinMiles("eventLocation", currentLocation, maxRange);
             return this;
         }
     }

@@ -2,8 +2,10 @@ package noaleetz.com.swol;
 
 
 import android.Manifest;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
@@ -11,9 +13,11 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -32,14 +36,17 @@ import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.parse.FindCallback;
 import com.parse.LocationCallback;
 import com.parse.ParseException;
 import com.parse.ParseGeoPoint;
+import com.parse.ParseUser;
 
 import org.parceler.Parcel;
 import org.parceler.Parcels;
@@ -51,6 +58,8 @@ import java.util.concurrent.Executor;
 
 import noaleetz.com.swol.models.Workout;
 
+import static noaleetz.com.swol.MainActivity.REQUEST_LOCATION_PERMISSION;
+
 
 /**
  * A simple {@link Fragment} subclass.
@@ -60,7 +69,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
 
     ArrayList<Workout> workouts;
     private static final String TAG = "MapFragment";
-    private int counter;
+    private int counter = 0;
+    private int mod;
 
     // map stuff
     GoogleMap map;
@@ -70,6 +80,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
     private FusedLocationProviderClient mFusedLocationProviderClient;
     private boolean mLocationPermissionGranted = true;
     Location mLastKnownLocation;
+    LatLngBounds workoutBounds;
+    ParseGeoPoint currentGeoPoint;
 
     public MapFragment() {
         // Required empty public constructor
@@ -88,18 +100,18 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         super.onViewCreated(view, savedInstanceState);
 
 
-        //TODO: dynamically create the mapfragment and then add the initial conditions as options
+        //TODO: dynamically create the mapfragment
 
         // Construct a FusedLocationProviderClient.
         mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getContext());
 
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map_fragment);
 
-        mapFragment.getMapAsync(this);
-
         workouts = new ArrayList<>();
 
         loadTopWorkouts();
+
+        mapFragment.getMapAsync(this);
 
 
     }
@@ -107,7 +119,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
     @Override
     public void onMapReady(GoogleMap googleMap) {
         loadMap(googleMap);
-        // TODO: enable this when you remove creating pins with long press
         map.setInfoWindowAdapter(new CustomWindowAdapter(getLayoutInflater()));
         //TODO: experiment with the ParseGeoPoint.getLocation thingy
 
@@ -118,7 +129,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         updateLocationUI();
 
         // Get the current location of the device and set the position of the map.
-        getDeviceLocation();
+        getLocation();
 
 
 // map = googleMap;
@@ -157,6 +168,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
                     return true;
                 }
             });
+
         }
 
     }
@@ -181,67 +193,18 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
     // Fires when a long press happens on the map
     @Override
     public void onMapLongClick(final LatLng point) {
-        counter--;
-        if (counter >= 0) {
-            Toast.makeText(getContext(), "New Pin [" + counter + "] @ " + workouts.get(counter).getLatLng().toString(), Toast.LENGTH_LONG).show();
-            createPin(map, workouts.get(counter));
-        } else showAlertDialogForPoint(point);
-//         Custom code here...
+        mod = counter % (workouts.size() + 1);
+        if (mod < workouts.size()) {
+            Workout workout = workouts.get(mod);
+            Log.i("MapView", "Showing workout [" + mod + "] @ " + workout.getLatLng().toString());
+            map.animateCamera(CameraUpdateFactory.newLatLng(workout.getLatLng()));
+        } else {
+            Log.i("MapView", "Showing workout bounds");
+            map.animateCamera(CameraUpdateFactory.newLatLngBounds(workoutBounds,convertDpToPixel(42)));
+        }
 
+        counter++;
 
-        // this is a test just for checking if loading the data points work
-
-    }
-
-
-
-
-
-    // Display the alert that adds the marker
-    private void showAlertDialogForPoint(final LatLng point) {
-        // inflate message_item.xml view
-        View messageView = LayoutInflater.from(getContext()).
-                inflate(R.layout.message_item, null);
-        // Create alert dialog builder
-        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getContext());
-        // set message_item.xml to AlertDialog builder
-        alertDialogBuilder.setView(messageView);
-
-        // Create alert dialog
-        final AlertDialog alertDialog = alertDialogBuilder.create();
-
-        // Configure dialog button (OK)
-        alertDialog.setButton(DialogInterface.BUTTON_POSITIVE, "OK",
-                new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        // Define color of marker icon
-                        BitmapDescriptor defaultMarker =
-                                BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN);
-                        // Extract content from alert dialog
-                        String title = ((EditText) alertDialog.findViewById(R.id.etTitle)).
-                                getText().toString();
-                        String snippet = ((EditText) alertDialog.findViewById(R.id.etSnippet)).
-                                getText().toString();
-                        // Creates and adds marker to the map
-                        Marker marker = map.addMarker(new MarkerOptions()
-                                .position(point)
-                                .title(title)
-                                .snippet(snippet)
-                                .icon(defaultMarker));
-                    }
-                });
-
-        // Configure dialog button (Cancel)
-        alertDialog.setButton(DialogInterface.BUTTON_NEGATIVE, "Cancel",
-                new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        dialog.cancel();
-                    }
-                });
-
-        // Display the dialog
-        alertDialog.show();
     }
 
     private void createPin(GoogleMap googleMap, Workout workout) {
@@ -266,8 +229,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
             e.printStackTrace();
         }
 
-        map.animateCamera(CameraUpdateFactory.newLatLng(loc));
-
     }
 
     public void loadTopWorkouts() {
@@ -281,7 +242,17 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
                     Log.d(TAG, Integer.toString(objects.size()));
                     workouts.clear();
                     workouts.addAll(objects);
-                    counter = objects.size(); // reason this isn't -1 is because there is already one in the long click
+
+                    workoutBounds = new LatLngBounds(workouts.get(0).getLatLng(), workouts.get(0).getLatLng());
+                    Toast.makeText(getContext(), "Workouts Size: " + workouts.size(), Toast.LENGTH_SHORT).show();
+                    for (int i = 0; i < workouts.size(); i++) {
+                        Workout workout = workouts.get(i);
+                        createPin(map, workout);
+                        if (workout.isInRange(currentGeoPoint, 10)) {
+                            workoutBounds = workoutBounds.including(workout.getLatLng());
+                            Log.i("AddToBounds", "added workout " + i + " to the bounds: " + workout.getLocation().distanceInMilesTo(currentGeoPoint));
+                        }
+                    }
                 } else {
                     e.printStackTrace();
                 }
@@ -290,38 +261,12 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
 
     }
 
-    // i got this code from https://github.com/googlemaps/android-samples/blob/master/ApiDemos/java/app/src/main/java/com/example/mapdemo/MyLocationDemoActivity.java
-
-//    @Override
-//    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
-//                                           @NonNull int[] grantResults) {
-//        if (requestCode != LOCATION_PERMISSION_REQUEST_CODE) {
-//            return;
-//        }
-//
-//        if (PermissionUtils.isPermissionGranted(permissions, grantResults,
-//                Manifest.permission.ACCESS_FINE_LOCATION)) {
-//            // Enable the my location layer if the permission has been granted.
-//            enableMyLocation();
-//        } else {
-//            // Display the missing permission error dialog when the fragments resume.
-//            mPermissionDenied = true;
-//        }
-//    }
-//
-//    private void enableMyLocation() {
-//        if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION)
-//                != PackageManager.PERMISSION_GRANTED) {
-//            // Permission to access the location is missing.
-//            PermissionUtils.requestPermission((AppCompatActivity) getActivity(), LOCATION_PERMISSION_REQUEST_CODE,
-//                    Manifest.permission.ACCESS_FINE_LOCATION, true);
-//        } else if (map != null) {
-//            // Access to the location has been granted to the app.
-//            map.setMyLocationEnabled(true);
-//        }
-//    }
-
-    // i got this code from https://developers.google.com/maps/documentation/android-sdk/current-place-tutorial
+    // this function is to convert from DP to pixels for the padding on the map bounds
+    public static int convertDpToPixel(float dp){
+        DisplayMetrics metrics = Resources.getSystem().getDisplayMetrics();
+        float px = dp * ((float)metrics.densityDpi / DisplayMetrics.DENSITY_DEFAULT);
+        return (int) px;
+    }
 
     private void updateLocationUI() {
         if (map == null) {
@@ -376,35 +321,47 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         updateLocationUI();
     }
 
-    private void getDeviceLocation() {
-        /*
-         * Get the best and most recent location of the device, which may be null in rare
-         * cases when a location is not available.
-         */
-        try {
-            if (mLocationPermissionGranted) {
-                Task locationResult = mFusedLocationProviderClient.getLastLocation();
-                locationResult.addOnCompleteListener( getActivity(), new OnCompleteListener() {
-                    @Override
-                    public void onComplete(@NonNull Task task) {
-                        if (task.isSuccessful()) {
-                            // Set the map's camera position to the current location of the device.
-                            mLastKnownLocation = (Location) task.getResult();
-                            map.moveCamera(CameraUpdateFactory.newLatLngZoom(
-                                    new LatLng(mLastKnownLocation.getLatitude(),
-                                            mLastKnownLocation.getLongitude()), 15));
-                        } else {
-                            Log.d(TAG, "Current location is null. Using defaults.");
-                            Log.e(TAG, "Exception: %s", task.getException());
-                            map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(47.6222833, -122.35217460000001), 15));
-                            map.getUiSettings().setMyLocationButtonEnabled(false);
+    private void getLocation() {
+        // If user has not yet given permission - ask for permission - dialog box asking for permission pops up
+        // Upon return, onRequestPermissionsResult is called
+        // getLocation is called AGAIN and this time will skip to the else
+        if (ActivityCompat.checkSelfPermission(getContext(),
+                Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(getActivity(), new String[]
+                            {Manifest.permission.ACCESS_FINE_LOCATION},
+                    REQUEST_LOCATION_PERMISSION);
+        } else {
+            Log.d(TAG, "getLocation: permissions granted");
+            mFusedLocationProviderClient.getLastLocation()
+                    .addOnSuccessListener(getActivity(), new OnSuccessListener<Location>() {
+                        @Override
+                        public void onSuccess(Location location) {
+                            // Got last known location. In some rare situations this can be null.
+
+                            if (location != null) {
+                                Log.d(TAG, "Got last known location");
+                                // Logic to handle location object
+                                mLastKnownLocation = location;
+                                currentGeoPoint = new ParseGeoPoint(mLastKnownLocation.getLatitude(), mLastKnownLocation.getLongitude());
+                                Log.d(TAG,currentGeoPoint.toString());
+                                ParseUser.getCurrentUser().put("currentLocation",currentGeoPoint);
+                                ParseUser.getCurrentUser().saveInBackground();
+                                // move the map to the current location
+                                map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(mLastKnownLocation.getLatitude(), mLastKnownLocation.getLongitude()), 15));
+
+                            }
+                            else{
+
+                                // TODO- handle null location
+
+                                Log.d(TAG,"location is found to be null");
+                            }
                         }
-                    }
-                });
-            }
-        } catch(SecurityException e)  {
-            Log.e("Exception: %s", e.getMessage());
+                    });
         }
+
+
     }
 
     // this exists to pass extra data to the window adapter
