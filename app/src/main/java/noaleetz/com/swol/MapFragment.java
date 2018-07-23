@@ -64,7 +64,7 @@ import static noaleetz.com.swol.MainActivity.REQUEST_LOCATION_PERMISSION;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleMap.OnMarkerDragListener, GoogleMap.OnMapLongClickListener {
+public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleMap.OnMapLongClickListener, GoogleMap.OnInfoWindowClickListener {
 
 
     ArrayList<Workout> workouts;
@@ -174,20 +174,11 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
     }
 
     @Override
-    public void onMarkerDragStart(Marker marker) {
-
-    }
-
-    @Override
-    public void onMarkerDrag(Marker marker) {
-
-    }
-
-    @Override
-    public void onMarkerDragEnd(Marker marker) {
-
-        // update the longitude and latitude of the activity
-
+    public void onInfoWindowClick(Marker marker) {
+        FragmentManager fm = getActivity().getSupportFragmentManager();
+        // TODO: make the detail fragment class
+//        fm.beginTransaction().replace(R.id.flContent, DetailFragment.class).commit();
+        Toast.makeText(getContext(), "Go to detailed screen", Toast.LENGTH_SHORT).show();
     }
 
     // Fires when a long press happens on the map
