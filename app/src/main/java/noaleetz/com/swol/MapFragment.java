@@ -122,6 +122,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         map.setInfoWindowAdapter(new CustomWindowAdapter(getLayoutInflater()));
         //TODO: experiment with the ParseGeoPoint.getLocation thingy
 
+        map.setOnInfoWindowClickListener(this);
+
         // Make sure we have the permissions
         getLocationPermission();
 
@@ -175,7 +177,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
 
     @Override
     public void onInfoWindowClick(Marker marker) {
-        FragmentManager fm = getActivity().getSupportFragmentManager();
+//        FragmentManager fm = getActivity().getSupportFragmentManager();
         // TODO: make the detail fragment class
 //        fm.beginTransaction().replace(R.id.flContent, DetailFragment.class).commit();
         Toast.makeText(getContext(), "Go to detailed screen", Toast.LENGTH_SHORT).show();
@@ -355,6 +357,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
 
 
     }
+
+    //TODO: this class is not necessary. Clean up code by turning the workout into a parcel and just give that to the tag
 
     // this exists to pass extra data to the window adapter
     @Parcel
