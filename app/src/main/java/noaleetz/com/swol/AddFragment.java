@@ -36,6 +36,7 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.TimePicker;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -109,11 +110,12 @@ public class AddFragment extends Fragment{
     // declare other variables
     Date Date;
     ParseGeoPoint postLocation;
-    int postYear;
-    int postMonth;
-    int postDay;
-    int postHour;
-    int postMinute;
+    // initialize time to midnight of current date
+    int postYear = Calendar.getInstance().get(Calendar.YEAR);
+    int postMonth = Calendar.getInstance().get(Calendar.MONTH);
+    int postDay = Calendar.getInstance().get(Calendar.DAY_OF_MONTH);
+    int postHour = 23;
+    int postMinute = 59;
     FloatingActionButton fab;
     
     // keep track of who is logged on
@@ -214,22 +216,30 @@ public class AddFragment extends Fragment{
             @Override
             public void onClick(View view) {
 
+                // ensure user enters event name
+                final String name = etName.getText().toString();
+                if (name.length() == 0) {
+                    Toast.makeText(getActivity(), "Your workout must have a name.", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+
+                final String description = etDescription.getText().toString();
+
+
                 // get the final choice of date, if no date or time is chosen, default to current instance
                 Calendar calendar = Calendar.getInstance();
                 calendar.set(postYear, postMonth, postDay, postHour, postMinute);
                 Date = calendar.getTime();
-
-
-
-                final String name = etName.getText().toString();
-                final String description = etDescription.getText().toString();
                 final Date date = Date;
+
 
                 // get final location, with default location as current location
                 if (postLocation == null) {
                     postLocation = currentUser.getParseGeoPoint("currentLocation");
                 }
                 final ParseGeoPoint location = postLocation;
+
 
                 // get the final tags
                 final JSONArray tags = new JSONArray();
@@ -239,9 +249,11 @@ public class AddFragment extends Fragment{
                     tags.put(gotTags[i]);
                 }
 
+
                 // populate participants
                 final JSONArray participants = new JSONArray();
                 participants.put(currentUser.getObjectId().toString());
+
 
                 // get media
                 final ParseFile media;
