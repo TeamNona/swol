@@ -209,7 +209,7 @@ public class MainActivity extends AppCompatActivity {
             case R.id.nav_map_fragment:
                 fab.show();
                 // if there is no api key, then throw this exception
-                if (TextUtils.isEmpty(getResources().getString(R.string.google_maps_api_key))) {
+                if (TextUtils.isEmpty(getResources().getString(R.string.api_key))) {
                     throw new IllegalStateException("You forgot to supply a Google Maps API key");
                 }
                 fragmentClass = MapFragment.class;
@@ -220,7 +220,11 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case R.id.nav_logout:
                 ParseUser.logOut();
-                startActivity(new Intent(this, DispatchActivity.class));
+                Intent i = new Intent(this, DispatchActivity.class);
+                i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(i);
                 finish();
             default:
                 fragmentClass = FeedFragment.class;
