@@ -6,6 +6,7 @@ import android.Manifest;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.location.Location;
+import android.media.Image;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
@@ -23,8 +24,12 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
@@ -32,6 +37,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.parse.Parse;
+import com.parse.ParseException;
 import com.parse.ParseGeoPoint;
 import com.parse.ParseUser;
 
@@ -70,6 +76,8 @@ public class MainActivity extends AppCompatActivity {
     @BindView(R.id.nvView)
     NavigationView nvDrawer;
 
+
+
     @OnClick(R.id.fab)
     public void onClick(View view) {
         fab.hide();
@@ -98,6 +106,31 @@ public class MainActivity extends AppCompatActivity {
 
         getLocation();
 
+        View hView = nvDrawer.getHeaderView(0);
+        TextView navName = hView.findViewById(R.id.tvNavName);
+        try {
+            navName.setText(ParseUser.getCurrentUser().fetchIfNeeded().getString("name"));
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+        TextView navUserame = hView.findViewById(R.id.tvNavUsername);
+        try {
+            navUserame.setText("@" + ParseUser.getCurrentUser().fetchIfNeeded().getUsername());
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+        ImageView ivAvatar = hView.findViewById(R.id.ivAvatar);
+        try {
+            Glide.with(hView).load(ParseUser.getCurrentUser().fetchIfNeeded().getParseFile("profilePicture").getFile())
+                             .apply(RequestOptions.circleCropTransform()
+                                    .placeholder(R.drawable.ic_person)
+                                    .error(R.drawable.ic_person))
+                             .into(ivAvatar);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
 
 
         // i have no idea what this does but if it ain't broke don't fix it
