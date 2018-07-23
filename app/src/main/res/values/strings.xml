@@ -6,8 +6,6 @@
     <string name="title_notifications">Notifications</string>
     <string name="drawer_open">Open navigation drawer</string>
     <string name="drawer_close">Close navigation drawer</string>
-    <string name="facebook_app_id">412258572515690</string>
-    <string name="fb_login_protocol_scheme">fb412258572515690</string>
     <string-array name="my_facebook_permissions">
         <item>public_profile</item>
         <item>user_friends</item>
@@ -21,7 +19,6 @@
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
-    <string name="google_maps_api_key">AIzaSyClKI-QQCyzu0yuZ_MrdGi7CG1uE04zsZw</string>
     <string name="title_activity_maps">Map</string>
     <string name="location_permission_denied">Permission to access location was denied</string>
     <string name="location_text">"Latitude: %1$.4f \n Longitude: %2$.4f\n Timestamp: %3$tr"</string>
