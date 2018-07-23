@@ -41,6 +41,8 @@ import com.parse.ParseException;
 import com.parse.ParseGeoPoint;
 import com.parse.ParseUser;
 
+import org.json.JSONObject;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
@@ -107,6 +109,10 @@ public class MainActivity extends AppCompatActivity {
         getLocation();
 
         View hView = nvDrawer.getHeaderView(0);
+
+        // TODO: all of these try catches look gross--fix it
+
+        // sets the full name in the drawer
         TextView navName = hView.findViewById(R.id.tvNavName);
         try {
             navName.setText(ParseUser.getCurrentUser().fetchIfNeeded().getString("name"));
@@ -114,13 +120,21 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
+        // sets the username in the drawer
         TextView navUserame = hView.findViewById(R.id.tvNavUsername);
         try {
-            navUserame.setText("@" + ParseUser.getCurrentUser().fetchIfNeeded().getUsername());
+            if(isFacebookUser(ParseUser.getCurrentUser())) {
+                navUserame.setVisibility(View.GONE);
+            } else {
+                navUserame.setText("@" + ParseUser.getCurrentUser().fetchIfNeeded().getUsername());
+                navUserame.setVisibility(View.VISIBLE);
+            }
         } catch (ParseException e) {
             e.printStackTrace();
         }
 
+        // sets the profile pic in the drawer
+        // TODO: pull pic from fb
         ImageView ivAvatar = hView.findViewById(R.id.ivAvatar);
         try {
             Glide.with(hView).load(ParseUser.getCurrentUser().fetchIfNeeded().getParseFile("profilePicture").getFile())
@@ -129,6 +143,9 @@ public class MainActivity extends AppCompatActivity {
                                     .error(R.drawable.ic_person))
                              .into(ivAvatar);
         } catch (ParseException e) {
+            e.printStackTrace();
+        } catch (NullPointerException e) {
+            Log.e("MainActivity", "There is no profile photo");
             e.printStackTrace();
         }
 
@@ -307,6 +324,12 @@ public class MainActivity extends AppCompatActivity {
         super.onConfigurationChanged(newConfig);
         // Pass any configuration change to the drawer toggles
         drawerToggle.onConfigurationChanged(newConfig);
+    }
+
+    public boolean isFacebookUser (ParseUser user) {
+        if (user.get("authData") == null) return false;
+        JSONObject authData = user.getJSONObject("authData");
+        return authData.has("facebook");
     }
 
 
