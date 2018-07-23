@@ -2,6 +2,7 @@ package noaleetz.com.swol;
 
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.TimePickerDialog;
@@ -10,6 +11,9 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -75,45 +79,57 @@ import static android.support.constraint.Constraints.TAG;
  */
 public class AddFragment extends Fragment{
 
+    // Use butterknife to bind
     @BindView(R.id.btCancel)
     ImageView btCancel;
-
-
-    FloatingActionButton fab;
-    
-    // keep track of who is logged on
-    private ParseUser currentUser = ParseUser.getCurrentUser();
-
-    // declare fields
-    Button addTime;
-    Button addDate;
-    Button camera;
-    Button upload;
+    @BindView(R.id.btnPost)
     Button postButton;
+    @BindView(R.id.btnUpload)
+    Button upload;
+    @BindView(R.id.btnCapture)
+    Button camera;
+    @BindView(R.id.btnTime)
+    Button addTime;
+    @BindView(R.id.btnDate)
+    Button addDate;
+    @BindView(R.id.etName)
     EditText etName;
+    @BindView(R.id.etDescription)
     EditText etDescription;
-    EditText etTags;
+    @BindView(R.id.tvDate)
     TextView tvDate;
+    @BindView(R.id.tvTime)
     TextView tvTime;
+    @BindView(R.id.etTags)
+    EditText etTags;
+    @BindView(R.id.ivMedia)
+    ImageView post;
+
+
+    // declare other variables
     Date Date;
     ParseGeoPoint postLocation;
-    ParseFile media;
-    ImageView post;
     int postYear;
     int postMonth;
     int postDay;
     int postHour;
     int postMinute;
+    FloatingActionButton fab;
+    
+    // keep track of who is logged on
+    private ParseUser currentUser = ParseUser.getCurrentUser();
 
-    // media
+    // declare important variables for accessing photo gallery
     private static final int RESULT_OK = -1;
+    private static int RESULT_LOAD_IMAGE = 1;
     Bitmap image;
+    Bitmap bitmap;
     File photoFile;
     public String photoFileName = "photo.jpg";
     public final String APP_TAG = "Swol";
-    private static int RESULT_LOAD_IMAGE = 1;
-    Bitmap bitmap;
+
     private Unbinder unbinder;
+
 
 
 
@@ -132,16 +148,14 @@ public class AddFragment extends Fragment{
         return view;
     }
 
+
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
         fab = (FloatingActionButton) getActivity().findViewById(R.id.fab);
 
-
-
-        addTime = view.findViewById(R.id.btnTime);
-
+        // set on click listener for user to add time
         addTime.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -149,8 +163,8 @@ public class AddFragment extends Fragment{
             }
         });
 
-        addDate = view.findViewById(R.id.btnDate);
 
+        // set on click listener for user to add date
         addDate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -158,13 +172,8 @@ public class AddFragment extends Fragment{
             }
         });
 
-        etName = view.findViewById(R.id.etName);
-        etDescription = view.findViewById(R.id.etDescription);
-        tvDate = view.findViewById(R.id.tvDate);
-        tvTime = view.findViewById(R.id.tvTime);
-        etTags = view.findViewById(R.id.etTags);
 
-
+        // utilize the Google Places API to autocomplete the location for the workout
         SupportPlaceAutocompleteFragment autocompleteFragment = (SupportPlaceAutocompleteFragment)
                 getChildFragmentManager().findFragmentById(R.id.place_autocomplete_fragment);
 
@@ -186,8 +195,8 @@ public class AddFragment extends Fragment{
             }
         });
 
-        post = view.findViewById(R.id.ivMedia);
-        upload = view.findViewById(R.id.btnUpload);
+
+        // allow user to upload and post a photo for the workout
         upload.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -200,12 +209,12 @@ public class AddFragment extends Fragment{
         });
 
 
-        postButton = view.findViewById(R.id.btnPost);
+        // send new workout info to Parse
         postButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
-                // get the final choice of date
+                // get the final choice of date, if no date or time is chosen, default to current instance
                 Calendar calendar = Calendar.getInstance();
                 calendar.set(postYear, postMonth, postDay, postHour, postMinute);
                 Date = calendar.getTime();
@@ -215,6 +224,11 @@ public class AddFragment extends Fragment{
                 final String name = etName.getText().toString();
                 final String description = etDescription.getText().toString();
                 final Date date = Date;
+
+                // get final location, with default location as current location
+                if (postLocation == null) {
+                    postLocation = currentUser.getParseGeoPoint("currentLocation");
+                }
                 final ParseGeoPoint location = postLocation;
 
                 // get the final tags
@@ -230,39 +244,17 @@ public class AddFragment extends Fragment{
                 participants.put(currentUser.getObjectId().toString());
 
                 // get media
-                // Locate the image in res >
-                //Bitmap bitmap = BitmapFactory.decodeFile("picturePath");
-                // Convert it to byte
-                //ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                // Compress image to lower quality scale 1 - 100
-                //bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+                final ParseFile media;
+                if (bitmap == null) {
+                    Drawable drawable = getResources().getDrawable(R.drawable.ic_directions_run_black_24dp);
+                    bitmap = convertToBitmap(drawable, 1000, 1000);
+                }
+                media = conversionBitmapParseFile(bitmap);
 
-                /*Object image = null;
-                try {
-                    String path = null;
-                    image = readInFile(path);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                } */
-
-                // Create the ParseFile
-                //ParseFile file = new ParseFile("picturePath", (byte[]) image);
-                // Upload the image into Parse Cloud
-                //file.saveInBackground();
-
-                // get media
-                final File file =  new File(String.valueOf(photoFile));
-                final ParseFile media = new ParseFile(file);
-                final ParseFile lastshot = conversionBitmapParseFile(bitmap);
-
-                media.saveInBackground();
-
-                createNewWorkout(name, description, date, location, lastshot, participants, tags);
+                createNewWorkout(name, description, date, location, media, participants, tags);
                 FragmentManager fm = getActivity().getSupportFragmentManager();
                 fab.show();
                 fm.popBackStackImmediate();
-
-
 
             }
         });
@@ -304,7 +296,7 @@ public class AddFragment extends Fragment{
 
                 } else {
                     e.printStackTrace();
-                    Log.e("no", "no");
+                    Log.e("AddFragment", "Create post was not successful");
                 }
             }
         });
@@ -371,33 +363,21 @@ public class AddFragment extends Fragment{
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        //GETTING IMAGE FROM GALLERY
+        // GETTING IMAGE FROM GALLERY
         if (requestCode == RESULT_LOAD_IMAGE && resultCode == RESULT_OK && null != data) {
             Uri selectedImage = data.getData();
             photoFile = getPhotoFileUri(photoFileName);
 
             try {
-                //..bitmap = BitmapFactory.decodeStream(context.getContentResolver().openInputStream(selectedImage));
                 bitmap = MediaStore.Images.Media.getBitmap(getActivity().getApplicationContext().getContentResolver(), selectedImage);
                 post.setImageBitmap(bitmap);
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            /*Uri selectedImage = data.getData();
-            String[] filePathColumn = { MediaStore.Images.Media.DATA };
-
-            Cursor cursor = getActivity().getContentResolver().query(selectedImage,
-                    filePathColumn, null, null, null);
-            cursor.moveToFirst();
-
-            int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
-            String picturePath = cursor.getString(columnIndex);
-            cursor.close();
-
-            post.setImageBitmap(BitmapFactory.decodeFile(picturePath)); */
 
         }
     }
+
 
     // Returns the File for a photo stored on disk given the fileName
     public File getPhotoFileUri(String fileName) {
@@ -417,22 +397,6 @@ public class AddFragment extends Fragment{
         return file;
     }
 
-    private byte[] readInFile(String path) throws IOException {
-        // TODO Auto-generated method stub
-        byte[] data = null;
-        File file = new File(path);
-        InputStream input_stream = new BufferedInputStream(new FileInputStream(
-                file));
-        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-        data = new byte[16384]; // 16K
-        int bytes_read;
-        while ((bytes_read = input_stream.read(data, 0, data.length)) != -1) {
-            buffer.write(data, 0, bytes_read);
-        }
-        input_stream.close();
-        return buffer.toByteArray();
-
-    }
 
     public ParseFile conversionBitmapParseFile(Bitmap imageBitmap){
         ByteArrayOutputStream byteArrayOutputStream=new ByteArrayOutputStream();
@@ -443,5 +407,20 @@ public class AddFragment extends Fragment{
     }
 
 
+    public Bitmap convertToBitmap(Drawable drawable, int widthPixels, int heightPixels) {
+        Bitmap mutableBitmap = Bitmap.createBitmap(widthPixels, heightPixels, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(mutableBitmap);
+        drawable.setBounds(0, 0, widthPixels, heightPixels);
+        drawable.draw(canvas);
+
+        return mutableBitmap;
+    }
+
+    // When binding a fragment in onCreateView, set the views to null in onDestroyView.
+    // ButterKnife returns an Unbinder on the initial binding that has an unbind method to do this automatically.
+    @Override public void onDestroyView() {
+        super.onDestroyView();
+        unbinder.unbind();
+    }
 
 }

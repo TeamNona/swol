@@ -116,7 +116,7 @@
         android:layout_alignEnd="@+id/btnTime"
         android:layout_alignTop="@+id/textView5"
         android:ems="10"
-        android:hint="example: #run #cardio"
+        android:hint="example: run cardio"
         android:inputType="textPersonName" />
 
     <Button
