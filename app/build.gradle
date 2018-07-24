@@ -56,8 +56,7 @@ dependencies {
     implementation "com.google.android.gms:play-services-location:$googlePlayVersion"
     implementation "com.google.android.gms:play-services-places:$googlePlayVersion"
 
-    // for the widget dependency
-    implementation "com.github.parse-community.ParseUI-Android:widget:0.0.3"
+
     // for the login dependency
     implementation "com.github.parse-community.ParseUI-Android:login:0.0.3"
 
@@ -65,5 +64,11 @@ dependencies {
     implementation 'com.facebook.android:facebook-android-sdk:[4,5)'
     implementation rootProject.ext.parseFacebookUtils
     implementation rootProject.ext.parse
+
+    implementation 'com.github.sharish:ShimmerRecyclerView:v1.3'
+
+    implementation 'com.nex3z:flow-layout:1.2.2'
+
+
 
 }

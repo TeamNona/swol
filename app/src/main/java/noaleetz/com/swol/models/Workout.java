@@ -147,6 +147,15 @@ public class Workout extends ParseObject{
             whereEqualTo(KEY_USER, currentUser);
             return this;
         }
+
+
+
+//        public Query getParticipants() {
+//
+//
+//            return this;
+//        }
+
     }
 
 }

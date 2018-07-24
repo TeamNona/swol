@@ -7,15 +7,36 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.TextView;
+
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
+import com.parse.FindCallback;
+import com.parse.GetCallback;
+import com.parse.Parse;
+import com.parse.ParseException;
+import com.parse.ParseObject;
+import com.parse.ParseQuery;
+import com.parse.ParseUser;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
+import jp.wasabeef.glide.transformations.RoundedCornersTransformation;
+import noaleetz.com.swol.models.User;
 import noaleetz.com.swol.models.Workout;
 
 
@@ -24,15 +45,47 @@ import noaleetz.com.swol.models.Workout;
  */
 public class DetailFragment extends Fragment {
 
-
-    @BindView(R.id.btBack)
-    ImageView btBack;
-
     FloatingActionButton fab;
 
+
+    private static final String TAG = "TAGDetailFragment";
+    @BindView(R.id.btBack)
+    ImageView btBack;
+    @BindView(R.id.tvWorkoutTitle)
+    TextView tvWorkoutTitle;
+    @BindView(R.id.tvBeginsIn)
+    TextView tvBeginsIn;
+    @BindView(R.id.ivTimeIcon)
+    ImageView ivTimeIcon;
+    @BindView(R.id.ivAvatar)
+    ImageView ivAvatar;
+    @BindView(R.id.tvFullName)
+    TextView tvFullName;
+    @BindView(R.id.tvUsername)
+    TextView tvUsername;
+    @BindView(R.id.ivImage)
+    ImageView ivImage;
+    @BindView(R.id.rvParticipants)
+    RecyclerView rvParticipants;
+    @BindView(R.id.tvDescription)
+    TextView tvDescription;
+    @BindView(R.id.tvLikesCt)
+    TextView tvLikesCt;
+    @BindView(R.id.ivHeartIcon)
+    ImageView ivHeartIcon;
+    @BindView(R.id.ivCommentIcon)
+    ImageView ivCommentIcon;
+
+    Workout workout;
+
+    String url;
+    String url_post;
+
+
+    private ParticipantAdapter adapter;
+    private List<ParseUser> participants;
+
     private Unbinder unbinder;
-
-
 
     public DetailFragment() {
         // Required empty public constructor
@@ -45,36 +98,74 @@ public class DetailFragment extends Fragment {
         // Inflate the layout for this fragment
 
 
-
-
-
-
-
-
-        View view = inflater.inflate(R.layout.fragment_add, container, false);
+        View view = inflater.inflate(R.layout.fragment_detail, container, false);
         unbinder = ButterKnife.bind(this, view);
 
 
-
-
-
-
         // Inflate the layout for this fragment
-        return view;    }
+        return view;
+    }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        Bundle bundle = getArguments();
-        Workout workout = (Workout) bundle.getParcelable("workout");
-        workout.getCreatedAt();
-        workout.getDescription();
-        workout.getName();
-        String name = workout.getUser().getUsername();
-        Log.d("NAME",name);
-
         fab = (FloatingActionButton) getActivity().findViewById(R.id.fab);
+        fab.hide();
+
+
+        final RoundedCornersTransformation roundedCornersTransformation = new RoundedCornersTransformation(30, 30);
+        final RequestOptions requestOptions = RequestOptions.bitmapTransform(roundedCornersTransformation);
+
+        Bundle bundle = getArguments();
+        workout = (Workout) bundle.getParcelable("workout");
+
+        tvWorkoutTitle.setText(workout.getName().toString());
+        tvBeginsIn.setText(workout.getTimeUntil());
+        tvFullName.setText(workout.getUser().getString("name"));
+        tvUsername.setText(workout.getUser().getUsername());
+
+        // Load user avatar
+        try {
+            url = workout.getUser()
+                    .fetchIfNeeded()
+                    .getParseFile("profilePicture")
+                    .getUrl();
+        } catch (ParseException e) {
+            e.printStackTrace();
+            Log.d(TAG, "AvatarImage did not load");
+        }
+
+        Glide.with(DetailFragment.this)
+                .load(url)
+                .apply(requestOptions)
+                .into(ivAvatar);
+
+        // load workout image
+
+        try {
+            url_post = workout
+                    .fetchIfNeeded()
+                    .getParseFile("media")
+                    .getUrl();
+        } catch (ParseException e) {
+            e.printStackTrace();
+            Log.d(TAG, "WorkoutImage did not load");
+        }
+
+        Glide.with(DetailFragment.this)
+                .load(url_post)
+                .apply(requestOptions)
+                .into(ivImage);
+
+        // set up and populate data for adapter
+        this.adapter = new ParticipantAdapter((List<ParseUser>) workout.getParticipants());
+        Log.d(TAG, "finished setting up adapter");
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext());
+        rvParticipants.setLayoutManager(linearLayoutManager);
+        rvParticipants.setAdapter(adapter);
+
+        loadParticipants(workout.getParticipants());
 
 
         btBack.setOnClickListener(new View.OnClickListener() {
@@ -82,7 +173,7 @@ public class DetailFragment extends Fragment {
             public void onClick(View view) {
 
                 FragmentManager fm = getActivity().getSupportFragmentManager();
-                fab.hide();
+                fab.show();
                 fm.popBackStackImmediate();
 
             }
@@ -90,5 +181,56 @@ public class DetailFragment extends Fragment {
 
 
     }
+
+
+
+    // get participant data and add it to list to assemble adapter
+
+    public void loadParticipants(JSONArray user_ids) {
+
+        Log.d(TAG, Integer.toString(user_ids.length()));
+
+        final List<ParseUser> participant_list = new ArrayList<>();
+
+
+
+        for (int i = 0; i < user_ids.length(); i++) {
+
+            try {
+
+                ParseQuery<ParseObject> query = ParseQuery.getQuery("User");
+                query.getInBackground(String.valueOf(user_ids.get(i)), new GetCallback<ParseObject>() {
+                    public void done(ParseObject object, ParseException e) {
+                        if (e == null) {
+                            // object will be your User
+
+                        } else {
+                            // something went wrong
+                        }
+                    }
+                });
+
+
+                participant_list.add((ParseUser) user_ids.get(i));
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+        }
+
+        participants.clear();
+        participants.addAll(participant_list);
+        adapter.notifyDataSetChanged();
+    }
+
+
+
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        unbinder.unbind();
+    }
+
 
 }
