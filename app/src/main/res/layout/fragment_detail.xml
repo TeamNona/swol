@@ -32,7 +32,7 @@
             android:layout_toEndOf="@+id/btBack"
             android:text="Workout Title"
             android:textAlignment="textEnd"
-            android:textSize="24sp"
+            android:textSize="18sp"
             android:textStyle="bold" />
 
         <TextView
@@ -43,7 +43,9 @@
             android:layout_alignParentEnd="true"
             android:layout_below="@+id/tvWorkoutTitle"
             android:layout_marginLeft="5dp"
+            android:layout_marginTop="3dp"
             android:text="In 3 days"
+            android:textAlignment="center"
             android:textSize="16dp" />
 
         <ImageView
@@ -221,12 +223,12 @@
     <RelativeLayout
         android:id="@+id/RLInfo"
         android:layout_width="match_parent"
-        android:layout_height="100dp"
+        android:layout_height="wrap_content"
         android:layout_below="@+id/LlImageAndRv">
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:background="@color/colorAccent"
             android:orientation="vertical"
             android:padding="16dp">

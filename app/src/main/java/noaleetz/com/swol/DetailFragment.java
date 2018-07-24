@@ -124,6 +124,9 @@ public class DetailFragment extends Fragment {
         tvBeginsIn.setText(workout.getTimeUntil());
         tvFullName.setText(workout.getUser().getString("name"));
         tvUsername.setText(workout.getUser().getUsername());
+        tvDescription.setText(workout.getDescription());
+
+        Log.d(TAG, "Tag 1" + workout.get("eventParticipants").toString());
 
         // Load user avatar
         try {
@@ -163,7 +166,7 @@ public class DetailFragment extends Fragment {
         participants = new ArrayList<>();
 
         this.adapter = new ParticipantAdapter(participants);
-        Log.d(TAG, "finished setting up adapter");
+        Log.d(TAG, "finished setting up participant adapter");
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext());
         rvParticipants.setLayoutManager(linearLayoutManager);
         rvParticipants.setAdapter(adapter);
@@ -181,15 +184,14 @@ public class DetailFragment extends Fragment {
 
             }
         });
-
-
     }
-
-
 
     // get participant data and add it to list to assemble adapter
 
     public void loadParticipants(final JSONArray user_ids) {
+
+        participants.clear();
+
 
         Log.d(TAG, Integer.toString(user_ids.length()));
 
@@ -197,39 +199,44 @@ public class DetailFragment extends Fragment {
 
 
         for (int i = 0; i < user_ids.length(); i++) {
-
             try {
 
-                ParseQuery<ParseUser> query = ParseQuery.getQuery("User");
-                query.getInBackground(String.valueOf(user_ids.get(i)), new GetCallback<ParseUser>() {
-                    public void done(ParseUser object, ParseException e) {
+                ParseQuery<ParseUser> query = ParseQuery.getQuery("_User");
+                query.whereEqualTo("objectId",user_ids.get(i));
+
+
+
+                query.findInBackground(new FindCallback<ParseUser>() {
+                    public void done(List<ParseUser> object, ParseException e) {
                         if (e == null) {
+                            ParseUser user = object.get(0);
+                            participants.add(user);
+                            adapter.notifyDataSetChanged();
+
                             // object will be your User
-                            participant_list.add(object);
-                            Log.d(TAG, "user object added:" + object.getUsername());
+//                            participant_list.add((ParseUser) object);
+                            Log.d(TAG, "user object added:" + user.getUsername());
 
                         } else {
                             // something went wrong
                             Log.d(TAG, "user object not added");
                         }
                     }
+
                 });
+
 
 
 //                participant_list.add((ParseUser) user_ids.get(i));
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-
         }
         Log.d(TAG, "participant list of objects" + participant_list);
 
-        participants.clear();
-        participants.addAll(participant_list);
-        adapter.notifyDataSetChanged();
+//        participants.clear();
+//        participants.addAll(participant_list);
     }
-
-
 
 
     @Override
