@@ -2,7 +2,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="192dp"
+    android:layout_height="230dp"
     android:layout_centerHorizontal="false"
     android:layout_centerInParent="false"
     android:layout_centerVertical="false"
@@ -14,18 +14,28 @@
 
     <ImageView
         android:id="@+id/ivAvatar"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
+        android:layout_width="172dp"
+        android:layout_height="120dp"
         app:srcCompat="@drawable/ic_person" />
 
     <TextView
-        android:id="@+id/tvUsername"
+        android:id="@+id/tvNavName"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Username"
+        android:text="name"
         android:textAlignment="center"
         android:textAppearance="@style/TextAppearance.AppCompat.Body1"
         android:textColor="@android:color/black"
         android:textSize="30sp" />
+
+    <TextView
+        android:id="@+id/tvNavUsername"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="username"
+        android:textAlignment="center"
+        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+        android:textColor="@android:color/darker_gray"
+        android:textSize="12sp"/>
 
 </LinearLayout>
