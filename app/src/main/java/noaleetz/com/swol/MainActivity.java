@@ -352,8 +352,6 @@ public class MainActivity extends AppCompatActivity {
         drawerToggle.onConfigurationChanged(newConfig);
     }
 
-<<<<<<< HEAD
-
     public void changeToDetailFragment(Workout workout) {
         //TODO that
         DetailFragment detailFragment = new DetailFragment();
@@ -374,14 +372,11 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-
-=======
     public boolean isFacebookUser(ParseUser user) {
         if (user.get("authData") == null) return false;
         JSONObject authData = user.getJSONObject("authData");
         return authData.has("facebook");
     }
->>>>>>> master
 
 
 }

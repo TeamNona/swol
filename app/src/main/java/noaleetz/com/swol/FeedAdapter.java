@@ -69,7 +69,7 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
             return;
         }
 
-        Workout post = mposts.get(position);
+        final Workout post = mposts.get(position);
 
         final RoundedCornersTransformation roundedCornersTransformation = new RoundedCornersTransformation(15, 15);
         final RequestOptions requestOptions = RequestOptions.bitmapTransform(roundedCornersTransformation);
