@@ -159,7 +159,10 @@ public class DetailFragment extends Fragment {
                 .into(ivImage);
 
         // set up and populate data for adapter
-        this.adapter = new ParticipantAdapter((List<ParseUser>) workout.getParticipants());
+
+        participants = new ArrayList<>();
+
+        this.adapter = new ParticipantAdapter(participants);
         Log.d(TAG, "finished setting up adapter");
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext());
         rvParticipants.setLayoutManager(linearLayoutManager);
@@ -186,37 +189,40 @@ public class DetailFragment extends Fragment {
 
     // get participant data and add it to list to assemble adapter
 
-    public void loadParticipants(JSONArray user_ids) {
+    public void loadParticipants(final JSONArray user_ids) {
 
         Log.d(TAG, Integer.toString(user_ids.length()));
 
         final List<ParseUser> participant_list = new ArrayList<>();
 
 
-
         for (int i = 0; i < user_ids.length(); i++) {
 
             try {
 
-                ParseQuery<ParseObject> query = ParseQuery.getQuery("User");
-                query.getInBackground(String.valueOf(user_ids.get(i)), new GetCallback<ParseObject>() {
-                    public void done(ParseObject object, ParseException e) {
+                ParseQuery<ParseUser> query = ParseQuery.getQuery("User");
+                query.getInBackground(String.valueOf(user_ids.get(i)), new GetCallback<ParseUser>() {
+                    public void done(ParseUser object, ParseException e) {
                         if (e == null) {
                             // object will be your User
+                            participant_list.add(object);
+                            Log.d(TAG, "user object added:" + object.getUsername());
 
                         } else {
                             // something went wrong
+                            Log.d(TAG, "user object not added");
                         }
                     }
                 });
 
 
-                participant_list.add((ParseUser) user_ids.get(i));
+//                participant_list.add((ParseUser) user_ids.get(i));
             } catch (JSONException e) {
                 e.printStackTrace();
             }
 
         }
+        Log.d(TAG, "participant list of objects" + participant_list);
 
         participants.clear();
         participants.addAll(participant_list);
