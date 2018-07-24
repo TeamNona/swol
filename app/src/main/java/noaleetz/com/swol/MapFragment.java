@@ -196,6 +196,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
             map.animateCamera(CameraUpdateFactory.newLatLngBounds(workoutBounds,convertDpToPixel(42)));
         }
 
+
         counter++;
 
     }

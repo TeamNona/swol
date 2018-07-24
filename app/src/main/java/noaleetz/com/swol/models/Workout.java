@@ -152,6 +152,7 @@ public class Workout extends ParseObject{
             return this;
         }
 
+
         public Query getWithinRange(ParseGeoPoint currentLocation, double maxRange) {
             whereWithinMiles("eventLocation", currentLocation, maxRange);
             return this;
