@@ -1,25 +1,19 @@
 package noaleetz.com.swol;
 
 import android.content.Context;
-import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
-import com.parse.Parse;
 import com.parse.ParseException;
 import com.parse.ParseGeoPoint;
 import com.parse.ParseUser;
-
-import org.parceler.Parcels;
-import org.w3c.dom.Text;
 
 import java.util.List;
 
@@ -35,8 +29,20 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
     public List<Workout> mposts;
     private Context mcontext;
 
+    private AdapterCallback mAdapterCallback;
+
+    // implements interface that we have in adapter- called upon when user clicks on item in rv
+    public interface AdapterCallback {
+        void onMethodCallback(int position);
+    }
+
+
     public FeedAdapter(List<Workout> posts) {
         mposts = posts;
+    }
+
+    public FeedAdapter(AdapterCallback callback) {
+        this.mAdapterCallback = callback;
     }
 
     @NonNull
@@ -56,6 +62,7 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
     }
 
     @Override
+
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
 
         if (ParseUser.getCurrentUser() == null) {
@@ -89,6 +96,16 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
             e.printStackTrace();
         }
         holder.tvTime.setText(post.getTimeUntil());
+
+        // call interface
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+//                mAdapterCallback.onMethodCallback(position);
+                ((MainActivity) mcontext).changeToDetailFragment(post);
+
+            }
+        });
 
 
     }
@@ -145,7 +162,9 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
 
         @Override
         public void onClick(View view) {
-//            final Post post = mposts.get(getAdapterPosition());
+
+
+
 
 
 //            final Intent i = new Intent(mcontext,DetailActivity.class);
