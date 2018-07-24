@@ -139,6 +139,21 @@ public class AddFragment extends Fragment{
         // Required empty public constructor
     }
 
+    public static AddFragment create(ParseGeoPoint point) {
+        AddFragment fragment = new AddFragment();
+        Bundle args = new Bundle();
+        args.putParcelable("geoLoc", point);
+        fragment.setArguments(args);
+        return fragment;
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (getArguments() != null) {
+            postLocation = getArguments().getParcelable("geoLoc");
+        }
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,

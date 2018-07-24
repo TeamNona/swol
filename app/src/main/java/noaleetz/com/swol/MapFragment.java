@@ -32,6 +32,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.GoogleMapOptions;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.UiSettings;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
@@ -64,7 +65,7 @@ import static noaleetz.com.swol.MainActivity.REQUEST_LOCATION_PERMISSION;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleMap.OnMapLongClickListener, GoogleMap.OnInfoWindowClickListener {
+public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleMap.OnMapLongClickListener, GoogleMap.OnMapClickListener, GoogleMap.OnInfoWindowClickListener {
 
 
     ArrayList<Workout> workouts;
@@ -117,6 +118,12 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        loadTopWorkouts();
+    }
+
+    @Override
     public void onMapReady(GoogleMap googleMap) {
         loadMap(googleMap);
         map.setInfoWindowAdapter(new CustomWindowAdapter(getLayoutInflater()));
@@ -132,7 +139,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
 
         // Get the current location of the device and set the position of the map.
         getLocation();
-
 
 // map = googleMap;
 //
@@ -186,6 +192,14 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
     // Fires when a long press happens on the map
     @Override
     public void onMapLongClick(final LatLng point) {
+        ParseGeoPoint geoLoc = new ParseGeoPoint(point.latitude, point.longitude);
+        FragmentManager fm = getActivity().getSupportFragmentManager();
+        fm.beginTransaction().replace(R.id.flContent, AddFragment.create(geoLoc)).addToBackStack(null).commit();
+
+    }
+
+    @Override
+    public void onMapClick(LatLng latLng) {
         mod = counter % (workouts.size() + 1);
         if (mod < workouts.size()) {
             Workout workout = workouts.get(mod);
@@ -197,7 +211,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         }
 
         counter++;
-
     }
 
     private void createPin(GoogleMap googleMap, Workout workout) {
@@ -235,6 +248,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
                     Log.d(TAG, Integer.toString(objects.size()));
                     workouts.clear();
                     workouts.addAll(objects);
+                    map.clear();
 
                     LatLng currLatLng = new LatLng(currentGeoPoint.getLatitude(), currentGeoPoint.getLongitude());
                     workoutBounds = new LatLngBounds(currLatLng, currLatLng);
@@ -270,6 +284,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
             if (mLocationPermissionGranted) {
                 map.setMyLocationEnabled(true);
                 map.getUiSettings().setMyLocationButtonEnabled(true);
+                map.getUiSettings().setMapToolbarEnabled(true);
             } else {
                 map.setMyLocationEnabled(false);
                 map.getUiSettings().setMyLocationButtonEnabled(false);
