@@ -62,18 +62,23 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ViewHolder holder, final int position) {
-        final Workout post = mposts.get(position);
 
-        final RoundedCornersTransformation roundedCornersTransformation = new RoundedCornersTransformation(15,15);
+    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+
+        if (ParseUser.getCurrentUser() == null) {
+            return;
+        }
+
+        Workout post = mposts.get(position);
+
+        final RoundedCornersTransformation roundedCornersTransformation = new RoundedCornersTransformation(15, 15);
         final RequestOptions requestOptions = RequestOptions.bitmapTransform(roundedCornersTransformation);
 
         try {
             Glide.with(mcontext)
                     .load(post.getMedia().getFile())
                     .into(holder.ivWorkoutImage);
-        }
-        catch (ParseException e) {
+        } catch (ParseException e) {
             e.printStackTrace();
         }
 
@@ -107,7 +112,7 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
 
     // TODO- Configure current location accuracy
 
-    public String distanceFrom(ParseGeoPoint workoutLocation){
+    public String distanceFrom(ParseGeoPoint workoutLocation) {
         ParseGeoPoint userLocation = ParseUser.getCurrentUser().getParseGeoPoint("currentLocation");
         double distance = workoutLocation.distanceInMilesTo(userLocation);
         return Double.toString(Math.round(distance));
@@ -117,10 +122,8 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
     @Override
     public int getItemCount() {
 
-        return mposts.size();    }
-
-
-
+        return mposts.size();
+    }
 
 
     // create inner class for ViewHolder that extends to RecyclerView.ViewHolder
@@ -146,14 +149,13 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
         TextView tvParticipants;
 
 
-
         public ViewHolder(View itemView) {
 
 
             super(itemView);
 
             itemView.setOnClickListener(this);
-            ButterKnife.bind(this,itemView);
+            ButterKnife.bind(this, itemView);
 
 
         }
@@ -171,7 +173,6 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
         }
 
 
-
     }
 
     // Clean all elements of the recycler
@@ -185,8 +186,6 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
         mposts.addAll(list);
         notifyDataSetChanged();
     }
-
-
 
 
 }

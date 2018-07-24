@@ -1,10 +1,12 @@
 package noaleetz.com.swol;
 
+
 import android.content.Intent;
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.location.Location;
+import android.media.Image;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
@@ -22,8 +24,15 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
+import com.facebook.AccessToken;
+import com.facebook.GraphRequest;
+import com.facebook.GraphResponse;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
@@ -31,8 +40,14 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.parse.Parse;
+import com.parse.ParseException;
 import com.parse.ParseGeoPoint;
 import com.parse.ParseUser;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.File;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -56,6 +71,7 @@ public class MainActivity extends AppCompatActivity {
     private final static String KEY_LOCATION = "location";
     private FusedLocationProviderClient mFusedLocationClient;
 
+
     public static final int REQUEST_LOCATION_PERMISSION = 1;
     ParseGeoPoint currentGeoPoint;
 
@@ -77,7 +93,7 @@ public class MainActivity extends AppCompatActivity {
         fab.hide();
         AddFragment addfragment = new AddFragment();
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.flContent,addfragment).addToBackStack(null);
+        transaction.replace(R.id.flContent, addfragment).addToBackStack(null);
         transaction.commit();
 
     }
@@ -102,12 +118,63 @@ public class MainActivity extends AppCompatActivity {
 
         getLocation();
 
+        final View hView = nvDrawer.getHeaderView(0);
+
+        // TODO: all of these try catches look gross--fix it
+
+        // sets the full name in the drawer
+        TextView navName = hView.findViewById(R.id.tvNavName);
+        // sets the username in the drawer
+        final TextView navUserame = hView.findViewById(R.id.tvNavUsername);
+        // sets the profile pic in the drawer
+        final ImageView ivAvatar = hView.findViewById(R.id.ivAvatar);
 
 
+        try {
+            navName.setText(ParseUser.getCurrentUser().fetchIfNeeded().getString("name"));
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
 
+        if (isFacebookUser(ParseUser.getCurrentUser())) {
+            navUserame.setVisibility(View.GONE);
+            // pulls the profile pic
+            GraphRequest request = GraphRequest.newGraphPathRequest(
+                    AccessToken.getCurrentAccessToken(),
+                    "100027668556706/picture?redirect=0&fields=url",
+                    new GraphRequest.Callback() {
+                        @Override
+                        public void onCompleted(GraphResponse response) {
+                            try {
+                                Log.d("FBPP", response.getJSONObject().optJSONObject("data").get("url").toString());
+                                Glide.with(hView).load(response.getJSONObject().optJSONObject("data").get("url").toString())
+                                        .apply(RequestOptions.circleCropTransform()
+                                                .placeholder(R.drawable.ic_person)
+                                                .error(R.drawable.ic_person))
+                                        .into(ivAvatar);
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    });
 
+            request.executeAsync();
 
+        } else {
+            navUserame.setText("@" + ParseUser.getCurrentUser().getUsername());
+            navUserame.setVisibility(View.VISIBLE);
 
+            try {
+                Glide.with(hView).load(ParseUser.getCurrentUser().fetchIfNeeded().getParseFile("profilePicture").getFile())
+                        .apply(RequestOptions.circleCropTransform()
+                                .placeholder(R.drawable.ic_person)
+                                .error(R.drawable.ic_person))
+                        .into(ivAvatar);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+
+        }
 
 
         // i have no idea what this does but if it ain't broke don't fix it
@@ -117,8 +184,6 @@ public class MainActivity extends AppCompatActivity {
             mCurrentLocation = savedInstanceState.getParcelable(KEY_LOCATION);
 
         }
-
-
 
 
     }
@@ -148,14 +213,14 @@ public class MainActivity extends AppCompatActivity {
                                 // Logic to handle location object
                                 mLastLocation = location;
                                 currentGeoPoint = new ParseGeoPoint(mLastLocation.getLatitude(), mLastLocation.getLongitude());
-                                Log.d(TAG,currentGeoPoint.toString());
-                                ParseUser.getCurrentUser().put("currentLocation",currentGeoPoint);
+                                Log.d(TAG, currentGeoPoint.toString());
+                                ParseUser.getCurrentUser().put("currentLocation", currentGeoPoint);
                                 ParseUser.getCurrentUser().saveInBackground();
                                 Log.d(TAG,"geopoint posted to parse)");
 
 
-                            }
-                            else{
+                            } else {
+
 
                                 // TODO- handle null location
 
@@ -195,7 +260,7 @@ public class MainActivity extends AppCompatActivity {
     private ActionBarDrawerToggle setupDrawerToggle() {
         // NOTE: Make sure you pass in a valid toolbar reference.  ActionBarDrawToggle() does not require it
         // and will not render the hamburger icon without it.
-        return new ActionBarDrawerToggle(this, mDrawer, toolbar, R.string.drawer_open,  R.string.drawer_close);
+        return new ActionBarDrawerToggle(this, mDrawer, toolbar, R.string.drawer_open, R.string.drawer_close);
     }
 
     private void setupDrawerContent(NavigationView navigationView) {
@@ -210,12 +275,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-
     public void selectDrawerItem(MenuItem menuItem) {
         // Create a new fragment and specify the fragment to show based on nav item clicked
         Fragment fragment = null;
         Class fragmentClass;
-        switch(menuItem.getItemId()) {
+        switch (menuItem.getItemId()) {
             case R.id.nav_feed_fragment:
                 fab.show();
                 fragmentClass = FeedFragment.class;
@@ -223,7 +287,7 @@ public class MainActivity extends AppCompatActivity {
             case R.id.nav_map_fragment:
                 fab.show();
                 // if there is no api key, then throw this exception
-                if (TextUtils.isEmpty(getResources().getString(R.string.google_maps_api_key))) {
+                if (TextUtils.isEmpty(getResources().getString(R.string.api_key))) {
                     throw new IllegalStateException("You forgot to supply a Google Maps API key");
                 }
                 fragmentClass = MapFragment.class;
@@ -234,7 +298,11 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case R.id.nav_logout:
                 ParseUser.logOut();
-                startActivity(new Intent(this, DispatchActivity.class));
+                Intent i = new Intent(this, DispatchActivity.class);
+                i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(i);
                 finish();
             default:
                 fragmentClass = FeedFragment.class;
@@ -259,9 +327,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-
     // ...
-
 
 
     @Override
@@ -286,6 +352,7 @@ public class MainActivity extends AppCompatActivity {
         drawerToggle.onConfigurationChanged(newConfig);
     }
 
+<<<<<<< HEAD
 
     public void changeToDetailFragment(Workout workout) {
         //TODO that
@@ -308,6 +375,13 @@ public class MainActivity extends AppCompatActivity {
 
 
 
+=======
+    public boolean isFacebookUser(ParseUser user) {
+        if (user.get("authData") == null) return false;
+        JSONObject authData = user.getJSONObject("authData");
+        return authData.has("facebook");
+    }
+>>>>>>> master
 
 
 }

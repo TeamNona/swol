@@ -12,9 +12,17 @@ android {
         vectorDrawables.useSupportLibrary = true
     }
     buildTypes {
+        debug {
+            resValue 'string', "api_key", Swol_ApiKey
+            resValue 'string', "facebook_app_id", FB_App_ID
+            resValue 'string', "fb_login_protocol_scheme", FB_Login_Protocol_Scheme
+        }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            resValue 'string', "api_key", Swol_ApiKey
+            resValue 'string', "facebook_app_id", FB_App_ID
+            resValue 'string', "fb_login_protocol_scheme", FB_Login_Protocol_Scheme
         }
     }
 }
