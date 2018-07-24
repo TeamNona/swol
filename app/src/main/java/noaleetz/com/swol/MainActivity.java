@@ -85,13 +85,12 @@ public class MainActivity extends AppCompatActivity {
     NavigationView nvDrawer;
 
 
-
     @OnClick(R.id.fab)
     public void onClick(View view) {
         fab.hide();
         AddFragment addfragment = new AddFragment();
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.flContent,addfragment).addToBackStack(null);
+        transaction.replace(R.id.flContent, addfragment).addToBackStack(null);
         transaction.commit();
 
     }
@@ -137,22 +136,17 @@ public class MainActivity extends AppCompatActivity {
             // pulls the profile pic
             GraphRequest request = GraphRequest.newGraphPathRequest(
                     AccessToken.getCurrentAccessToken(),
-                    "/100027668556706/picture",
+                    "100027668556706/picture?redirect=0&fields=url",
                     new GraphRequest.Callback() {
                         @Override
                         public void onCompleted(GraphResponse response) {
                             try {
-                                Glide.with(hView).load(response.getJSONObject().get("FACEBOOK_NON_JSON_RESULT"))
+                                Log.d("FBPP", response.getJSONObject().optJSONObject("data").get("url").toString());
+                                Glide.with(hView).load(response.getJSONObject().optJSONObject("data").get("url").toString())
                                         .apply(RequestOptions.circleCropTransform()
                                                 .placeholder(R.drawable.ic_person)
                                                 .error(R.drawable.ic_person))
                                         .into(ivAvatar);
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            }
-
-                            try {
-                                Log.d("what is this", response.getJSONObject().get("FACEBOOK_NON_JSON_RESULT").toString());
                             } catch (JSONException e) {
                                 e.printStackTrace();
                             }
@@ -187,8 +181,6 @@ public class MainActivity extends AppCompatActivity {
         }
 
 
-
-
     }
 
     private void getLocation() {
@@ -214,25 +206,23 @@ public class MainActivity extends AppCompatActivity {
                                 // Logic to handle location object
                                 mLastLocation = location;
                                 currentGeoPoint = new ParseGeoPoint(mLastLocation.getLatitude(), mLastLocation.getLongitude());
-                                Log.d(TAG,currentGeoPoint.toString());
-                                ParseUser.getCurrentUser().put("currentLocation",currentGeoPoint);
+                                Log.d(TAG, currentGeoPoint.toString());
+                                ParseUser.getCurrentUser().put("currentLocation", currentGeoPoint);
                                 ParseUser.getCurrentUser().saveInBackground();
 
 
-                            }
-                            else{
+                            } else {
 
 
                                 // TODO- handle null location
 
-                                Log.d(TAG,"location is found to be null");
+                                Log.d(TAG, "location is found to be null");
                             }
                         }
                     });
         }
         FragmentManager fragmentManager = getSupportFragmentManager();
         fragmentManager.beginTransaction().replace(R.id.flContent, new FeedFragment()).commit();
-
 
 
     }
@@ -259,7 +249,7 @@ public class MainActivity extends AppCompatActivity {
     private ActionBarDrawerToggle setupDrawerToggle() {
         // NOTE: Make sure you pass in a valid toolbar reference.  ActionBarDrawToggle() does not require it
         // and will not render the hamburger icon without it.
-        return new ActionBarDrawerToggle(this, mDrawer, toolbar, R.string.drawer_open,  R.string.drawer_close);
+        return new ActionBarDrawerToggle(this, mDrawer, toolbar, R.string.drawer_open, R.string.drawer_close);
     }
 
     private void setupDrawerContent(NavigationView navigationView) {
@@ -274,12 +264,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-
     public void selectDrawerItem(MenuItem menuItem) {
         // Create a new fragment and specify the fragment to show based on nav item clicked
         Fragment fragment = null;
         Class fragmentClass;
-        switch(menuItem.getItemId()) {
+        switch (menuItem.getItemId()) {
             case R.id.nav_feed_fragment:
                 fab.show();
                 fragmentClass = FeedFragment.class;
@@ -327,9 +316,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-
     // ...
-
 
 
     @Override
@@ -354,19 +341,11 @@ public class MainActivity extends AppCompatActivity {
         drawerToggle.onConfigurationChanged(newConfig);
     }
 
-    public boolean isFacebookUser (ParseUser user) {
+    public boolean isFacebookUser(ParseUser user) {
         if (user.get("authData") == null) return false;
         JSONObject authData = user.getJSONObject("authData");
         return authData.has("facebook");
     }
-
-
-
-
-
-
-
-
 
 
 }
