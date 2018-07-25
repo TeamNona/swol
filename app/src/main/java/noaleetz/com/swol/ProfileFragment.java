@@ -69,6 +69,8 @@ public class ProfileFragment extends Fragment {
     @BindView(R.id.svProfile)
     ScrollView svProfile;
 
+    ParseUser user;
+
     private ProfileAdapter adapter;
     private List<Workout> posts;
     private Unbinder unbinder;
@@ -94,7 +96,7 @@ public class ProfileFragment extends Fragment {
 
 
         Bundle bundle = getArguments();
-        ParseUser user = bundle.getParcelable("user");
+        user = bundle.getParcelable("user");
 
         tvProfileName.setText(user.getString("name"));
         // TODO: fix facebook users
@@ -151,7 +153,7 @@ public class ProfileFragment extends Fragment {
 
 
         final Workout.Query postQuery = new Workout.Query();
-        postQuery.getTop().createdBy(ParseUser.getCurrentUser()).withUser().orderByLastCreated();
+        postQuery.getTop().contains(user).withUser().orderByLastCreated();
 
         postQuery.findInBackground(new FindCallback<Workout>() {
             @Override

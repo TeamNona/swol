@@ -88,6 +88,11 @@ public class ProfileAdapter extends RecyclerView.Adapter<ProfileAdapter.ViewHold
         String distText = Double.parseDouble(distanceFrom(post.getLocation())) == 1 ? " mile from you" : " miles from you";
         holder.tvLocation.setText(distanceFrom(post.getLocation()) + distText);
         holder.tvTime.setText(post.getTimeUntil());
+        try {
+            holder.tvCreatedBy.setText(post.getUser().fetchIfNeeded().getUsername());
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
 
         // call interface
         holder.itemView.setOnClickListener(new View.OnClickListener() {
@@ -131,6 +136,8 @@ public class ProfileAdapter extends RecyclerView.Adapter<ProfileAdapter.ViewHold
         TextView tvLocation;
         @BindView(R.id.tvTime)
         TextView tvTime;
+        @BindView(R.id.tvCreatedBy)
+        TextView tvCreatedBy;
 
 
         public ViewHolder(View itemView) {
