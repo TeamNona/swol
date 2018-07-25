@@ -294,8 +294,9 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case R.id.nav_profile_fragment:
                 fab.hide();
-                fragmentClass = ProfileFragment.class;
-                break;
+                changeToProfileFragment(ParseUser.getCurrentUser());
+                mDrawer.closeDrawers();
+                return;
             case R.id.nav_logout:
                 ParseUser.logOut();
                 Intent i = new Intent(this, DispatchActivity.class);
@@ -352,7 +353,6 @@ public class MainActivity extends AppCompatActivity {
         drawerToggle.onConfigurationChanged(newConfig);
     }
 
-
     public void changeToDetailFragment(Workout workout) {
         //TODO that
         DetailFragment detailFragment = new DetailFragment();
@@ -362,16 +362,18 @@ public class MainActivity extends AppCompatActivity {
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.flContent,detailFragment).addToBackStack(null);
         transaction.commit();
-
-
-
-
-
     }
 
-
-
-
+    public void changeToProfileFragment(ParseUser user) {
+        //TODO that
+        ProfileFragment profileFragment = new ProfileFragment();
+        Bundle bundle = new Bundle();
+        bundle.putParcelable("user", user);
+        profileFragment.setArguments(bundle);
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.flContent, profileFragment).addToBackStack(null);
+        transaction.commit();
+    }
 
 
     public boolean isFacebookUser(ParseUser user) {

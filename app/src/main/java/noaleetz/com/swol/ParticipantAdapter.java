@@ -81,8 +81,14 @@ public class ParticipantAdapter extends RecyclerView.Adapter<ParticipantAdapter.
                 .apply(requestOptions)
                 .into(holder.ivAvatar);
 
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+//                mAdapterCallback.onMethodCallback(position);
+                ((MainActivity) mcontext).changeToProfileFragment(participant);
 
-
+            }
+        });
 
 
     }
