@@ -26,6 +26,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.content.FileProvider;
 import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -123,8 +124,9 @@ public class AddFragment extends Fragment{
     // keep track of who is logged on
     private ParseUser currentUser = ParseUser.getCurrentUser();
 
-    // declare important variables for accessing photo gallery
+    // declare important variables for accessing photo gallery and for accessing camerq
     private static final int RESULT_OK = -1;
+    public final static int CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE = 1034;
     private static int RESULT_LOAD_IMAGE = 1;
     Bitmap image;
     Bitmap bitmap;
@@ -209,6 +211,14 @@ public class AddFragment extends Fragment{
                         android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
 
                 startActivityForResult(i, RESULT_LOAD_IMAGE);
+            }
+        });
+
+        // allow user to take a photo for the workout directly from the app
+        camera.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                onLaunchCamera(view);
             }
         });
 
@@ -373,6 +383,26 @@ public class AddFragment extends Fragment{
     };
 
 
+    public void onLaunchCamera(View view) {
+        // create Intent to take a picture and return control to the calling application
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        // Create a File reference to access to future access
+        photoFile = getPhotoFileUri(photoFileName);
+
+        // wrap File object into a content provider
+        // required for API >= 24
+        // See https://guides.codepath.com/android/Sharing-Content-with-Intents#sharing-files-with-api-24-or-higher
+        Uri fileProvider = FileProvider.getUriForFile(getActivity(), "com.swol.fileprovider", photoFile);
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, fileProvider);
+
+        // If you call startActivityForResult() using an intent that no app can handle, your app will crash.
+        // So as long as the result is not null, it's safe to use the intent.
+        if (intent.resolveActivity(getActivity().getPackageManager()) != null) {
+            // Start the image capture intent to take photo
+            startActivityForResult(intent, CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE);
+        }
+    }
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -390,6 +420,20 @@ public class AddFragment extends Fragment{
             }
 
         }
+        // GETTING IMAGE FROM CAMERA
+        else if (requestCode == CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE) {
+            if (resultCode == RESULT_OK) {
+                // by this point we have the camera photo on disk
+                bitmap = BitmapFactory.decodeFile(photoFile.getAbsolutePath());
+                // RESIZE BITMAP, see section below
+                // TODO -- This can be maybe where you fix the orientation
+                // Load the taken image into a preview
+                post.setImageBitmap(bitmap);
+            } else { // Result was a failure
+                Toast.makeText(getActivity(), "Picture wasn't taken!", Toast.LENGTH_SHORT).show();
+            }
+        }
+
     }
 
 
