@@ -18,6 +18,7 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
+import com.parse.CountCallback;
 import com.parse.FindCallback;
 import com.parse.GetCallback;
 import com.parse.Parse;
@@ -32,6 +33,7 @@ import org.json.JSONException;
 import java.util.ArrayList;
 import java.util.List;
 
+import bolts.Task;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
@@ -161,6 +163,8 @@ public class DetailFragment extends Fragment {
                 .apply(requestOptions)
                 .into(ivImage);
 
+        getLikesCount(workout);
+
         // set up and populate data for adapter
 
         participants = new ArrayList<>();
@@ -184,6 +188,34 @@ public class DetailFragment extends Fragment {
 
             }
         });
+    }
+
+    public void getLikesCount(Workout workout_event){
+        String workoutId = workout_event.getObjectId();
+
+
+
+        ParseQuery<ParseObject> exerciseEvent = ParseQuery.getQuery("exerciseEvent");
+
+        ParseQuery<ParseObject> query = ParseQuery.getQuery("Likes");
+
+        query.whereEqualTo("likedPost",workout_event).countInBackground(new CountCallback() {
+            @Override
+            public void done(int count, ParseException e) {
+                if (e == null){
+                    // no error
+                    Log.d(TAG, "like count:" + String.valueOf(count));
+                    tvLikesCt.setText(String.valueOf(count));
+
+                }
+                else{
+                    // something went wrong
+                    Log.d(TAG, "unable to find like count");
+                    tvLikesCt.setText(String.valueOf(0));
+                }
+            }
+        });
+
     }
 
     // get participant data and add it to list to assemble adapter
