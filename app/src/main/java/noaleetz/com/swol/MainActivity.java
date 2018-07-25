@@ -375,7 +375,8 @@ public class MainActivity extends AppCompatActivity {
         transaction.commit();
     }
 
-    public static boolean isFacebookUser(ParseUser user) {
+
+    public boolean isFacebookUser(ParseUser user) {
         if (user.get("authData") == null) return false;
         JSONObject authData = user.getJSONObject("authData");
         return authData.has("facebook");
