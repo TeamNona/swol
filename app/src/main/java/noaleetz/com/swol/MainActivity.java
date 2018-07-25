@@ -352,6 +352,7 @@ public class MainActivity extends AppCompatActivity {
         drawerToggle.onConfigurationChanged(newConfig);
     }
 
+
     public void changeToDetailFragment(Workout workout) {
         //TODO that
         DetailFragment detailFragment = new DetailFragment();
@@ -367,6 +368,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     }
+
 
 
 
