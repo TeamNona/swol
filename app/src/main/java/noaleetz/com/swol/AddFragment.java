@@ -281,7 +281,7 @@ public class AddFragment extends Fragment{
                 }
                 media = conversionBitmapParseFile(bitmap);
 
-                createNewWorkout(name, description, date, location, media, participants, tags);
+                Workout workout = createNewWorkout(name, description, date, location, media, participants, tags);
                 FragmentManager fm = getActivity().getSupportFragmentManager();
                 fab.show();
                 fm.popBackStackImmediate();
@@ -303,7 +303,7 @@ public class AddFragment extends Fragment{
 
     }
 
-    private void createNewWorkout(String name, String description, Date time, ParseGeoPoint location, ParseFile media, JSONArray participants, JSONArray tags) {
+    private Workout createNewWorkout(String name, String description, Date time, ParseGeoPoint location, ParseFile media, JSONArray participants, JSONArray tags) {
 
         // create a new event
         Workout workout = new Workout();
@@ -330,6 +330,8 @@ public class AddFragment extends Fragment{
                 }
             }
         });
+
+        return workout;
 
     }
 

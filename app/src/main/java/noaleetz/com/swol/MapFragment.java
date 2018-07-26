@@ -4,6 +4,7 @@ package noaleetz.com.swol;
 import android.Manifest;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.location.Location;
@@ -64,6 +65,7 @@ import butterknife.ButterKnife;
 import butterknife.Unbinder;
 import noaleetz.com.swol.models.Workout;
 
+import static android.app.Activity.RESULT_OK;
 import static noaleetz.com.swol.MainActivity.REQUEST_LOCATION_PERMISSION;
 
 
@@ -73,10 +75,11 @@ import static noaleetz.com.swol.MainActivity.REQUEST_LOCATION_PERMISSION;
 public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleMap.OnMapLongClickListener, GoogleMap.OnInfoWindowClickListener {
 
 
-    ArrayList<Workout> workouts;
+    ArrayList<Marker> workoutMarkers;
     private static final String TAG = "MapFragment";
     private int counter = 0;
     private int mod;
+    private final int REQUEST_CODE = 10;
 
     // map stuff
     GoogleMap map;
@@ -124,7 +127,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
 
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map_fragment);
 
-        workouts = new ArrayList<>();
+        workoutMarkers = new ArrayList<>();
 
         loadTopWorkouts();
 
@@ -212,9 +215,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
 
     @Override
     public void onInfoWindowClick(Marker marker) {
-//        FragmentManager fm = getActivity().getSupportFragmentManager();
-        // TODO: make the detail fragment class
-//        fm.beginTransaction().replace(R.id.flContent, DetailFragment.class).commit();
         Workout assigned_workout = (Workout) Parcels.unwrap((Parcelable) marker.getTag());
         ((MainActivity) getContext()).changeToDetailFragment(assigned_workout);
 
@@ -229,24 +229,18 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         fm.beginTransaction().replace(R.id.flContent, AddFragment.create(geoLoc)).addToBackStack(null).commit();
 
     }
-    private void createPin(GoogleMap googleMap, Workout workout) {
+    private Marker createMarker(GoogleMap googleMap, Workout workout) {
         map = googleMap;
-
-        Marker pin;
+        Marker marker;
 
         LatLng loc = workout.getLatLng();
         MarkerOptions option = new MarkerOptions();
         option.position(loc);
 
-        pin = map.addMarker(option);
+        marker = map.addMarker(option);
+        marker.setTag(Parcels.wrap(workout));
 
-//                    MarkerData data = new MarkerData(workout.getName(),
-//                    workout.getUser().fetchIfNeeded().getUsername(),
-//                    workout.getTimeUntil(),
-//                    workout.getMedia().getFile());
-//
-
-        pin.setTag(Parcels.wrap(workout));
+        return marker;
 
     }
 
@@ -258,17 +252,16 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
             @Override
             public void done(List<Workout> objects, ParseException e) {
                 if (e == null) {
-                    Log.d(TAG, Integer.toString(objects.size()));
-                    workouts.clear();
-                    workouts.addAll(objects);
+                    Log.d(TAG, "Number of workouts: "+ Integer.toString(objects.size()));
+                    workoutMarkers.clear();
                     map.clear();
 
                     LatLng currLatLng = new LatLng(currentGeoPoint.getLatitude(), currentGeoPoint.getLongitude());
                     workoutBounds = new LatLngBounds(currLatLng, currLatLng);
-                    Toast.makeText(getContext(), "Workouts Size: " + workouts.size(), Toast.LENGTH_SHORT).show();
-                    for (int i = 0; i < workouts.size(); i++) {
-                        Workout workout = workouts.get(i);
-                        createPin(map, workout);
+                    Toast.makeText(getContext(), "Workouts Size: " + objects.size(), Toast.LENGTH_SHORT).show();
+                    for (int i = 0; i < objects.size(); i++) {
+                        Workout workout = objects.get(i);
+                        workoutMarkers.add(createMarker(map, workout));
                         if (workout.isInRange(currentGeoPoint, 10)) {
                             workoutBounds = workoutBounds.including(workout.getLatLng());
                             Log.i("AddToBounds", "added workout " + i + " to the bounds: " + workout.getLocation().distanceInMilesTo(currentGeoPoint));
@@ -387,12 +380,61 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
 
     }
 
-    void viewNextWorkout() {
-        mod = counter % workouts.size();
-            Workout workout = workouts.get(mod);
-            Log.i("MapView", "Showing workout [" + mod + "] @ " + workout.getLatLng().toString());
-            map.animateCamera(CameraUpdateFactory.newLatLngZoom(workout.getLatLng(), 17));
+    void viewWorkout(Marker marker) {
+        final Marker m = marker;
+        Workout workout = Parcels.unwrap((Parcelable) marker.getTag());
+        Log.i("MapView", "Showing workout [" + mod + "] @ " + workout.getLatLng().toString());
+        map.animateCamera(CameraUpdateFactory.newLatLngZoom(workout.getLatLng(), 17), new GoogleMap.CancelableCallback() {
+            @Override
+            public void onFinish() {
+                // TODO: same as the onInfoWindowClick
+                m.showInfoWindow();
 
+                final Handler handler = new Handler();
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        m.showInfoWindow();
+
+                    }
+                }, 200);
+
+            }
+
+            @Override
+            public void onCancel() {
+
+            }
+        });
+    }
+
+    void viewNextWorkout() {
+        mod = counter % workoutMarkers.size();
+            final Marker marker = workoutMarkers.get(mod);
+            Workout workout = Parcels.unwrap((Parcelable) marker.getTag());
+            Log.i("MapView", "Showing workout [" + mod + "] @ " + workout.getLatLng().toString());
+            map.animateCamera(CameraUpdateFactory.newLatLngZoom(workout.getLatLng(), 17), new GoogleMap.CancelableCallback() {
+                @Override
+                public void onFinish() {
+                    // TODO: same as the onInfoWindowClick
+                    marker.showInfoWindow();
+
+                    final Handler handler = new Handler();
+                    handler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            marker.showInfoWindow();
+
+                        }
+                    }, 200);
+
+                }
+
+                @Override
+                public void onCancel() {
+
+                }
+            });
         counter++;
     }
 
@@ -401,47 +443,22 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         Log.i("MapView", "Showing workout bounds");
         map.animateCamera(CameraUpdateFactory.newLatLngBounds(workoutBounds,convertDpToPixel(42)));
         Toast.makeText(getContext(), "Showing Nearby Workouts", Toast.LENGTH_SHORT).show();
-
     }
 
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == RESULT_OK && requestCode == REQUEST_CODE) {
+            Workout workout = Parcels.unwrap(data.getExtras().getParcelable("workout"));
+            workoutMarkers.add(0, createMarker(map, workout));
+            viewWorkout(workoutMarkers.get(0));
+
+        }
+
+    }
 
     @Override public void onDestroyView() {
         super.onDestroyView();
         unbinder.unbind();
     }
-
-    //TODO: this class is not necessary. Clean up code by turning the workout into a parcel and just give that to the tag
-
-    // this exists to pass extra data to the window adapter
-//    @Parcel
-//    public static class MarkerData {
-//
-//        String title, createdBy, timeUntil;
-//        File image;
-//
-//        public MarkerData() {}
-//
-//        public MarkerData(String title, String createdBy, String timeUntil, File image){
-//            this.title = title;
-//            this.createdBy = createdBy;
-//            this.timeUntil = timeUntil;
-//            this.image = image;
-//        }
-//
-//        public String getTitle() {
-//            return title;
-//        }
-//
-//        public String getCreatedBy() {
-//            return createdBy;
-//        }
-//
-//        public String getTimeUntil() {
-//            return timeUntil;
-//        }
-//
-//        public File getImage() {
-//            return image;
-//        }
-//    }
 }
