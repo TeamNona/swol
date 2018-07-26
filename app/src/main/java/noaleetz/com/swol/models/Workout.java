@@ -11,6 +11,7 @@ import com.parse.ParseQuery;
 import com.parse.ParseUser;
 
 import org.json.JSONArray;
+import org.parceler.Parcel;
 
 import java.util.Date;
 
@@ -147,10 +148,16 @@ public class Workout extends ParseObject{
             return this;
         }
 
-        public Query getForUser(ParseUser currentUser) {
-            whereEqualTo(KEY_USER, currentUser);
+        public Query createdBy(ParseUser user) {
+            whereEqualTo(KEY_USER, user);
             return this;
         }
+
+        public Query contains(ParseUser user) {
+            whereContains(KEY_PARTICIPANTS, user.getObjectId());
+            return this;
+        }
+
 
         public Query getWithinRange(ParseGeoPoint currentLocation, double maxRange) {
             whereWithinMiles("eventLocation", currentLocation, maxRange);

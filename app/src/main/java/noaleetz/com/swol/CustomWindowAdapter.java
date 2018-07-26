@@ -13,6 +13,8 @@ import com.parse.ParseException;
 
 import org.parceler.Parcels;
 
+import noaleetz.com.swol.models.Workout;
+
 class CustomWindowAdapter implements GoogleMap.InfoWindowAdapter {
     LayoutInflater mInflater;
 
@@ -23,23 +25,37 @@ class CustomWindowAdapter implements GoogleMap.InfoWindowAdapter {
     // This defines the contents within the info window based on the marker
     @Override
     public View getInfoContents(Marker marker) {
+
+//        Workout assigned_workout;
+
+
+
+
         // Getting view from the layout file
         View v = mInflater.inflate(R.layout.custom_info_window, null);
         // Populate fields
 
-        MapFragment.MarkerData data = Parcels.unwrap( (Parcelable) marker.getTag());
+        Workout assigned_workout = (Workout) Parcels.unwrap((Parcelable) marker.getTag());
 
         TextView tvInfoTitle = v.findViewById(R.id.tvInfoTitle);
-        tvInfoTitle.setText(data.getTitle());
+        tvInfoTitle.setText(assigned_workout.getName());
 
         TextView tvCreatedBy = v.findViewById(R.id.tvInfoCreatedBy);
-        tvCreatedBy.setText("Created By: "+ data.getCreatedBy());
+
+        String user = null;
+        try {
+            user = assigned_workout.getUser().fetchIfNeeded().getUsername();
+            tvCreatedBy.setText("Created By: "+ user);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
 
         TextView tvInfoTimeUntil = v.findViewById(R.id.tvInfoTimeUntil);
-        tvInfoTimeUntil.setText(data.getTimeUntil());
+        tvInfoTimeUntil.setText(assigned_workout.getTimeUntil());
 
         ImageView ivInfoImage = v.findViewById(R.id.ivInfoImage);
-        Glide.with(v).load(data.getImage()).into(ivInfoImage);
+        Glide.with(v).load(assigned_workout.getMedia().getUrl()).into(ivInfoImage);
         // Return info window contents
         return v;
     }

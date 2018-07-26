@@ -52,6 +52,7 @@ import java.io.File;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import noaleetz.com.swol.models.Workout;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -73,6 +74,8 @@ public class MainActivity extends AppCompatActivity {
 
     public static final int REQUEST_LOCATION_PERMISSION = 1;
     ParseGeoPoint currentGeoPoint;
+
+
 
     @BindView(R.id.fab)
     FloatingActionButton fab;
@@ -108,6 +111,8 @@ public class MainActivity extends AppCompatActivity {
 
 
         mDrawer.addDrawerListener(drawerToggle);
+
+
 
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
@@ -183,6 +188,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+
     private void getLocation() {
         // If user has not yet given permission - ask for permission - dialog box asking for permission pops up
         // Upon return, onRequestPermissionsResult is called
@@ -200,6 +206,7 @@ public class MainActivity extends AppCompatActivity {
                         @Override
                         public void onSuccess(Location location) {
                             // Got last known location. In some rare situations this can be null.
+                            //location = null;
 
                             if (location != null) {
                                 Log.d(TAG, "Got last known location");
@@ -209,6 +216,7 @@ public class MainActivity extends AppCompatActivity {
                                 Log.d(TAG, currentGeoPoint.toString());
                                 ParseUser.getCurrentUser().put("currentLocation", currentGeoPoint);
                                 ParseUser.getCurrentUser().saveInBackground();
+                                Log.d(TAG,"geopoint posted to parse)");
 
 
                             } else {
@@ -216,7 +224,10 @@ public class MainActivity extends AppCompatActivity {
 
                                 // TODO- handle null location
 
-                                Log.d(TAG, "location is found to be null");
+                                Log.d(TAG,"location is found to be null");
+                                Toast.makeText(getApplication().getBaseContext(), "We weren't able to identify your location",
+                                        Toast.LENGTH_LONG).show();
+
                             }
                         }
                     });
@@ -283,8 +294,9 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case R.id.nav_profile_fragment:
                 fab.hide();
-                fragmentClass = ProfileFragment.class;
-                break;
+                changeToProfileFragment(ParseUser.getCurrentUser());
+                mDrawer.closeDrawers();
+                return;
             case R.id.nav_logout:
                 ParseUser.logOut();
                 Intent i = new Intent(this, DispatchActivity.class);
@@ -340,6 +352,29 @@ public class MainActivity extends AppCompatActivity {
         // Pass any configuration change to the drawer toggles
         drawerToggle.onConfigurationChanged(newConfig);
     }
+
+    public void changeToDetailFragment(Workout workout) {
+        //TODO that
+        DetailFragment detailFragment = new DetailFragment();
+        Bundle bundle = new Bundle();
+        bundle.putParcelable("workout",workout);
+        detailFragment.setArguments(bundle);
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.flContent,detailFragment).addToBackStack(null);
+        transaction.commit();
+    }
+
+    public void changeToProfileFragment(ParseUser user) {
+        //TODO that
+        ProfileFragment profileFragment = new ProfileFragment();
+        Bundle bundle = new Bundle();
+        bundle.putParcelable("user", user);
+        profileFragment.setArguments(bundle);
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.flContent, profileFragment).addToBackStack(null);
+        transaction.commit();
+    }
+
 
     public boolean isFacebookUser(ParseUser user) {
         if (user.get("authData") == null) return false;

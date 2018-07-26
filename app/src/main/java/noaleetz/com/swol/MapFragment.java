@@ -9,6 +9,7 @@ import android.content.res.Resources;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
@@ -214,6 +215,9 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
 //        FragmentManager fm = getActivity().getSupportFragmentManager();
         // TODO: make the detail fragment class
 //        fm.beginTransaction().replace(R.id.flContent, DetailFragment.class).commit();
+        Workout assigned_workout = (Workout) Parcels.unwrap((Parcelable) marker.getTag());
+        ((MainActivity) getContext()).changeToDetailFragment(assigned_workout);
+
         Toast.makeText(getContext(), "Go to detailed screen", Toast.LENGTH_SHORT).show();
     }
 
@@ -236,16 +240,13 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
 
         pin = map.addMarker(option);
 
-        try {
-            MarkerData data = new MarkerData(workout.getName(),
-                    workout.getUser().fetchIfNeeded().getUsername(),
-                    workout.getTimeUntil(),
-                    workout.getMedia().getFile());
+//                    MarkerData data = new MarkerData(workout.getName(),
+//                    workout.getUser().fetchIfNeeded().getUsername(),
+//                    workout.getTimeUntil(),
+//                    workout.getMedia().getFile());
+//
 
-            pin.setTag(Parcels.wrap(data));
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
+        pin.setTag(Parcels.wrap(workout));
 
     }
 
@@ -412,35 +413,35 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
     //TODO: this class is not necessary. Clean up code by turning the workout into a parcel and just give that to the tag
 
     // this exists to pass extra data to the window adapter
-    @Parcel
-    public static class MarkerData {
-
-        String title, createdBy, timeUntil;
-        File image;
-
-        public MarkerData() {}
-
-        public MarkerData(String title, String createdBy, String timeUntil, File image){
-            this.title = title;
-            this.createdBy = createdBy;
-            this.timeUntil = timeUntil;
-            this.image = image;
-        }
-
-        public String getTitle() {
-            return title;
-        }
-
-        public String getCreatedBy() {
-            return createdBy;
-        }
-
-        public String getTimeUntil() {
-            return timeUntil;
-        }
-
-        public File getImage() {
-            return image;
-        }
-    }
+//    @Parcel
+//    public static class MarkerData {
+//
+//        String title, createdBy, timeUntil;
+//        File image;
+//
+//        public MarkerData() {}
+//
+//        public MarkerData(String title, String createdBy, String timeUntil, File image){
+//            this.title = title;
+//            this.createdBy = createdBy;
+//            this.timeUntil = timeUntil;
+//            this.image = image;
+//        }
+//
+//        public String getTitle() {
+//            return title;
+//        }
+//
+//        public String getCreatedBy() {
+//            return createdBy;
+//        }
+//
+//        public String getTimeUntil() {
+//            return timeUntil;
+//        }
+//
+//        public File getImage() {
+//            return image;
+//        }
+//    }
 }
