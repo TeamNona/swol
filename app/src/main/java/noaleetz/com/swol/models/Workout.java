@@ -148,8 +148,13 @@ public class Workout extends ParseObject{
             return this;
         }
 
-        public Query getForUser(ParseUser currentUser) {
-            whereEqualTo(KEY_USER, currentUser);
+        public Query createdBy(ParseUser user) {
+            whereEqualTo(KEY_USER, user);
+            return this;
+        }
+
+        public Query contains(ParseUser user) {
+            whereContains(KEY_PARTICIPANTS, user.getObjectId());
             return this;
         }
 

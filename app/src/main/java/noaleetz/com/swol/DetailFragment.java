@@ -120,7 +120,7 @@ public class DetailFragment extends Fragment {
         Bundle bundle = getArguments();
         workout = (Workout) bundle.getParcelable("workout");
 
-        tvWorkoutTitle.setText(workout.getName().toString());
+        tvWorkoutTitle.setText(workout.getName());
         tvBeginsIn.setText(workout.getTimeUntil());
         tvFullName.setText(workout.getUser().getString("name"));
         tvUsername.setText(workout.getUser().getUsername());
