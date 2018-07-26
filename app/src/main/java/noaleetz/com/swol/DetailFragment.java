@@ -102,6 +102,9 @@ public class DetailFragment extends Fragment {
 
     private Unbinder unbinder;
 
+    public JSONArray participant_list;
+
+
     public DetailFragment() {
         // Required empty public constructor
     }
@@ -129,6 +132,7 @@ public class DetailFragment extends Fragment {
         fab.hide();
 
 
+
         final RoundedCornersTransformation roundedCornersTransformation = new RoundedCornersTransformation(30, 30);
         final RequestOptions requestOptions = RequestOptions.bitmapTransform(roundedCornersTransformation);
 
@@ -140,6 +144,9 @@ public class DetailFragment extends Fragment {
         tvFullName.setText(workout.getUser().getString("name"));
         tvUsername.setText(workout.getUser().getUsername());
         tvDescription.setText(workout.getDescription());
+
+        participant_list = new JSONArray();
+        participant_list = workout.getParticipants();
 
         Log.d(TAG, "Tag 1" + workout.get("eventParticipants").toString());
 
@@ -191,6 +198,8 @@ public class DetailFragment extends Fragment {
         loadParticipants(workout.getParticipants());
 
 
+
+
         btBack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -209,14 +218,12 @@ public class DetailFragment extends Fragment {
             public void onClick(View view) {
                 // user clicks join workout to add themselves to participant list
 
-                JSONArray old_list = new JSONArray();
-                old_list = workout.getParticipants();
-                Log.d(TAG, old_list.toString());
-                String UserIdToAdd = ParseUser.getCurrentUser().getObjectId();
+                Log.d(TAG, "reset participant list" + participant_list.toString());
+                String UserIdToAdd = ParseUser.getCurrentUser().getObjectId().toString();
 
                 // check if user has already joined
-                if(didUserJoin(old_list,UserIdToAdd)){
-                    Log.d(TAG, "is user there?" + String.valueOf(old_list.equals(UserIdToAdd)));
+                if(didUserJoin(participant_list,UserIdToAdd)){
+                    Log.d(TAG, "is user there?" + String.valueOf(participant_list.equals(UserIdToAdd)));
 
 
                     AlertDialog alertDialog = new AlertDialog.Builder(
@@ -243,8 +250,9 @@ public class DetailFragment extends Fragment {
 
                 }
                 else {
-                    final JSONArray new_list = old_list.put(UserIdToAdd);
-                    Log.d(TAG, new_list.toString());
+                    participant_list.put(UserIdToAdd);
+
+                    Log.d(TAG, participant_list.toString());
 
                     ParseQuery<ParseObject> update_query = ParseQuery.getQuery("exerciseEvent");
 
@@ -252,17 +260,19 @@ public class DetailFragment extends Fragment {
                     update_query.getInBackground(workout.getObjectId(), new GetCallback<ParseObject>() {
                         public void done(ParseObject exerciseEvent, ParseException e) {
                             if (e == null) {
-                                // Now let's update it with some new data. In this case, only cheatMode and score
-                                // will get sent to the Parse Cloud. playerName hasn't changed.
-                                exerciseEvent.put("eventParticipants", new_list);
+                                // Now let's update with some new data
+
+                                exerciseEvent.put("eventParticipants", participant_list);
                                 exerciseEvent.saveInBackground();
+                                adapter.notifyDataSetChanged();
+                                loadParticipants(participant_list);
+                                Toast.makeText(getApplicationContext(), "Workout Joined", Toast.LENGTH_SHORT).show();
 
                             }
                         }
                     });
 
-                    loadParticipants(new_list);
-                    Toast.makeText(getApplicationContext(), "Workout Joined", Toast.LENGTH_SHORT).show();
+
 
 
                 }
@@ -272,6 +282,26 @@ public class DetailFragment extends Fragment {
 
             }
         });
+    }
+
+    public boolean didUserJoin(JSONArray participantListToCheck, String userIdToCheck) {
+        for(int i=0;i<participantListToCheck.length();i++){
+            try {
+//                if(participantListToCheck.get(i).equals(userIdToCheck)){
+//                if(userIdToCheck.equals(participantListToCheck.get(i))){
+
+                if(userIdToCheck.equals(participantListToCheck.getString(i))){
+
+                    Log.d(TAG, "participantListToCheck.getString(i):" + participantListToCheck.getString(i));
+                    Log.d(TAG, "user ID found in participantListToCheck");
+                    return true;
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+                Log.d(TAG, "unable to check if userID is in participant array");
+            }
+        }
+        return false;
     }
 
     public void getLikesCount(Workout workout_event){
@@ -325,7 +355,6 @@ public class DetailFragment extends Fragment {
                 query.whereEqualTo("objectId",user_ids.get(i));
 
 
-
                 query.findInBackground(new FindCallback<ParseUser>() {
                     public void done(List<ParseUser> object, ParseException e) {
                         if (e == null) {
@@ -358,22 +387,7 @@ public class DetailFragment extends Fragment {
 //        participants.addAll(participant_list);
     }
 
-    public boolean didUserJoin(JSONArray old_list, String userIdToCheck) {
-        for(int i=0;i<old_list.length();i++){
-            try {
-//                if(old_list.get(i).equals(userIdToCheck)){
-                if(old_list.get(i).equals(userIdToCheck)){
 
-                    Log.d(TAG, "user ID found in old_list");
-                    return true;
-                }
-            } catch (JSONException e) {
-                e.printStackTrace();
-                Log.d(TAG, "unable to check if userID is in participant array");
-            }
-        }
-        return false;
-    }
 
 
     @Override

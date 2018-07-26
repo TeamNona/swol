@@ -185,7 +185,6 @@
             android:layout_alignTop="@+id/ivHeartIcon"
             android:layout_toRightOf="@+id/ivHeartIcon"
             android:gravity="top"
-            android:text="1234567"
             android:textColor="#517fa4"
             android:textSize="16sp"
             android:textStyle="bold" />
