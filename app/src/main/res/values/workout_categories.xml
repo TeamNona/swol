@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="workout_categories">
+        <item>Run</item>
+        <item>Hike</item>
+        <item>Bike</item>
+        <item>Swim</item>
+        <item>Weight</item>
+        <item>Cardio</item>
+        <item>Dance</item>
+        <item>Game</item>
+        <item>Class</item>
+        <item>Meditation</item>
+    </string-array>
+</resources>
