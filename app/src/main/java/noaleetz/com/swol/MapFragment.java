@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -57,6 +58,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executor;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import butterknife.Unbinder;
 import noaleetz.com.swol.models.Workout;
 
 import static noaleetz.com.swol.MainActivity.REQUEST_LOCATION_PERMISSION;
@@ -65,7 +69,7 @@ import static noaleetz.com.swol.MainActivity.REQUEST_LOCATION_PERMISSION;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleMap.OnMapLongClickListener, GoogleMap.OnMapClickListener, GoogleMap.OnInfoWindowClickListener {
+public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleMap.OnMapLongClickListener, GoogleMap.OnInfoWindowClickListener {
 
 
     ArrayList<Workout> workouts;
@@ -84,6 +88,11 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
     LatLngBounds workoutBounds;
     ParseGeoPoint currentGeoPoint;
 
+    @BindView(R.id.fabNext)
+    FloatingActionButton fabNext;
+
+    Unbinder unbinder;
+
     public MapFragment() {
         // Required empty public constructor
     }
@@ -93,7 +102,10 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_map, container, false);
+        View view = inflater.inflate(R.layout.fragment_map, container, false);
+        unbinder = ButterKnife.bind(this, view);
+
+        return view;
     }
 
     @Override
@@ -113,6 +125,13 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         loadTopWorkouts();
 
         mapFragment.getMapAsync(this);
+
+        fabNext.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                viewNextWorkout();
+            }
+        });
 
 
     }
@@ -197,22 +216,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         fm.beginTransaction().replace(R.id.flContent, AddFragment.create(geoLoc)).addToBackStack(null).commit();
 
     }
-
-    @Override
-    public void onMapClick(LatLng latLng) {
-        mod = counter % (workouts.size() + 1);
-        if (mod < workouts.size()) {
-            Workout workout = workouts.get(mod);
-            Log.i("MapView", "Showing workout [" + mod + "] @ " + workout.getLatLng().toString());
-            map.animateCamera(CameraUpdateFactory.newLatLng(workout.getLatLng()));
-        } else {
-            Log.i("MapView", "Showing workout bounds");
-            map.animateCamera(CameraUpdateFactory.newLatLngBounds(workoutBounds,convertDpToPixel(42)));
-        }
-
-        counter++;
-    }
-
     private void createPin(GoogleMap googleMap, Workout workout) {
         map = googleMap;
 
@@ -371,6 +374,26 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         }
 
 
+
+    }
+    void viewNextWorkout() {
+        mod = counter % (workouts.size() + 1);
+        if (mod < workouts.size()) {
+            Workout workout = workouts.get(mod);
+            Log.i("MapView", "Showing workout [" + mod + "] @ " + workout.getLatLng().toString());
+            map.animateCamera(CameraUpdateFactory.newLatLng(workout.getLatLng()));
+        } else {
+            Log.i("MapView", "Showing workout bounds");
+            map.animateCamera(CameraUpdateFactory.newLatLngBounds(workoutBounds,convertDpToPixel(42)));
+        }
+
+        counter++;
+    }
+
+
+    @Override public void onDestroyView() {
+        super.onDestroyView();
+        unbinder.unbind();
     }
 
     //TODO: this class is not necessary. Clean up code by turning the workout into a parcel and just give that to the tag
