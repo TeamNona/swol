@@ -25,8 +25,8 @@
 
             <ImageView
                 android:id="@+id/ivWorkoutImage"
-                android:layout_width="match_parent"
-                android:layout_height="200dp"
+                android:layout_width="400dp"
+                android:layout_height="wrap_content"
                 android:scaleType="fitXY"
                 card_view:srcCompat="@drawable/ic_directions_run_black_24dp" />
 
