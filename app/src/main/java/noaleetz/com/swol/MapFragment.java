@@ -91,6 +91,9 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
     @BindView(R.id.fabNext)
     FloatingActionButton fabNext;
 
+    @BindView(R.id.fabNearby)
+    FloatingActionButton fabNearby;
+
     Unbinder unbinder;
 
     public MapFragment() {
@@ -130,6 +133,13 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
             @Override
             public void onClick(View view) {
                 viewNextWorkout();
+            }
+        });
+
+        fabNearby.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                showNearbyWorkouts();
             }
         });
 
@@ -376,18 +386,22 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
 
 
     }
+
     void viewNextWorkout() {
-        mod = counter % (workouts.size() + 1);
-        if (mod < workouts.size()) {
+        mod = counter % workouts.size();
             Workout workout = workouts.get(mod);
             Log.i("MapView", "Showing workout [" + mod + "] @ " + workout.getLatLng().toString());
-            map.animateCamera(CameraUpdateFactory.newLatLng(workout.getLatLng()));
-        } else {
-            Log.i("MapView", "Showing workout bounds");
-            map.animateCamera(CameraUpdateFactory.newLatLngBounds(workoutBounds,convertDpToPixel(42)));
-        }
+            map.animateCamera(CameraUpdateFactory.newLatLngZoom(workout.getLatLng(), 17));
 
         counter++;
+    }
+
+    void showNearbyWorkouts() {
+        if (currentGeoPoint == null) return;
+        Log.i("MapView", "Showing workout bounds");
+        map.animateCamera(CameraUpdateFactory.newLatLngBounds(workoutBounds,convertDpToPixel(42)));
+        Toast.makeText(getContext(), "Showing Nearby Workouts", Toast.LENGTH_SHORT).show();
+
     }
 
 
