@@ -54,7 +54,7 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import noaleetz.com.swol.models.Workout;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements AddFragment.NewMapItemListener {
 
     private static final String TAG = "LOCATION";
     private ActionBarDrawerToggle drawerToggle;
@@ -328,8 +328,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    // ...
-
+    @Override
+    public void updateMap(Workout w) {
+        MapFragment mapFragment = (MapFragment) getSupportFragmentManager().findFragmentById(R.id.map_fragment);
+        mapFragment.addMarker(w);
+    }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {

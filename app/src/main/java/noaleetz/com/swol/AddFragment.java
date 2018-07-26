@@ -52,6 +52,7 @@ import com.google.android.gms.location.places.ui.PlaceAutocompleteFragment;
 import com.google.android.gms.location.places.ui.PlaceSelectionListener;
 import com.google.android.gms.location.places.ui.SupportPlaceAutocompleteFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.parse.ParseException;
 import com.parse.ParseFile;
 import com.parse.ParseGeoPoint;
@@ -133,6 +134,8 @@ public class AddFragment extends Fragment{
     public String photoFileName = "photo.jpg";
     public final String APP_TAG = "Swol";
 
+    private NewMapItemListener listener;
+
     private Unbinder unbinder;
 
 
@@ -148,6 +151,16 @@ public class AddFragment extends Fragment{
         args.putParcelable("geoLoc", point);
         fragment.setArguments(args);
         return fragment;
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (context instanceof NewMapItemListener) {
+            listener = (NewMapItemListener) context;
+        } else {
+            throw new ClassCastException(context.toString() + " must implement AddFragment.NewMapItemListener");
+        }
     }
 
     @Override
@@ -284,6 +297,7 @@ public class AddFragment extends Fragment{
                 Workout workout = createNewWorkout(name, description, date, location, media, participants, tags);
                 FragmentManager fm = getActivity().getSupportFragmentManager();
                 fab.show();
+                if (fm.getBackStackEntryAt(0) instanceof MapFragment) listener.updateMap(workout);
                 fm.popBackStackImmediate();
 
             }
@@ -491,6 +505,11 @@ public class AddFragment extends Fragment{
         mtx.postRotate(degree);
 
         return Bitmap.createBitmap(bitmap, 0, 0, w, h, mtx, true);
+    }
+
+    // this interface is so that when a new workout is created, it can send it to the map to update it
+    public interface NewMapItemListener {
+        public void updateMap(Workout w);
     }
 
 }

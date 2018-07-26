@@ -450,11 +450,14 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK && requestCode == REQUEST_CODE) {
             Workout workout = Parcels.unwrap(data.getExtras().getParcelable("workout"));
-            workoutMarkers.add(0, createMarker(map, workout));
-            viewWorkout(workoutMarkers.get(0));
 
         }
 
+    }
+
+    public void addMarker(Workout workout) {
+        workoutMarkers.add(0, createMarker(map, workout));
+        viewWorkout(workoutMarkers.get(0));
     }
 
     @Override public void onDestroyView() {
