@@ -1,6 +1,8 @@
 package noaleetz.com.swol;
 
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -16,6 +18,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
@@ -45,6 +48,8 @@ import butterknife.Unbinder;
 import jp.wasabeef.glide.transformations.RoundedCornersTransformation;
 import noaleetz.com.swol.models.User;
 import noaleetz.com.swol.models.Workout;
+
+import static com.parse.Parse.getApplicationContext;
 
 
 /**
@@ -208,8 +213,59 @@ public class DetailFragment extends Fragment {
                 old_list = workout.getParticipants();
                 Log.d(TAG, old_list.toString());
                 String UserIdToAdd = ParseUser.getCurrentUser().getObjectId();
-                JSONArray new_list = old_list.put(UserIdToAdd);
-                Log.d(TAG,new_list.toString());
+
+                // check if user has already joined
+                if(didUserJoin(old_list,UserIdToAdd)){
+                    Log.d(TAG, "is user there?" + String.valueOf(old_list.equals(UserIdToAdd)));
+
+
+                    AlertDialog alertDialog = new AlertDialog.Builder(
+                            view.getContext()).create();
+
+                    //Setting Dialog Title
+                    alertDialog.setTitle("You Have Already Joined!");
+
+                    // Setting Dialog Message
+//                    alertDialog.setMessage("You Have Already Joined!");
+
+                    // Setting Icon to Dialog
+                    alertDialog.setIcon(R.drawable.ic_noun_add_group_782192);
+
+                    // Setting OK Button
+                    alertDialog.setButton("OK", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            // Write your code here to execute after dialog closed
+//                            Toast.makeText(getApplicationContext(), "You clicked on OK", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                    // Showing Alert Message
+                    alertDialog.show();
+
+                }
+                else {
+                    final JSONArray new_list = old_list.put(UserIdToAdd);
+                    Log.d(TAG, new_list.toString());
+
+                    ParseQuery<ParseObject> update_query = ParseQuery.getQuery("exerciseEvent");
+
+                    // Retrieve the object by id
+                    update_query.getInBackground(workout.getObjectId(), new GetCallback<ParseObject>() {
+                        public void done(ParseObject exerciseEvent, ParseException e) {
+                            if (e == null) {
+                                // Now let's update it with some new data. In this case, only cheatMode and score
+                                // will get sent to the Parse Cloud. playerName hasn't changed.
+                                exerciseEvent.put("eventParticipants", new_list);
+                                exerciseEvent.saveInBackground();
+
+                            }
+                        }
+                    });
+
+                    loadParticipants(new_list);
+                    Toast.makeText(getApplicationContext(), "Workout Joined", Toast.LENGTH_SHORT).show();
+
+
+                }
 
 
 
@@ -243,7 +299,6 @@ public class DetailFragment extends Fragment {
                 }
             }
         });
-
     }
 
 
@@ -301,6 +356,23 @@ public class DetailFragment extends Fragment {
 
 //        participants.clear();
 //        participants.addAll(participant_list);
+    }
+
+    public boolean didUserJoin(JSONArray old_list, String userIdToCheck) {
+        for(int i=0;i<old_list.length();i++){
+            try {
+//                if(old_list.get(i).equals(userIdToCheck)){
+                if(old_list.get(i).equals(userIdToCheck)){
+
+                    Log.d(TAG, "user ID found in old_list");
+                    return true;
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+                Log.d(TAG, "unable to check if userID is in participant array");
+            }
+        }
+        return false;
     }
 
 
