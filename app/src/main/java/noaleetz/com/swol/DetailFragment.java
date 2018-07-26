@@ -13,6 +13,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -23,13 +24,17 @@ import com.parse.FindCallback;
 import com.parse.GetCallback;
 import com.parse.Parse;
 import com.parse.ParseException;
+import com.parse.ParseFile;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
+import com.parse.SaveCallback;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,6 +53,7 @@ import noaleetz.com.swol.models.Workout;
 public class DetailFragment extends Fragment {
 
     FloatingActionButton fab;
+
 
 
     private static final String TAG = "TAGDetailFragment";
@@ -77,6 +83,8 @@ public class DetailFragment extends Fragment {
     ImageView ivHeartIcon;
     @BindView(R.id.ivCommentIcon)
     ImageView ivCommentIcon;
+    @BindView(R.id.ivJoin)
+    ImageView ivJoin;
 
     Workout workout;
 
@@ -187,6 +195,26 @@ public class DetailFragment extends Fragment {
                 fm.popBackStackImmediate();
 
             }
+
+
+        });
+
+        ivJoin.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // user clicks join workout to add themselves to participant list
+
+                JSONArray old_list = new JSONArray();
+                old_list = workout.getParticipants();
+                Log.d(TAG, old_list.toString());
+                String UserIdToAdd = ParseUser.getCurrentUser().getObjectId();
+                JSONArray new_list = old_list.put(UserIdToAdd);
+                Log.d(TAG,new_list.toString());
+
+
+
+
+            }
         });
     }
 
@@ -217,6 +245,11 @@ public class DetailFragment extends Fragment {
         });
 
     }
+
+
+
+
+
 
     // get participant data and add it to list to assemble adapter
 

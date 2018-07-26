@@ -54,7 +54,7 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import noaleetz.com.swol.models.Workout;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity   {
 
     private static final String TAG = "LOCATION";
     private ActionBarDrawerToggle drawerToggle;
