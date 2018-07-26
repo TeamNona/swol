@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".MapFragment">
 
     <fragment xmlns:android="http://schemas.android.com/apk/res/android"
@@ -16,5 +17,17 @@
         map:cameraTargetLng="-122.35217460000001"
         map:cameraZoom="17"
         tools:context=".MapsActivity" />
+
+    <com.h6ah4i.android.widget.verticalseekbar.VerticalSeekBarWrapper
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent">
+
+        <com.h6ah4i.android.widget.verticalseekbar.VerticalSeekBar
+            android:id="@+id/sbViewRange"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:splitTrack="false"
+            app:seekBarRotation="CW270" /> <!-- Rotation: CW90 or CW270 -->
+    </com.h6ah4i.android.widget.verticalseekbar.VerticalSeekBarWrapper>
 
 </FrameLayout>

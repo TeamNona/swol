@@ -74,4 +74,7 @@ dependencies {
     implementation rootProject.ext.parseFacebookUtils
     implementation rootProject.ext.parse
 
+    // Vertical SeekBar
+    implementation 'com.h6ah4i.android.widget.verticalseekbar:verticalseekbar:0.7.2'
+
 }

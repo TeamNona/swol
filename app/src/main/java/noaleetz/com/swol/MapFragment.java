@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
+import android.graphics.Point;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
@@ -23,10 +24,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.SeekBar;
 import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.GoogleMapOptions;
@@ -47,6 +50,7 @@ import com.parse.FindCallback;
 import com.parse.LocationCallback;
 import com.parse.ParseException;
 import com.parse.ParseGeoPoint;
+import com.parse.ParseObject;
 import com.parse.ParseUser;
 
 import org.parceler.Parcel;
@@ -57,6 +61,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executor;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import butterknife.Unbinder;
 import noaleetz.com.swol.models.Workout;
 
 import static noaleetz.com.swol.MainActivity.REQUEST_LOCATION_PERMISSION;
@@ -65,7 +72,7 @@ import static noaleetz.com.swol.MainActivity.REQUEST_LOCATION_PERMISSION;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleMap.OnMapLongClickListener, GoogleMap.OnMapClickListener, GoogleMap.OnInfoWindowClickListener {
+public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleMap.OnMapLongClickListener, GoogleMap.OnMapClickListener, GoogleMap.OnInfoWindowClickListener, GoogleMap.OnCameraMoveListener {
 
 
     ArrayList<Workout> workouts;
@@ -84,6 +91,12 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
     LatLngBounds workoutBounds;
     ParseGeoPoint currentGeoPoint;
 
+    // vertical slider
+    @BindView(R.id.sbViewRange)
+    SeekBar sbViewRange;
+
+    Unbinder unbinder;
+
     public MapFragment() {
         // Required empty public constructor
     }
@@ -93,7 +106,11 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_map, container, false);
+        View view = inflater.inflate(R.layout.fragment_map, container, false);
+        unbinder = ButterKnife.bind(this, view);
+
+
+        return view;
     }
 
     @Override
@@ -114,6 +131,22 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
 
         mapFragment.getMapAsync(this);
 
+        sbViewRange.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
+                map.animateCamera(CameraUpdateFactory.zoomTo(i/10 + 10));
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
 
     }
 
@@ -139,6 +172,12 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
 
         // Get the current location of the device and set the position of the map.
         getLocation();
+
+        float slideZoom = ((map.getCameraPosition().zoom - 10)/10)*100;
+        // Set the slider to the right initial position
+        Toast.makeText(getContext(), "Current Zoom: " + slideZoom, Toast.LENGTH_SHORT).show();
+//        sbViewRange.setProgress(((int) map.getCameraPosition().zoom - 10) / 20 * 100, true);
+        sbViewRange.setProgress((int) slideZoom, true);
 
 // map = googleMap;
 //
@@ -371,6 +410,22 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         }
 
 
+    }
+
+    @Override
+    public void onCameraMove() {
+        float slideZoom = ((map.getCameraPosition().zoom - 10)/10)*100;
+        // Set the slider to the right initial position
+        Toast.makeText(getContext(), "Current Zoom: " + slideZoom, Toast.LENGTH_SHORT).show();
+//        sbViewRange.setProgress(((int) map.getCameraPosition().zoom - 10) / 20 * 100, true);
+        sbViewRange.setProgress((int) slideZoom, true);
+
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        unbinder.unbind();
     }
 
     //TODO: this class is not necessary. Clean up code by turning the workout into a parcel and just give that to the tag
