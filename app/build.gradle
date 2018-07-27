@@ -73,10 +73,12 @@ dependencies {
     implementation rootProject.ext.parseFacebookUtils
     implementation rootProject.ext.parse
 
+    // Vertical SeekBar
+    implementation 'com.h6ah4i.android.widget.verticalseekbar:verticalseekbar:0.7.2'
+
     implementation 'com.github.sharish:ShimmerRecyclerView:v1.3'
 
     implementation 'com.nex3z:flow-layout:1.2.2'
-
 
 
 }

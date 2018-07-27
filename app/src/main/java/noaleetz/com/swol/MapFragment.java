@@ -21,6 +21,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.SeekBar;
 import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -56,10 +57,13 @@ import static noaleetz.com.swol.MainActivity.REQUEST_LOCATION_PERMISSION;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleMap.OnMapLongClickListener, GoogleMap.OnInfoWindowClickListener {
+
+public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleMap.OnMapLongClickListener, GoogleMap.OnInfoWindowClickListener, GoogleMap.OnMapClickListener {
+
 
 
     ArrayList<Marker> workoutMarkers;
+    ArrayList<String> workoutIDs;
     private static final String TAG = "MapFragment";
     private int counter = 0;
     private int mod;
@@ -82,6 +86,15 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
     @BindView(R.id.fabNearby)
     FloatingActionButton fabNearby;
 
+    @BindView(R.id.fab1mi)
+    FloatingActionButton fab1mi;
+
+    @BindView(R.id.fab5mi)
+    FloatingActionButton fab5mi;
+
+    @BindView(R.id.fab10mi)
+    FloatingActionButton fab10mi;
+
     boolean showLast;
 
     Unbinder unbinder;
@@ -98,6 +111,9 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         View view = inflater.inflate(R.layout.fragment_map, container, false);
         unbinder = ButterKnife.bind(this, view);
 
+        workoutMarkers = new ArrayList<>();
+        workoutIDs = new ArrayList<>();
+
         return view;
     }
 
@@ -106,32 +122,61 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         super.onViewCreated(view, savedInstanceState);
 
 
-        //TODO: dynamically create the mapfragment
+        //TODO: dynamically create the mapfragment (ok maybe not we'll see - Omari 7/27)
 
         // Construct a FusedLocationProviderClient.
         mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getContext());
 
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.google_map_fragment);
 
-        workoutMarkers = new ArrayList<>();
-
-        loadTopWorkouts();
-
         mapFragment.getMapAsync(this);
+
+        hideZoomButtons();
 
         fabNext.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 viewNextWorkout();
+                hideZoomButtons();
             }
         });
 
         fabNearby.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                showNearbyWorkouts();
+                if (fab1mi.getVisibility() == View.GONE) showZoomButtons();
+                else hideZoomButtons();
             }
         });
+
+        fab1mi.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                showViewBounds(1);
+                hideZoomButtons();
+            }
+        });
+
+        fab5mi.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                showViewBounds(5);
+                hideZoomButtons();
+            }
+        });
+
+        fab10mi.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                showViewBounds(10);
+                hideZoomButtons();
+            }
+        });
+
+
+
+        Log.d("ArrayCheck(onViewCreat)", "markers " + "[" + workoutMarkers.size() + "]:" + workoutMarkers.toString() +
+                "/n ids " + "[" + workoutIDs.size() + "]:"  + workoutIDs.toString());
 
 
     }
@@ -144,10 +189,14 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
     @Override
     public void onMapReady(GoogleMap googleMap) {
         loadMap(googleMap);
+
+        loadTopWorkouts();
+
         map.setInfoWindowAdapter(new CustomWindowAdapter(getLayoutInflater()));
-        //TODO: experiment with the ParseGeoPoint.getLocation thingy
 
         map.setOnInfoWindowClickListener(this);
+
+        map.setOnMapClickListener(this);
 
         // Make sure we have the permissions
         getLocationPermission();
@@ -157,6 +206,9 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
 
         // Get the current location of the device and set the position of the map.
         getLocation();
+
+        // Set the slider to the right initial position
+        Toast.makeText(getContext(), "Current Zoom: " + map.getCameraPosition().zoom, Toast.LENGTH_SHORT).show();
     }
 
     protected void loadMap(GoogleMap googleMap) {
@@ -187,7 +239,45 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
                 }
             });
 
+
+            Log.d("ArrayCheck(loadMap)", "markers " + "[" + workoutMarkers.size() + "]:" + workoutMarkers.toString() +
+                    "/n ids " + "[" + workoutIDs.size() + "]:"  + workoutIDs.toString());
+
         }
+
+    }
+
+    public void showViewBounds(int r) {
+        final int range = r;
+        final LatLng currLoc = new LatLng(currentGeoPoint.getLatitude(), currentGeoPoint.getLongitude());
+
+        final Workout.Query postQuery = new Workout.Query();
+        postQuery.withUser().orderByLastCreated().getWithinRange(currentGeoPoint, range);
+
+        postQuery.findInBackground(new FindCallback<Workout>() {
+            @Override
+            public void done(List<Workout> objects, ParseException e) {
+                if (e == null) {
+                    Log.d(TAG, "Number of nearby workouts: " + Integer.toString(objects.size()));
+                    Toast.makeText(getContext(), "Workouts Size: " + objects.size(), Toast.LENGTH_SHORT).show();
+                    LatLngBounds bounds = LatLngBounds.builder().include(currLoc).build();
+                    for (int i = 0; i < objects.size(); i++) {
+                        Workout workout = objects.get(i);
+                        if (!workoutIDs.contains(workout.getID())) workoutMarkers.add(createMarker(map, workout));
+                        bounds = bounds.including(workout.getLatLng());
+                        Log.i("CalculateBounds", "added workout " + i + " to the bounds: " + workout.getLocation().distanceInMilesTo(currentGeoPoint));
+                    }
+                    workoutBounds = bounds;
+                    showNearbyWorkouts(range);
+
+                    Log.d("ArrayCheck(calcBounds)", "markers [" + workoutMarkers.size() + "]" +
+                            "\nids " + "[" + workoutIDs.size() + "]:"  + workoutIDs.toString());
+
+                } else {
+                    e.printStackTrace();
+                }
+            }
+        });
 
     }
 
@@ -207,6 +297,12 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         fm.beginTransaction().replace(R.id.flContent, AddFragment.create(geoLoc)).addToBackStack(null).commit();
 
     }
+
+    @Override
+    public void onMapClick(LatLng latLng) {
+        hideZoomButtons();
+    }
+
     private Marker createMarker(GoogleMap googleMap, Workout workout) {
         map = googleMap;
         Marker marker;
@@ -231,7 +327,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
             public void done(List<Workout> objects, ParseException e) {
                 if (e == null) {
                     Log.d(TAG, "Number of workouts: "+ Integer.toString(objects.size()));
-                    workoutMarkers.clear();
+//                    workoutMarkers.clear();
+//                    workoutIDs.clear();
                     map.clear();
 
                     LatLng currLatLng = new LatLng(currentGeoPoint.getLatitude(), currentGeoPoint.getLongitude());
@@ -239,6 +336,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
                     Toast.makeText(getContext(), "Workouts Size: " + objects.size(), Toast.LENGTH_SHORT).show();
                     for (int i = 0; i < objects.size(); i++) {
                         Workout workout = objects.get(i);
+                        workoutIDs.add(workout.getObjectId());
                         workoutMarkers.add(createMarker(map, workout));
                         if (workout.isInRange(currentGeoPoint, 10)) {
                             workoutBounds = workoutBounds.including(workout.getLatLng());
@@ -361,6 +459,12 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
 
     }
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        unbinder.unbind();
+    }
+
     void viewWorkout(Marker marker) {
         final Marker m = marker;
         Workout workout = Parcels.unwrap((Parcelable) marker.getTag());
@@ -419,7 +523,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         counter++;
     }
 
-    void showNearbyWorkouts() {
+    void showNearbyWorkouts(int range) {
         if (currentGeoPoint == null) return;
         Log.i("MapView", "Showing workout bounds");
         map.animateCamera(CameraUpdateFactory.newLatLngBounds(workoutBounds,convertDpToPixel(42)));
@@ -438,6 +542,20 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
 
     public void addMarker() {
         showLast = true;
+    }
+
+    // TODO: animate this
+    void showZoomButtons() {
+        fab1mi.setVisibility(View.VISIBLE);
+        fab5mi.setVisibility(View.VISIBLE);
+        fab10mi.setVisibility(View.VISIBLE);
+    }
+
+    // TODO: animate this
+    void hideZoomButtons() {
+        fab1mi.setVisibility(View.GONE);
+        fab5mi.setVisibility(View.GONE);
+        fab10mi.setVisibility(View.GONE);
     }
 
     @Override public void onDestroyView() {
