@@ -398,7 +398,7 @@ public class AddFragment extends Fragment{
                     fab.show();
                     if (fm.getBackStackEntryAt(0).getName() == "map") {
                         fm.popBackStackImmediate();
-                        listener.updateMap(workout);
+                        listener.updateMap();
                     } else fm.popBackStackImmediate();
 
                 } else {
@@ -651,7 +651,7 @@ public class AddFragment extends Fragment{
 
     // this interface is so that when a new workout is created, it can send it to the map to update it
     public interface NewMapItemListener {
-        public void updateMap(Workout w);
+        public void updateMap();
     }
 
 }

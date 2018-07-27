@@ -157,14 +157,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
 
         // Get the current location of the device and set the position of the map.
         getLocation();
-
-// map = googleMap;
-//
-//        LatLng dexter = new LatLng(47.6288488, -122.3430076);
-//        MarkerOptions option = new MarkerOptions();
-//        option.position(dexter).title("Facebook Dexter");
-//        map.addMarker(option);
-//        map.animateCamera(CameraUpdateFactory.newLatLng(dexter));
     }
 
     protected void loadMap(GoogleMap googleMap) {
@@ -444,7 +436,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
 
     }
 
-    public void addMarker(Workout workout) {
+    public void addMarker() {
         showLast = true;
     }
 

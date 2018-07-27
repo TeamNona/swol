@@ -311,8 +311,8 @@ public class MainActivity extends AppCompatActivity implements AddFragment.NewMa
 
 
     @Override
-    public void updateMap(Workout w) {
-        mapFragment.addMarker(w);
+    public void updateMap() {
+        mapFragment.addMarker();
     }
 
     @Override
