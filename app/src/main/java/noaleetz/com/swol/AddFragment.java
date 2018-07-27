@@ -371,6 +371,7 @@ public class AddFragment extends Fragment{
                     Drawable drawable = getResources().getDrawable(R.drawable.ic_directions_run_black_24dp);
                     bitmap = convertToBitmap(drawable, 1000, 1000);
                 }
+
                 final ParseFile media;
                 media = conversionBitmapParseFile(bitmap);
 
@@ -385,6 +386,7 @@ public class AddFragment extends Fragment{
 
 
     }
+
 
     private void createNewWorkout(String category, String name, String description, Date time, ParseGeoPoint location, ParseFile media, JSONArray participants, JSONArray tags) {
 
