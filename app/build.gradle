@@ -64,8 +64,7 @@ dependencies {
     implementation "com.google.android.gms:play-services-location:$googlePlayVersion"
     implementation "com.google.android.gms:play-services-places:$googlePlayVersion"
 
-    // for the widget dependency
-    implementation "com.github.parse-community.ParseUI-Android:widget:0.0.3"
+
     // for the login dependency
     implementation "com.github.parse-community.ParseUI-Android:login:0.0.3"
 
@@ -76,5 +75,10 @@ dependencies {
 
     // Vertical SeekBar
     implementation 'com.h6ah4i.android.widget.verticalseekbar:verticalseekbar:0.7.2'
+
+    implementation 'com.github.sharish:ShimmerRecyclerView:v1.3'
+
+    implementation 'com.nex3z:flow-layout:1.2.2'
+
 
 }

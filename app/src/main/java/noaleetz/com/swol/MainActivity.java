@@ -6,13 +6,11 @@ import android.Manifest;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.location.Location;
-import android.media.Image;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.widget.DrawerLayout;
@@ -23,7 +21,6 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -39,7 +36,6 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.parse.Parse;
 import com.parse.ParseException;
 import com.parse.ParseGeoPoint;
 import com.parse.ParseUser;
@@ -47,21 +43,17 @@ import com.parse.ParseUser;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.File;
-
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import noaleetz.com.swol.models.Workout;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements AddFragment.NewMapItemListener {
 
     private static final String TAG = "LOCATION";
     private ActionBarDrawerToggle drawerToggle;
 
     // maps stuff
-    private SupportMapFragment mapFragment;
-    private GoogleMap map;
-    private LocationRequest mLocationRequest;
     Location mCurrentLocation;
     Location mLastLocation;
 
@@ -73,6 +65,8 @@ public class MainActivity extends AppCompatActivity {
 
     public static final int REQUEST_LOCATION_PERMISSION = 1;
     ParseGeoPoint currentGeoPoint;
+
+    MapFragment mapFragment = new MapFragment();
 
     @BindView(R.id.fab)
     FloatingActionButton fab;
@@ -108,6 +102,8 @@ public class MainActivity extends AppCompatActivity {
 
 
         mDrawer.addDrawerListener(drawerToggle);
+
+
 
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
@@ -183,6 +179,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+
     private void getLocation() {
         // If user has not yet given permission - ask for permission - dialog box asking for permission pops up
         // Upon return, onRequestPermissionsResult is called
@@ -200,6 +197,7 @@ public class MainActivity extends AppCompatActivity {
                         @Override
                         public void onSuccess(Location location) {
                             // Got last known location. In some rare situations this can be null.
+                            //location = null;
 
                             if (location != null) {
                                 Log.d(TAG, "Got last known location");
@@ -209,6 +207,7 @@ public class MainActivity extends AppCompatActivity {
                                 Log.d(TAG, currentGeoPoint.toString());
                                 ParseUser.getCurrentUser().put("currentLocation", currentGeoPoint);
                                 ParseUser.getCurrentUser().saveInBackground();
+                                Log.d(TAG,"geopoint posted to parse)");
 
 
                             } else {
@@ -216,7 +215,10 @@ public class MainActivity extends AppCompatActivity {
 
                                 // TODO- handle null location
 
-                                Log.d(TAG, "location is found to be null");
+                                Log.d(TAG,"location is found to be null");
+                                Toast.makeText(getApplication().getBaseContext(), "We weren't able to identify your location",
+                                        Toast.LENGTH_LONG).show();
+
                             }
                         }
                     });
@@ -253,6 +255,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupDrawerContent(NavigationView navigationView) {
+        navigationView.getBackground().setAlpha(150);
         navigationView.setNavigationItemSelectedListener(
                 new NavigationView.OnNavigationItemSelectedListener() {
                     @Override
@@ -266,12 +269,11 @@ public class MainActivity extends AppCompatActivity {
 
     public void selectDrawerItem(MenuItem menuItem) {
         // Create a new fragment and specify the fragment to show based on nav item clicked
-        Fragment fragment = null;
-        Class fragmentClass;
+        FragmentManager fragmentManager = getSupportFragmentManager();
         switch (menuItem.getItemId()) {
             case R.id.nav_feed_fragment:
                 fab.show();
-                fragmentClass = FeedFragment.class;
+                fragmentManager.beginTransaction().replace(R.id.flContent, new FeedFragment()).addToBackStack(null).commit();
                 break;
             case R.id.nav_map_fragment:
                 fab.show();
@@ -279,11 +281,13 @@ public class MainActivity extends AppCompatActivity {
                 if (TextUtils.isEmpty(getResources().getString(R.string.api_key))) {
                     throw new IllegalStateException("You forgot to supply a Google Maps API key");
                 }
-                fragmentClass = MapFragment.class;
+                // TODO: pass through the current location here so we don't have to find it twice
+                fragmentManager.beginTransaction().replace(R.id.flContent, mapFragment).addToBackStack("map").commit();
                 break;
             case R.id.nav_profile_fragment:
                 fab.hide();
-                fragmentClass = ProfileFragment.class;
+                changeToProfileFragment(ParseUser.getCurrentUser());
+                mDrawer.closeDrawers();
                 break;
             case R.id.nav_logout:
                 ParseUser.logOut();
@@ -294,18 +298,8 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(i);
                 finish();
             default:
-                fragmentClass = FeedFragment.class;
+                return;
         }
-
-        try {
-            fragment = (Fragment) fragmentClass.newInstance();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        // Insert the fragment by replacing any existing fragment
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        fragmentManager.beginTransaction().replace(R.id.flContent, fragment).commit();
 
         // Highlight the selected item has been done by NavigationView
         menuItem.setChecked(true);
@@ -316,8 +310,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    // ...
-
+    @Override
+    public void updateMap() {
+        mapFragment.addMarker();
+    }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -341,7 +337,31 @@ public class MainActivity extends AppCompatActivity {
         drawerToggle.onConfigurationChanged(newConfig);
     }
 
-    public boolean isFacebookUser(ParseUser user) {
+    public void changeToDetailFragment(Workout workout) {
+        //TODO that
+        DetailFragment detailFragment = new DetailFragment();
+        Bundle bundle = new Bundle();
+        bundle.putParcelable("workout",workout);
+        detailFragment.setArguments(bundle);
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.flContent,detailFragment).addToBackStack(null);
+        transaction.commit();
+    }
+
+    public void changeToProfileFragment(ParseUser user) {
+        //TODO that
+        ProfileFragment profileFragment = new ProfileFragment();
+        Bundle bundle = new Bundle();
+        bundle.putParcelable("user", user);
+        profileFragment.setArguments(bundle);
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.flContent, profileFragment).addToBackStack(null);
+        transaction.commit();
+    }
+
+// TODO - BEFORE PUSHING- ran an error when not static- should change back to static?
+
+    public static boolean isFacebookUser(ParseUser user) {
         if (user.get("authData") == null) return false;
         JSONObject authData = user.getJSONObject("authData");
         return authData.has("facebook");

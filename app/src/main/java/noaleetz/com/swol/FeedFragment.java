@@ -1,6 +1,7 @@
 package noaleetz.com.swol;
 
 
+import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -12,6 +13,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 
 import com.parse.FindCallback;
 import com.parse.ParseException;
@@ -32,9 +34,13 @@ public class FeedFragment extends Fragment {
 
     private static final String TAG = "FeedFragmentTAG";
 
+//    private AdapterView.OnItemSelectedListener listener;
 
-    @BindView(R.id.rvPosts) RecyclerView rvPosts;
-    @BindView(R.id.swipeContainer) SwipeRefreshLayout swipeContainer;
+
+    @BindView(R.id.rvPosts)
+    RecyclerView rvPosts;
+    @BindView(R.id.swipeContainer)
+    SwipeRefreshLayout swipeContainer;
     private FeedAdapter adapter;
     private List<Workout> posts;
     private Unbinder unbinder;
@@ -45,9 +51,11 @@ public class FeedFragment extends Fragment {
         // Required empty public constructor
     }
 
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
 
     }
 
@@ -80,6 +88,9 @@ public class FeedFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        this.adapter = new FeedAdapter(posts); // this class implements callback
+
+
         posts = new ArrayList<>();
         adapter = new FeedAdapter(posts);
         Log.d(TAG, "Finished setting the adapter");
@@ -110,8 +121,6 @@ public class FeedFragment extends Fragment {
     }
 
 
-
-
     public void loadTopPosts() {
 
 
@@ -136,11 +145,23 @@ public class FeedFragment extends Fragment {
             }
         });
 
-        }
+    }
 
-    @Override public void onDestroyView() {
+    @Override
+    public void onDestroyView() {
         super.onDestroyView();
         unbinder.unbind();
     }
-    }
+
+//    @Override
+//    public void onMethodCallback(int position) {
+//        // TODO- define actions to occur upon callback
+//        // Now, switch fragments via regular listener process
+//
+//
+//
+//
+//
+//    }
+}
 

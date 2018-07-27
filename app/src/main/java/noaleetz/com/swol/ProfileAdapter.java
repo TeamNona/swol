@@ -22,7 +22,7 @@ import butterknife.ButterKnife;
 import jp.wasabeef.glide.transformations.RoundedCornersTransformation;
 import noaleetz.com.swol.models.Workout;
 
-public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
+public class ProfileAdapter extends RecyclerView.Adapter<ProfileAdapter.ViewHolder> {
     //Creating a global variable to store the array of string containing data to be displayed
     //Send dummy list that need to be displayed from MainActivity to MyListAdapter via constructor
 
@@ -37,11 +37,11 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
     }
 
 
-    public FeedAdapter(List<Workout> posts) {
+    public ProfileAdapter(List<Workout> posts) {
         mposts = posts;
     }
 
-    public FeedAdapter(AdapterCallback callback) {
+    public ProfileAdapter(AdapterCallback callback) {
         this.mAdapterCallback = callback;
     }
 
@@ -55,7 +55,7 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
 
         LayoutInflater inflater = LayoutInflater.from(mcontext);
 
-        View postView = inflater.inflate(R.layout.workout_item, parent, false);
+        View postView = inflater.inflate(R.layout.profile_workout_item, parent, false);
 
         return new ViewHolder(postView);
 
@@ -85,17 +85,14 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
         holder.tvWorkoutTitle.setText(post.getName());
 
         // TODO- set icons and text in layout
-
-        holder.tvLocation.setText(distanceFrom(post.getLocation()) + " mile(s) from you");
-
-        holder.tvDescription.setText(post.getDescription());
-//        holder.tvParticipants.setText(post.getParticipants());
+        String distText = Double.parseDouble(distanceFrom(post.getLocation())) == 1 ? " mile from you" : " miles from you";
+        holder.tvLocation.setText(distanceFrom(post.getLocation()) + distText);
+        holder.tvTime.setText(post.getTimeUntil());
         try {
-            holder.tvCreatedBy.setText("Created By " + post.getUser().fetchIfNeeded().getUsername());
+            holder.tvCreatedBy.setText(post.getUser().fetchIfNeeded().getUsername());
         } catch (ParseException e) {
             e.printStackTrace();
         }
-        holder.tvTime.setText(post.getTimeUntil());
 
         // call interface
         holder.itemView.setOnClickListener(new View.OnClickListener() {
@@ -131,22 +128,16 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         // define and reference all the Views defined in our workout_item.xml file
-        @BindView(R.id.ivDetail)
-        ImageView ivDetail;
         @BindView(R.id.ivWorkoutImage)
         ImageView ivWorkoutImage;
         @BindView(R.id.tvWorkoutTitle)
         TextView tvWorkoutTitle;
-        @BindView(R.id.tvDescription)
-        TextView tvDescription;
         @BindView(R.id.tvLocation)
         TextView tvLocation;
         @BindView(R.id.tvTime)
         TextView tvTime;
         @BindView(R.id.tvCreatedBy)
         TextView tvCreatedBy;
-        @BindView(R.id.tvParticipants)
-        TextView tvParticipants;
 
 
         public ViewHolder(View itemView) {
@@ -163,13 +154,6 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
         @Override
         public void onClick(View view) {
 
-
-
-
-
-//            final Intent i = new Intent(mcontext,DetailActivity.class);
-//            i.putExtra("post", Parcels.wrap(postObj));
-//            mcontext.startActivity(i);
         }
 
 
