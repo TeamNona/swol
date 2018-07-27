@@ -359,6 +359,7 @@ public class MainActivity extends AppCompatActivity implements AddFragment.NewMa
         transaction.commit();
     }
 
+// TODO - BEFORE PUSHING- ran an error when not static- should change back to static?
 
     public static boolean isFacebookUser(ParseUser user) {
         if (user.get("authData") == null) return false;

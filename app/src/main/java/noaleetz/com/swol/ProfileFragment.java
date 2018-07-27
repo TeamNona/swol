@@ -100,8 +100,11 @@ public class ProfileFragment extends Fragment {
 
         tvProfileName.setText(user.getString("name"));
         // TODO: fix facebook users
+//        if (!MainActivity.isFacebookUser(user)) {
+
         if (!MainActivity.isFacebookUser(user)) {
-            tvProfileUsername.setVisibility(View.VISIBLE);
+
+                tvProfileUsername.setVisibility(View.VISIBLE);
             tvProfileUsername.setText("@" + user.getUsername());
             try {
                 Glide.with(view).load(user.getParseFile("profilePicture").getFile())

@@ -1,6 +1,8 @@
 package noaleetz.com.swol;
 
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -13,31 +15,41 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
+import com.parse.CountCallback;
 import com.parse.FindCallback;
 import com.parse.GetCallback;
 import com.parse.Parse;
 import com.parse.ParseException;
+import com.parse.ParseFile;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
+import com.parse.SaveCallback;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import bolts.Task;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
 import jp.wasabeef.glide.transformations.RoundedCornersTransformation;
 import noaleetz.com.swol.models.User;
 import noaleetz.com.swol.models.Workout;
+
+import static com.parse.Parse.getApplicationContext;
 
 
 /**
@@ -46,6 +58,7 @@ import noaleetz.com.swol.models.Workout;
 public class DetailFragment extends Fragment {
 
     FloatingActionButton fab;
+
 
 
     private static final String TAG = "TAGDetailFragment";
@@ -75,6 +88,8 @@ public class DetailFragment extends Fragment {
     ImageView ivHeartIcon;
     @BindView(R.id.ivCommentIcon)
     ImageView ivCommentIcon;
+    @BindView(R.id.ivJoin)
+    ImageView ivJoin;
 
     Workout workout;
 
@@ -86,6 +101,9 @@ public class DetailFragment extends Fragment {
     private List<ParseUser> participants;
 
     private Unbinder unbinder;
+
+    public JSONArray participant_list;
+
 
     public DetailFragment() {
         // Required empty public constructor
@@ -114,6 +132,7 @@ public class DetailFragment extends Fragment {
         fab.hide();
 
 
+
         final RoundedCornersTransformation roundedCornersTransformation = new RoundedCornersTransformation(30, 30);
         final RequestOptions requestOptions = RequestOptions.bitmapTransform(roundedCornersTransformation);
 
@@ -125,6 +144,9 @@ public class DetailFragment extends Fragment {
         tvFullName.setText(workout.getUser().getString("name"));
         tvUsername.setText(workout.getUser().getUsername());
         tvDescription.setText(workout.getDescription());
+
+        participant_list = new JSONArray();
+        participant_list = workout.getParticipants();
 
         Log.d(TAG, "Tag 1" + workout.get("eventParticipants").toString());
 
@@ -161,6 +183,8 @@ public class DetailFragment extends Fragment {
                 .apply(requestOptions)
                 .into(ivImage);
 
+        getLikesCount(workout);
+
         // set up and populate data for adapter
 
         participants = new ArrayList<>();
@@ -174,6 +198,8 @@ public class DetailFragment extends Fragment {
         loadParticipants(workout.getParticipants());
 
 
+
+
         btBack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -183,8 +209,132 @@ public class DetailFragment extends Fragment {
                 fm.popBackStackImmediate();
 
             }
+
+
+        });
+
+        ivJoin.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // user clicks join workout to add themselves to participant list
+
+                Log.d(TAG, "reset participant list" + participant_list.toString());
+                String UserIdToAdd = ParseUser.getCurrentUser().getObjectId().toString();
+
+                // check if user has already joined
+                if(didUserJoin(participant_list,UserIdToAdd)){
+                    Log.d(TAG, "is user there?" + String.valueOf(participant_list.equals(UserIdToAdd)));
+
+
+                    AlertDialog alertDialog = new AlertDialog.Builder(
+                            view.getContext()).create();
+
+                    //Setting Dialog Title
+                    alertDialog.setTitle("You Have Already Joined!");
+
+                    // Setting Dialog Message
+//                    alertDialog.setMessage("You Have Already Joined!");
+
+                    // Setting Icon to Dialog
+                    alertDialog.setIcon(R.drawable.ic_noun_add_group_782192);
+
+                    // Setting OK Button
+                    alertDialog.setButton("OK", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            // Write your code here to execute after dialog closed
+//                            Toast.makeText(getApplicationContext(), "You clicked on OK", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                    // Showing Alert Message
+                    alertDialog.show();
+
+                }
+                else {
+                    participant_list.put(UserIdToAdd);
+
+                    Log.d(TAG, participant_list.toString());
+
+                    ParseQuery<ParseObject> update_query = ParseQuery.getQuery("exerciseEvent");
+
+                    // Retrieve the object by id
+                    update_query.getInBackground(workout.getObjectId(), new GetCallback<ParseObject>() {
+                        public void done(ParseObject exerciseEvent, ParseException e) {
+                            if (e == null) {
+                                // Now let's update with some new data
+
+                                exerciseEvent.put("eventParticipants", participant_list);
+                                exerciseEvent.saveInBackground();
+                                adapter.notifyDataSetChanged();
+                                loadParticipants(participant_list);
+                                Toast.makeText(getApplicationContext(), "Workout Joined", Toast.LENGTH_SHORT).show();
+
+                            }
+                        }
+                    });
+
+
+
+
+                }
+
+
+
+
+            }
         });
     }
+
+    public boolean didUserJoin(JSONArray participantListToCheck, String userIdToCheck) {
+        for(int i=0;i<participantListToCheck.length();i++){
+            try {
+//                if(participantListToCheck.get(i).equals(userIdToCheck)){
+//                if(userIdToCheck.equals(participantListToCheck.get(i))){
+
+                if(userIdToCheck.equals(participantListToCheck.getString(i))){
+
+                    Log.d(TAG, "participantListToCheck.getString(i):" + participantListToCheck.getString(i));
+                    Log.d(TAG, "user ID found in participantListToCheck");
+                    return true;
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+                Log.d(TAG, "unable to check if userID is in participant array");
+            }
+        }
+        return false;
+    }
+
+    public void getLikesCount(Workout workout_event){
+        String workoutId = workout_event.getObjectId();
+
+
+
+        ParseQuery<ParseObject> exerciseEvent = ParseQuery.getQuery("exerciseEvent");
+
+        ParseQuery<ParseObject> query = ParseQuery.getQuery("Likes");
+
+        query.whereEqualTo("likedPost",workout_event).countInBackground(new CountCallback() {
+            @Override
+            public void done(int count, ParseException e) {
+                if (e == null){
+                    // no error
+                    Log.d(TAG, "like count:" + String.valueOf(count));
+                    tvLikesCt.setText(String.valueOf(count));
+
+                }
+                else{
+                    // something went wrong
+                    Log.d(TAG, "unable to find like count");
+                    tvLikesCt.setText(String.valueOf(0));
+                }
+            }
+        });
+    }
+
+
+
+
+
 
     // get participant data and add it to list to assemble adapter
 
@@ -203,7 +353,6 @@ public class DetailFragment extends Fragment {
 
                 ParseQuery<ParseUser> query = ParseQuery.getQuery("_User");
                 query.whereEqualTo("objectId",user_ids.get(i));
-
 
 
                 query.findInBackground(new FindCallback<ParseUser>() {
@@ -237,6 +386,8 @@ public class DetailFragment extends Fragment {
 //        participants.clear();
 //        participants.addAll(participant_list);
     }
+
+
 
 
     @Override
