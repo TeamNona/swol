@@ -22,6 +22,7 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Parcelable;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -60,6 +61,7 @@ import com.google.android.gms.location.places.ui.PlaceAutocompleteFragment;
 import com.google.android.gms.location.places.ui.PlaceSelectionListener;
 import com.google.android.gms.location.places.ui.SupportPlaceAutocompleteFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.parse.ParseException;
 import com.parse.ParseFile;
 import com.parse.ParseGeoPoint;
@@ -153,6 +155,8 @@ public class AddFragment extends Fragment{
     public String photoFileName = "photo.jpg";
     public final String APP_TAG = "Swol";
 
+    private NewMapItemListener listener;
+
     private Unbinder unbinder;
 
 
@@ -162,6 +166,31 @@ public class AddFragment extends Fragment{
         // Required empty public constructor
     }
 
+    public static AddFragment create(ParseGeoPoint point) {
+        AddFragment fragment = new AddFragment();
+        Bundle args = new Bundle();
+        args.putParcelable("geoLoc", point);
+        fragment.setArguments(args);
+        return fragment;
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (context instanceof NewMapItemListener) {
+            listener = (NewMapItemListener) context;
+        } else {
+            throw new ClassCastException(context.toString() + " must implement AddFragment.NewMapItemListener");
+        }
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (getArguments() != null) {
+            postLocation = getArguments().getParcelable("geoLoc");
+        }
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -338,7 +367,6 @@ public class AddFragment extends Fragment{
                 final JSONArray participants = new JSONArray();
                 participants.put(currentUser.getObjectId().toString());
 
-
                 if (bitmap == null) {
                     Drawable drawable = getResources().getDrawable(R.drawable.ic_directions_run_black_24dp);
                     bitmap = convertToBitmap(drawable, 1000, 1000);
@@ -360,8 +388,9 @@ public class AddFragment extends Fragment{
 
     private void createNewWorkout(String category, String name, String description, Date time, ParseGeoPoint location, ParseFile media, JSONArray participants, JSONArray tags) {
 
+
         // create a new event
-        Workout workout = new Workout();
+        final Workout workout = new Workout();
 
         // populate all of the fields
         workout.setCategory(category);
@@ -380,12 +409,21 @@ public class AddFragment extends Fragment{
                 if (e == null) {
                     Log.d("AddFragment", "Create post successful");
 
+                    // if the user made the post from the map fragment, send the workout back to the map
+                    FragmentManager fm = getActivity().getSupportFragmentManager();
+                    fab.show();
+                    if (fm.getBackStackEntryAt(0).getName() == "map") {
+                        fm.popBackStackImmediate();
+                        listener.updateMap();
+                    } else fm.popBackStackImmediate();
+
                 } else {
                     e.printStackTrace();
                     Log.e("AddFragment", "Create post was not successful");
                 }
             }
         });
+
 
     }
 
@@ -623,6 +661,11 @@ public class AddFragment extends Fragment{
         mtx.postRotate(degree);
 
         return Bitmap.createBitmap(bitmap, 0, 0, w, h, mtx, true);
+    }
+
+    // this interface is so that when a new workout is created, it can send it to the map to update it
+    public interface NewMapItemListener {
+        public void updateMap();
     }
 
 }
