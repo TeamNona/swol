@@ -348,13 +348,13 @@ public class AddFragment extends Fragment{
                 // populate participants
                 final JSONArray participants = new JSONArray();
                 participants.put(currentUser.getObjectId().toString());
-                File file = new File(String.valueOf(videoFile));
-                final ParseFile media = new ParseFile(file);
-//                if (bitmap == null) {
-//                    Drawable drawable = getResources().getDrawable(R.drawable.ic_directions_run_black_24dp);
-//                    bitmap = convertToBitmap(drawable, 1000, 1000);
-//                }
-//                media = conversionBitmapParseFile(bitmap);
+                //File file = new File(String.valueOf(videoFile));
+                //final ParseFile media = new ParseFile(file);
+                if (bitmap == null) {
+                    Drawable drawable = getResources().getDrawable(R.drawable.ic_directions_run_black_24dp);
+                    bitmap = convertToBitmap(drawable, 1000, 1000);
+                }
+                final ParseFile media = conversionBitmapParseFile(bitmap);
 //
 //                if (methodPhoto) {
 //
@@ -363,13 +363,8 @@ public class AddFragment extends Fragment{
 //                }
 
 
-                Workout workout = createNewWorkout(name, description, date, location, media, participants);
-                FragmentManager fm = getActivity().getSupportFragmentManager();
-                fab.show();
-                if (fm.getBackStackEntryAt(0) instanceof MapFragment) {
-                    fm.popBackStackImmediate();
-                    listener.updateMap(workout);
-                } else fm.popBackStackImmediate();
+                createNewWorkout(name, description, date, location, media, participants);
+
 
             }
         });
@@ -380,7 +375,7 @@ public class AddFragment extends Fragment{
     private Workout createNewWorkout(String name, String description, Date time, ParseGeoPoint location, ParseFile media, JSONArray participants) {
 
         // create a new event
-        Workout workout = new Workout();
+        final Workout workout = new Workout();
 
         // populate all of the fields
         workout.setName(name);
@@ -397,6 +392,14 @@ public class AddFragment extends Fragment{
             public void done(ParseException e) {
                 if (e == null) {
                     Log.d("AddFragment", "Create post successful");
+
+                    // if the user made the post from the map fragment, send the workout back to the map
+                    FragmentManager fm = getActivity().getSupportFragmentManager();
+                    fab.show();
+                    if (fm.getBackStackEntryAt(0).getName() == "map") {
+                        fm.popBackStackImmediate();
+                        listener.updateMap(workout);
+                    } else fm.popBackStackImmediate();
 
                 } else {
                     e.printStackTrace();
