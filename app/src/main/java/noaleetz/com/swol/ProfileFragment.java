@@ -24,6 +24,7 @@ import com.parse.FindCallback;
 import com.parse.ParseException;
 import com.parse.ParseUser;
 
+import org.json.JSONObject;
 import org.w3c.dom.Text;
 
 import java.util.ArrayList;
@@ -100,7 +101,7 @@ public class ProfileFragment extends Fragment {
 
         tvProfileName.setText(user.getString("name"));
         // TODO: fix facebook users
-        if (!MainActivity.isFacebookUser(user)) {
+        if (!isFacebookUser(user)) {
             tvProfileUsername.setVisibility(View.VISIBLE);
             tvProfileUsername.setText("@" + user.getUsername());
             try {
@@ -176,6 +177,12 @@ public class ProfileFragment extends Fragment {
     public void onDestroy() {
         super.onDestroy();
         unbinder.unbind();
+    }
+
+    public boolean isFacebookUser(ParseUser user) {
+        if (user.get("authData") == null) return false;
+        JSONObject authData = user.getJSONObject("authData");
+        return authData.has("facebook");
     }
 
 }

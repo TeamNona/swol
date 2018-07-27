@@ -17,6 +17,7 @@ import android.graphics.Matrix;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.media.ExifInterface;
+import android.media.Image;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
@@ -96,11 +97,13 @@ public class AddFragment extends Fragment{
     @BindView(R.id.btnUpload)
     Button upload;
     @BindView(R.id.btnCapture)
-    Button camera;
-    @BindView(R.id.btnUploadVideo)
+    Button capture;
+    @BindView(R.id.btnCamera)
+    ImageButton camera;
+    /*@BindView(R.id.btnUploadVideo)
     Button uploadVideo;
     @BindView(R.id.btnCaptureVideo)
-    Button captureVideo;
+    Button captureVideo; */
     @BindView(R.id.ibTime)
     ImageButton addTime;
     @BindView(R.id.ibDate)
@@ -133,7 +136,6 @@ public class AddFragment extends Fragment{
     int postHour = 23;
     int postMinute = 59;
     FloatingActionButton fab;
-    Boolean methodPhoto = true;
     
     // keep track of who is logged on
     private ParseUser currentUser = ParseUser.getCurrentUser();
@@ -185,6 +187,8 @@ public class AddFragment extends Fragment{
         categoryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         // Apply the adapter to the spinner
         workoutCategory.setAdapter(categoryAdapter);
+        workoutCategory.setPrompt("Categorize your workout");
+
 
         // set on click listener for user to add time
         addTime.setOnClickListener(new View.OnClickListener() {
@@ -233,15 +237,26 @@ public class AddFragment extends Fragment{
         ArrayAdapter<CharSequence> tagsAdapter = ArrayAdapter.createFromResource(getActivity(),
                 R.array.tags, android.R.layout.simple_spinner_item);
         // Specify the layout to use when the list of choices appears
-        tagsAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        tagsAdapter.setDropDownViewResource(android.R.layout.select_dialog_multichoice);
         // Apply the adapter to the spinner
         spTags.setAdapter(tagsAdapter);
+        spTags.setPrompt("Choose up to 5 Tags");
 
+        camera.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                upload.setVisibility(View.VISIBLE);
+                capture.setVisibility(View.VISIBLE);
+            }
+        });
 
                 // allow user to upload and post a photo for the workout
         upload.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                upload.setVisibility(View.INVISIBLE);
+                capture.setVisibility(View.INVISIBLE);
+
                 Intent i = new Intent(
                         Intent.ACTION_PICK,
                         android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
@@ -250,6 +265,7 @@ public class AddFragment extends Fragment{
             }
         });
 
+        /*
         // allow user to upload a video for the workout
         uploadVideo.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -261,21 +277,26 @@ public class AddFragment extends Fragment{
                 startActivityForResult(i, RESULT_LOAD_VIDEO);
             }
         });
+        */
 
         // allow user to take a photo for the workout directly from the app
-        camera.setOnClickListener(new View.OnClickListener() {
+        capture.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                upload.setVisibility(View.INVISIBLE);
+                capture.setVisibility(View.INVISIBLE);
                 onLaunchCamera(view);
             }
         });
+
+        /*
         captureVideo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 dispatchTakeVideoIntent();
             }
         });
-
+        */
 
         // send new workout info to Parse
         postButton.setOnClickListener(new View.OnClickListener() {
@@ -289,6 +310,7 @@ public class AddFragment extends Fragment{
                     return;
                 }
 
+                final String category = (String) workoutCategory.getSelectedItem();
 
                 final String description = etDescription.getText().toString();
 
@@ -309,11 +331,7 @@ public class AddFragment extends Fragment{
 
                 // get the final tags
                 final JSONArray tags = new JSONArray();
-                // String getTags = etTags.getText().toString();
-                //String[] gotTags = getTags.split(" ");
-                //for (int i = 0; i < gotTags.length; i++) {
-                 //   tags.put(gotTags[i]);
-                //}
+                tags.put((String) spTags.getSelectedItem());
 
 
                 // populate participants
@@ -321,23 +339,15 @@ public class AddFragment extends Fragment{
                 participants.put(currentUser.getObjectId().toString());
 
 
-                // get media
-                File file = new File(String.valueOf(videoFile));
-                final ParseFile media = new ParseFile(file);
-//                if (bitmap == null) {
-//                    Drawable drawable = getResources().getDrawable(R.drawable.ic_directions_run_black_24dp);
-//                    bitmap = convertToBitmap(drawable, 1000, 1000);
-//                }
-//                media = conversionBitmapParseFile(bitmap);
-//
-//                if (methodPhoto) {
-//
-//                } else {
-//
-//                }
+                if (bitmap == null) {
+                    Drawable drawable = getResources().getDrawable(R.drawable.ic_directions_run_black_24dp);
+                    bitmap = convertToBitmap(drawable, 1000, 1000);
+                }
+                final ParseFile media;
+                media = conversionBitmapParseFile(bitmap);
 
 
-                createNewWorkout(name, description, date, location, media, participants);
+                createNewWorkout(category, name, description, date, location, media, participants, tags);
                 FragmentManager fm = getActivity().getSupportFragmentManager();
                 fab.show();
                 fm.popBackStackImmediate();
@@ -348,19 +358,20 @@ public class AddFragment extends Fragment{
 
     }
 
-    private void createNewWorkout(String name, String description, Date time, ParseGeoPoint location, ParseFile media, JSONArray participants) {
+    private void createNewWorkout(String category, String name, String description, Date time, ParseGeoPoint location, ParseFile media, JSONArray participants, JSONArray tags) {
 
         // create a new event
         Workout workout = new Workout();
 
         // populate all of the fields
+        workout.setCategory(category);
         workout.setName(name);
         workout.setDescription(description);
         workout.setLocation(location);
         workout.setMedia(media);
         workout.setParticipants(participants);
         workout.setTime(time);
-        //workout.setTags(tags);
+        workout.setTags(tags);
         workout.setUser(currentUser);
 
         workout.saveInBackground(new SaveCallback() {
@@ -454,12 +465,12 @@ public class AddFragment extends Fragment{
         }
     }
 
-    private void dispatchTakeVideoIntent() {
+   /* private void dispatchTakeVideoIntent() {
         Intent takeVideoIntent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
         if (takeVideoIntent.resolveActivity(getActivity().getPackageManager()) != null) {
             startActivityForResult(takeVideoIntent, REQUEST_VIDEO_CAPTURE);
         }
-    }
+    } */
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -467,25 +478,25 @@ public class AddFragment extends Fragment{
 
         // GETTING IMAGE FROM GALLERY
         if (requestCode == RESULT_LOAD_IMAGE && resultCode == RESULT_OK && null != data) {
+
             Uri selectedImage = data.getData();
             photoFile = getPhotoFileUri(photoFileName);
 
+
             try {
                 bitmap = MediaStore.Images.Media.getBitmap(getActivity().getApplicationContext().getContentResolver(), selectedImage);
-                vvPost.setVisibility(View.INVISIBLE);
-                post.setVisibility(View.VISIBLE);
                 post.setImageBitmap(bitmap);
             } catch (IOException e) {
                 e.printStackTrace();
             }
+
         // GETTING IMAGE FROM CAMERA
         } else if (requestCode == CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE) {
             if (resultCode == RESULT_OK) {
                 // by this point we have the camera photo on disk
-                bitmap = BitmapFactory.decodeFile(photoFile.getAbsolutePath());
-                vvPost.setVisibility(View.GONE);
+                // bitmap = BitmapFactory.decodeFile(photoFile.getAbsolutePath());
+                bitmap = rotateBitmapOrientation(photoFile.getPath());
                 // RESIZE BITMAP, see section below
-                // TODO -- This can be maybe where you fix the orientation
                 // Load the taken image into a preview
                 post.setImageBitmap(bitmap);
             } else { // Result was a failure
@@ -503,8 +514,6 @@ public class AddFragment extends Fragment{
             vvPost.setVideoURI(videoUri);
 
             videoFile = getVideoFileUri(photoFileName);
-
-
 
             post.setVisibility(View.INVISIBLE);
             vvPost.setVisibility(View.VISIBLE);
@@ -597,6 +606,7 @@ public class AddFragment extends Fragment{
         // Return result
         return rotatedBitmap;
     }
+
 
     // When binding a fragment in onCreateView, set the views to null in onDestroyView.
     // ButterKnife returns an Unbinder on the initial binding that has an unbind method to do this automatically.
