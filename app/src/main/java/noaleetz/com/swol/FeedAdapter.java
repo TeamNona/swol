@@ -15,6 +15,7 @@ import com.parse.ParseException;
 import com.parse.ParseGeoPoint;
 import com.parse.ParseUser;
 
+import java.io.File;
 import java.util.List;
 
 import butterknife.BindView;
@@ -73,6 +74,9 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
 
         final RoundedCornersTransformation roundedCornersTransformation = new RoundedCornersTransformation(15, 15);
         final RequestOptions requestOptions = RequestOptions.bitmapTransform(roundedCornersTransformation);
+
+
+
 
         try {
             Glide.with(mcontext)
@@ -186,6 +190,7 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
         mposts.addAll(list);
         notifyDataSetChanged();
     }
+
 
 
 }
