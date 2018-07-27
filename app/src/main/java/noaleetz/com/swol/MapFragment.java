@@ -2,8 +2,7 @@ package noaleetz.com.swol;
 
 
 import android.Manifest;
-import android.content.Context;
-import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.location.Location;
@@ -12,53 +11,45 @@ import android.os.Handler;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.EditText;
 import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.GoogleMapOptions;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptor;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.parse.FindCallback;
-import com.parse.LocationCallback;
 import com.parse.ParseException;
 import com.parse.ParseGeoPoint;
 import com.parse.ParseUser;
 
-import org.parceler.Parcel;
 import org.parceler.Parcels;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Executor;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import butterknife.Unbinder;
 import noaleetz.com.swol.models.Workout;
 
+import static android.app.Activity.RESULT_OK;
 import static noaleetz.com.swol.MainActivity.REQUEST_LOCATION_PERMISSION;
 
 
@@ -68,10 +59,11 @@ import static noaleetz.com.swol.MainActivity.REQUEST_LOCATION_PERMISSION;
 public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleMap.OnMapLongClickListener, GoogleMap.OnInfoWindowClickListener {
 
 
-    ArrayList<Workout> workouts;
+    ArrayList<Marker> workoutMarkers;
     private static final String TAG = "MapFragment";
     private int counter = 0;
     private int mod;
+    private final int REQUEST_CODE = 10;
 
     // map stuff
     GoogleMap map;
@@ -84,6 +76,16 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
     LatLngBounds workoutBounds;
     ParseGeoPoint currentGeoPoint;
 
+    @BindView(R.id.fabNext)
+    FloatingActionButton fabNext;
+
+    @BindView(R.id.fabNearby)
+    FloatingActionButton fabNearby;
+
+    boolean showLast;
+
+    Unbinder unbinder;
+
     public MapFragment() {
         // Required empty public constructor
     }
@@ -93,7 +95,10 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_map, container, false);
+        View view = inflater.inflate(R.layout.fragment_map, container, false);
+        unbinder = ButterKnife.bind(this, view);
+
+        return view;
     }
 
     @Override
@@ -106,15 +111,34 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         // Construct a FusedLocationProviderClient.
         mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getContext());
 
-        SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map_fragment);
+        SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.google_map_fragment);
 
-        workouts = new ArrayList<>();
+        workoutMarkers = new ArrayList<>();
 
         loadTopWorkouts();
 
         mapFragment.getMapAsync(this);
 
+        fabNext.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                viewNextWorkout();
+            }
+        });
 
+        fabNearby.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                showNearbyWorkouts();
+            }
+        });
+
+
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
     }
 
     @Override
@@ -133,15 +157,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
 
         // Get the current location of the device and set the position of the map.
         getLocation();
-
-
-// map = googleMap;
-//
-//        LatLng dexter = new LatLng(47.6288488, -122.3430076);
-//        MarkerOptions option = new MarkerOptions();
-//        option.position(dexter).title("Facebook Dexter");
-//        map.addMarker(option);
-//        map.animateCamera(CameraUpdateFactory.newLatLng(dexter));
     }
 
     protected void loadMap(GoogleMap googleMap) {
@@ -178,9 +193,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
 
     @Override
     public void onInfoWindowClick(Marker marker) {
-//        FragmentManager fm = getActivity().getSupportFragmentManager();
-        // TODO: make the detail fragment class
-//        fm.beginTransaction().replace(R.id.flContent, DetailFragment.class).commit();
         Workout assigned_workout = (Workout) Parcels.unwrap((Parcelable) marker.getTag());
         ((MainActivity) getContext()).changeToDetailFragment(assigned_workout);
 
@@ -190,39 +202,23 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
     // Fires when a long press happens on the map
     @Override
     public void onMapLongClick(final LatLng point) {
-        mod = counter % (workouts.size() + 1);
-        if (mod < workouts.size()) {
-            Workout workout = workouts.get(mod);
-            Log.i("MapView", "Showing workout [" + mod + "] @ " + workout.getLatLng().toString());
-            map.animateCamera(CameraUpdateFactory.newLatLng(workout.getLatLng()));
-        } else {
-            Log.i("MapView", "Showing workout bounds");
-            map.animateCamera(CameraUpdateFactory.newLatLngBounds(workoutBounds,convertDpToPixel(42)));
-        }
-
-
-        counter++;
+        ParseGeoPoint geoLoc = new ParseGeoPoint(point.latitude, point.longitude);
+        FragmentManager fm = getActivity().getSupportFragmentManager();
+        fm.beginTransaction().replace(R.id.flContent, AddFragment.create(geoLoc)).addToBackStack(null).commit();
 
     }
-
-    private void createPin(GoogleMap googleMap, Workout workout) {
+    private Marker createMarker(GoogleMap googleMap, Workout workout) {
         map = googleMap;
-
-        Marker pin;
+        Marker marker;
 
         LatLng loc = workout.getLatLng();
         MarkerOptions option = new MarkerOptions();
         option.position(loc);
 
-        pin = map.addMarker(option);
+        marker = map.addMarker(option);
+        marker.setTag(Parcels.wrap(workout));
 
-//                    MarkerData data = new MarkerData(workout.getName(),
-//                    workout.getUser().fetchIfNeeded().getUsername(),
-//                    workout.getTimeUntil(),
-//                    workout.getMedia().getFile());
-//
-
-        pin.setTag(Parcels.wrap(workout));
+        return marker;
 
     }
 
@@ -234,21 +230,24 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
             @Override
             public void done(List<Workout> objects, ParseException e) {
                 if (e == null) {
-                    Log.d(TAG, Integer.toString(objects.size()));
-                    workouts.clear();
-                    workouts.addAll(objects);
+                    Log.d(TAG, "Number of workouts: "+ Integer.toString(objects.size()));
+                    workoutMarkers.clear();
+                    map.clear();
 
                     LatLng currLatLng = new LatLng(currentGeoPoint.getLatitude(), currentGeoPoint.getLongitude());
                     workoutBounds = new LatLngBounds(currLatLng, currLatLng);
-                    Toast.makeText(getContext(), "Workouts Size: " + workouts.size(), Toast.LENGTH_SHORT).show();
-                    for (int i = 0; i < workouts.size(); i++) {
-                        Workout workout = workouts.get(i);
-                        createPin(map, workout);
+                    Toast.makeText(getContext(), "Workouts Size: " + objects.size(), Toast.LENGTH_SHORT).show();
+                    for (int i = 0; i < objects.size(); i++) {
+                        Workout workout = objects.get(i);
+                        workoutMarkers.add(createMarker(map, workout));
                         if (workout.isInRange(currentGeoPoint, 10)) {
                             workoutBounds = workoutBounds.including(workout.getLatLng());
                             Log.i("AddToBounds", "added workout " + i + " to the bounds: " + workout.getLocation().distanceInMilesTo(currentGeoPoint));
                         }
                     }
+
+                    if (showLast) viewWorkout(workoutMarkers.get(0));
+                    showLast = false;
                 } else {
                     e.printStackTrace();
                 }
@@ -272,6 +271,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
             if (mLocationPermissionGranted) {
                 map.setMyLocationEnabled(true);
                 map.getUiSettings().setMyLocationButtonEnabled(true);
+                map.getUiSettings().setMapToolbarEnabled(true);
             } else {
                 map.setMyLocationEnabled(false);
                 map.getUiSettings().setMyLocationButtonEnabled(false);
@@ -358,40 +358,90 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         }
 
 
+
     }
 
-    //TODO: this class is not necessary. Clean up code by turning the workout into a parcel and just give that to the tag
+    void viewWorkout(Marker marker) {
+        final Marker m = marker;
+        Workout workout = Parcels.unwrap((Parcelable) marker.getTag());
+        Log.i("MapView", "Showing workout [" + mod + "] @ " + workout.getLatLng().toString());
+        map.animateCamera(CameraUpdateFactory.newLatLngZoom(workout.getLatLng(), 17), new GoogleMap.CancelableCallback() {
+            @Override
+            public void onFinish() {
+                // TODO: same as the onInfoWindowClick
+                m.showInfoWindow();
 
-    // this exists to pass extra data to the window adapter
-//    @Parcel
-//    public static class MarkerData {
-//
-//        String title, createdBy, timeUntil;
-//        File image;
-//
-//        public MarkerData() {}
-//
-//        public MarkerData(String title, String createdBy, String timeUntil, File image){
-//            this.title = title;
-//            this.createdBy = createdBy;
-//            this.timeUntil = timeUntil;
-//            this.image = image;
-//        }
-//
-//        public String getTitle() {
-//            return title;
-//        }
-//
-//        public String getCreatedBy() {
-//            return createdBy;
-//        }
-//
-//        public String getTimeUntil() {
-//            return timeUntil;
-//        }
-//
-//        public File getImage() {
-//            return image;
-//        }
-//    }
+                final Handler handler = new Handler();
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        m.showInfoWindow();
+
+                    }
+                }, 200);
+
+            }
+
+            @Override
+            public void onCancel() {
+
+            }
+        });
+    }
+
+    void viewNextWorkout() {
+        mod = counter % workoutMarkers.size();
+            final Marker marker = workoutMarkers.get(mod);
+            Workout workout = Parcels.unwrap((Parcelable) marker.getTag());
+            Log.i("MapView", "Showing workout [" + mod + "] @ " + workout.getLatLng().toString());
+            map.animateCamera(CameraUpdateFactory.newLatLngZoom(workout.getLatLng(), 17), new GoogleMap.CancelableCallback() {
+                @Override
+                public void onFinish() {
+                    // TODO: same as the onInfoWindowClick
+                    marker.showInfoWindow();
+
+                    final Handler handler = new Handler();
+                    handler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            marker.showInfoWindow();
+
+                        }
+                    }, 200);
+
+                }
+
+                @Override
+                public void onCancel() {
+
+                }
+            });
+        counter++;
+    }
+
+    void showNearbyWorkouts() {
+        if (currentGeoPoint == null) return;
+        Log.i("MapView", "Showing workout bounds");
+        map.animateCamera(CameraUpdateFactory.newLatLngBounds(workoutBounds,convertDpToPixel(42)));
+        Toast.makeText(getContext(), "Showing Nearby Workouts", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == RESULT_OK && requestCode == REQUEST_CODE) {
+            Workout workout = Parcels.unwrap(data.getExtras().getParcelable("workout"));
+
+        }
+
+    }
+
+    public void addMarker() {
+        showLast = true;
+    }
+
+    @Override public void onDestroyView() {
+        super.onDestroyView();
+        unbinder.unbind();
+    }
 }
