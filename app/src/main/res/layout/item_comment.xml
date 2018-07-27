@@ -31,13 +31,13 @@
 
         <LinearLayout
             android:layout_width="250dp"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:layout_weight="1"
             android:orientation="vertical">
 
 
             <TextView
-                android:id="@+id/tvCurrentUsername"
+                android:id="@+id/tvCommentUsername"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignTop="@+id/tvCreatedTimeC"
@@ -53,11 +53,11 @@
             <TextView
                 android:id="@+id/tvComment"
                 android:layout_width="match_parent"
-                android:layout_height="37dp"
-                android:layout_alignStart="@+id/tvCurrentUsername"
-                android:layout_below="@+id/tvCurrentUsername"
-                android:minLines="1"
+                android:layout_height="wrap_content"
+                android:layout_alignStart="@+id/tvCommentUsername"
+                android:layout_below="@+id/tvCommentUsername"
                 android:maxLines="3"
+                android:minLines="1"
                 android:singleLine="false"
                 android:text="Comment that was written!" />
 

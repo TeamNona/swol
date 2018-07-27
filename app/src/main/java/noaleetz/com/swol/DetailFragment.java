@@ -46,6 +46,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
 import jp.wasabeef.glide.transformations.RoundedCornersTransformation;
+import noaleetz.com.swol.models.Comments;
 import noaleetz.com.swol.models.User;
 import noaleetz.com.swol.models.Workout;
 
@@ -80,6 +81,8 @@ public class DetailFragment extends Fragment {
     ImageView ivImage;
     @BindView(R.id.rvParticipants)
     RecyclerView rvParticipants;
+    @BindView(R.id.rvComments)
+    RecyclerView rvComments;
     @BindView(R.id.tvDescription)
     TextView tvDescription;
     @BindView(R.id.tvLikesCt)
@@ -97,8 +100,11 @@ public class DetailFragment extends Fragment {
     String url_post;
 
 
-    private ParticipantAdapter adapter;
+    private ParticipantAdapter participantAdapter;
     private List<ParseUser> participants;
+
+    private CommentAdapter commentAdapter;
+    private List<Comments> comments;
 
     private Unbinder unbinder;
 
@@ -185,17 +191,29 @@ public class DetailFragment extends Fragment {
 
         getLikesCount(workout);
 
-        // set up and populate data for adapter
+        // set up and populate data for  participant adapter
 
         participants = new ArrayList<>();
 
-        this.adapter = new ParticipantAdapter(participants);
+        this.participantAdapter = new ParticipantAdapter(participants);
         Log.d(TAG, "finished setting up participant adapter");
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext());
         rvParticipants.setLayoutManager(linearLayoutManager);
-        rvParticipants.setAdapter(adapter);
+        rvParticipants.setAdapter(participantAdapter);
 
         loadParticipants(workout.getParticipants());
+
+        // set up comment adapter
+
+        comments = new ArrayList<>();
+        this.commentAdapter = new CommentAdapter(comments);
+        Log.d(TAG, "finished setting up comment adapter");
+        LinearLayoutManager commentLinearLayoutManager = new LinearLayoutManager(getContext());
+        rvComments.setLayoutManager(commentLinearLayoutManager);
+        rvComments.setAdapter(commentAdapter);
+
+
+
 
 
 
@@ -264,7 +282,7 @@ public class DetailFragment extends Fragment {
 
                                 exerciseEvent.put("eventParticipants", participant_list);
                                 exerciseEvent.saveInBackground();
-                                adapter.notifyDataSetChanged();
+                                participantAdapter.notifyDataSetChanged();
                                 loadParticipants(participant_list);
                                 Toast.makeText(getApplicationContext(), "Workout Joined", Toast.LENGTH_SHORT).show();
 
@@ -276,8 +294,6 @@ public class DetailFragment extends Fragment {
 
 
                 }
-
-
 
 
             }
@@ -331,6 +347,42 @@ public class DetailFragment extends Fragment {
         });
     }
 
+    // get comment data
+
+    public void loadComments(Workout workout_event){
+
+        comments.clear();
+
+        final JSONArray comment_ids = new JSONArray();
+
+        final List<Comments> comment_list = new ArrayList<>();
+
+        // get list of comment object ids
+        ParseQuery<ParseObject> commentQuery = ParseQuery.getQuery("Comments");
+
+        commentQuery.whereEqualTo("postedTo",workout_event).findInBackground(new FindCallback<ParseObject>() {
+            @Override
+            public void done(List<ParseObject> objects, ParseException e) {
+                for(int i =0;i< objects.size();i++) {
+                    String commentId = (String) objects.get(i).get("objectId");
+                    Log.d(TAG, "comment ID to add to JSONArray" + commentId);
+                    comment_ids.put(commentId);
+                    Log.d(TAG, "updated list of comment ids" + comment_ids);
+
+                }
+            }
+        });
+
+
+//        for(int i=0; i<)
+
+
+
+
+
+
+    }
+
 
 
 
@@ -360,7 +412,7 @@ public class DetailFragment extends Fragment {
                         if (e == null) {
                             ParseUser user = object.get(0);
                             participants.add(user);
-                            adapter.notifyDataSetChanged();
+                            participantAdapter.notifyDataSetChanged();
 
                             // object will be your User
 //                            participant_list.add((ParseUser) object);
@@ -386,6 +438,8 @@ public class DetailFragment extends Fragment {
 //        participants.clear();
 //        participants.addAll(participant_list);
     }
+
+
 
 
 
