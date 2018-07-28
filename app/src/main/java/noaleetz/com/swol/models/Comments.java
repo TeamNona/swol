@@ -51,7 +51,7 @@ public class Comments extends ParseObject{
         }
 
         public Query getPostComments (ParseObject post) {
-            whereEqualTo(KEY_POST, post);
+            whereEqualTo(KEY_POST, post.getObjectId());
             return this;
         }
 

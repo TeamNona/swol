@@ -77,6 +77,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -100,8 +102,6 @@ public class AddFragment extends Fragment{
     Button upload;
     @BindView(R.id.btnCapture)
     Button capture;
-    @BindView(R.id.btnCamera)
-    ImageButton camera;
     /*@BindView(R.id.btnUploadVideo)
     Button uploadVideo;
     @BindView(R.id.btnCaptureVideo)
@@ -122,8 +122,6 @@ public class AddFragment extends Fragment{
     Spinner spTags;
     @BindView(R.id.ivMedia)
     ImageView post;
-    @BindView(R.id.vvMedia)
-    VideoView vvPost;
     @BindView(R.id.spCategory)
     Spinner workoutCategory;
 
@@ -158,6 +156,10 @@ public class AddFragment extends Fragment{
     private NewMapItemListener listener;
 
     private Unbinder unbinder;
+
+    // declare variables for spinners
+    String workoutCategoryPrompt = "Choose a Workout Category";
+    String tagsPrompt = "Choose up to 5 tags";
 
 
 
@@ -209,14 +211,58 @@ public class AddFragment extends Fragment{
 
         fab = (FloatingActionButton) getActivity().findViewById(R.id.fab);
 
-        // Create an ArrayAdapter using the string array and a default spinner layout
-        ArrayAdapter<CharSequence> categoryAdapter = ArrayAdapter.createFromResource(getActivity(),
-                R.array.workout_categories, android.R.layout.simple_spinner_item);
+        // create Array of workout categories
+        final String[] workoutCategories;
+        workoutCategories = getResources().getStringArray(R.array.workout_categories);
+
+        ArrayAdapter<CharSequence> categoryAdapter = new ArrayAdapter<CharSequence>(getActivity(),
+                android.R.layout.simple_spinner_dropdown_item, workoutCategories ) {
+            // Disable click item
+            @Override
+            public boolean isEnabled(int position) {
+                // TODO Auto-generated method stub
+                if (position == 0) {
+                    return false;
+                }
+                return true;
+            }
+
+            // Change color item
+            @Override
+            public View getDropDownView(int position, View convertView,
+                                        ViewGroup parent) {
+                // TODO Auto-generated method stub
+                View mView = super.getDropDownView(position, convertView, parent);
+                TextView mTextView = (TextView) mView;
+                if (position == 0) {
+                    mTextView.setTextColor(Color.GRAY);
+                } else {
+                    mTextView.setTextColor(Color.BLACK);
+                }
+                return mView;
+            }
+
+        };
+
+
+
+//        // Create an ArrayAdapter using the string array and a default spinner layout
+//        ArrayAdapter<CharSequence> categoryAdapter = ArrayAdapter.createFromResource(getActivity(),
+//                R.array.workout_categories, android.R.layout.simple_spinner_item) ;
         // Specify the layout to use when the list of choices appears
-        categoryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        categoryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item) ;
         // Apply the adapter to the spinner
         workoutCategory.setAdapter(categoryAdapter);
-        workoutCategory.setPrompt("Categorize your workout");
+
+        post.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                upload.setVisibility(View.VISIBLE);
+                capture.setVisibility(View.VISIBLE);
+            }
+        });
+
+
 
 
         // set on click listener for user to add time
@@ -242,7 +288,7 @@ public class AddFragment extends Fragment{
                 getChildFragmentManager().findFragmentById(R.id.place_autocomplete_fragment);
 
         ((EditText)autocompleteFragment.getView().findViewById(R.id.place_autocomplete_search_input)).setHint("Choose Location");
-        ((EditText)autocompleteFragment.getView().findViewById(R.id.place_autocomplete_search_input)).setTextSize(24.0f);
+        ((EditText)autocompleteFragment.getView().findViewById(R.id.place_autocomplete_search_input)).setTextSize(18.0f);
 
         autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
             @Override
@@ -262,22 +308,44 @@ public class AddFragment extends Fragment{
             }
         });
 
-        // Create an ArrayAdapter using the string array and a default spinner layout
-        ArrayAdapter<CharSequence> tagsAdapter = ArrayAdapter.createFromResource(getActivity(),
-                R.array.tags, android.R.layout.simple_spinner_item);
+        // create Array of workout categories
+        String[] tagCategories;
+        tagCategories = getResources().getStringArray(R.array.tags);
+
+        ArrayAdapter<CharSequence> tagsAdapter = new ArrayAdapter<CharSequence>(getActivity(),
+                android.R.layout.simple_spinner_dropdown_item, tagCategories ) {
+            // Disable click item
+            @Override
+            public boolean isEnabled(int position) {
+                // TODO Auto-generated method stub
+                if (position == 0) {
+                    return false;
+                }
+                return true;
+            }
+
+            // Change color item
+            @Override
+            public View getDropDownView(int position, View convertView,
+                                        ViewGroup parent) {
+                // TODO Auto-generated method stub
+                View mView = super.getDropDownView(position, convertView, parent);
+                TextView mTextView = (TextView) mView;
+                if (position == 0) {
+                    mTextView.setTextColor(Color.GRAY);
+                } else {
+                    mTextView.setTextColor(Color.BLACK);
+                }
+                return mView;
+            }
+
+        };
+
         // Specify the layout to use when the list of choices appears
-        tagsAdapter.setDropDownViewResource(android.R.layout.select_dialog_multichoice);
+        tagsAdapter.setDropDownViewResource(android.R.layout.simple_list_item_multiple_choice);
         // Apply the adapter to the spinner
         spTags.setAdapter(tagsAdapter);
-        spTags.setPrompt("Choose up to 5 Tags");
 
-        camera.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                upload.setVisibility(View.VISIBLE);
-                capture.setVisibility(View.VISIBLE);
-            }
-        });
 
                 // allow user to upload and post a photo for the workout
         upload.setOnClickListener(new View.OnClickListener() {
@@ -339,7 +407,14 @@ public class AddFragment extends Fragment{
                     return;
                 }
 
-                final String category = (String) workoutCategory.getSelectedItem();
+                final String category;
+                if (workoutCategoryPrompt.equals((String) workoutCategory.getSelectedItem())) {
+                    Toast.makeText(getActivity(), "Please categorize your workout", Toast.LENGTH_SHORT).show();
+                    return;
+                } else {
+                    category = (String) workoutCategory.getSelectedItem();
+                }
+
 
                 final String description = etDescription.getText().toString();
 
@@ -360,7 +435,13 @@ public class AddFragment extends Fragment{
 
                 // get the final tags
                 final JSONArray tags = new JSONArray();
-                tags.put((String) spTags.getSelectedItem());
+                if (tagsPrompt.equals((String) spTags.getSelectedItem())) {
+                    Toast.makeText(getActivity(), "Please add a least one tag to your workout.", Toast.LENGTH_SHORT).show();
+                    return;
+                } else {
+                    tags.put(spTags.getSelectedItem());
+                }
+
 
 
                 // populate participants
@@ -530,7 +611,7 @@ public class AddFragment extends Fragment{
                 e.printStackTrace();
             }
 
-        // GETTING IMAGE FROM CAMERA
+            // GETTING IMAGE FROM CAMERA
         } else if (requestCode == CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE) {
             if (resultCode == RESULT_OK) {
                 // by this point we have the camera photo on disk
@@ -542,26 +623,28 @@ public class AddFragment extends Fragment{
             } else { // Result was a failure
                 Toast.makeText(getActivity(), "Picture wasn't taken!", Toast.LENGTH_SHORT).show();
             }
-
-        } else if (requestCode == REQUEST_VIDEO_CAPTURE && resultCode == RESULT_OK) {
-            Uri videoUri = data.getData();
-            vvPost.setVideoURI(videoUri);
-            vvPost.start();
-            videoFile = new File(videoUri.getPath());
-            // GETTING VIDEO FROM GALLERY
-        } else if (requestCode == RESULT_LOAD_VIDEO && resultCode == RESULT_OK) {
-            Uri videoUri = data.getData();
-            vvPost.setVideoURI(videoUri);
-
-            videoFile = getVideoFileUri(photoFileName);
-
-            post.setVisibility(View.INVISIBLE);
-            vvPost.setVisibility(View.VISIBLE);
-
-            vvPost.start();
-
         }
     }
+//
+//        } else if (requestCode == REQUEST_VIDEO_CAPTURE && resultCode == RESULT_OK) {
+//            Uri videoUri = data.getData();
+//            vvPost.setVideoURI(videoUri);
+//            vvPost.start();
+//            videoFile = new File(videoUri.getPath());
+//            // GETTING VIDEO FROM GALLERY
+//        } else if (requestCode == RESULT_LOAD_VIDEO && resultCode == RESULT_OK) {
+//            Uri videoUri = data.getData();
+//            vvPost.setVideoURI(videoUri);
+//
+//            videoFile = getVideoFileUri(photoFileName);
+//
+//            post.setVisibility(View.INVISIBLE);
+//            vvPost.setVisibility(View.VISIBLE);
+//
+//            vvPost.start();
+//
+//        }
+//    }
 
 
     // Returns the File for a photo stored on disk given the fileName
