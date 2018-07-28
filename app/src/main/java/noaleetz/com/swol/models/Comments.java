@@ -50,8 +50,8 @@ public class Comments extends ParseObject{
             super(Comments.class);
         }
 
-        public Query getPostComments (ParseObject post) {
-            whereEqualTo(KEY_POST, post);
+        public Query getPostComments (String post_id) {
+            whereEqualTo(KEY_POST, post_id);
             return this;
         }
 

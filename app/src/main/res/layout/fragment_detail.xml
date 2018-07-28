@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent">
+
+<RelativeLayout
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
@@ -149,6 +152,12 @@
         android:layout_below="@+id/card_view">
 
 
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/rvComments"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_alignTop="@+id/tvLikesWord"
+            android:layout_toRightOf="@+id/tvLikesWord" />
 
         <ImageView
             android:id="@+id/ivHeartIcon"
@@ -170,6 +179,7 @@
             android:layout_height="wrap_content"
             android:layout_alignTop="@+id/ivHeartIcon"
             android:layout_marginLeft="5dp"
+            android:layout_marginRight="10dp"
             android:layout_marginTop="0dp"
             android:layout_toEndOf="@+id/tvLikesCt"
             android:gravity="top"
@@ -203,23 +213,6 @@
             android:minWidth="8dp"
             android:paddingTop="2dp"
             app:srcCompat="@drawable/ic_comment" />
-
-        <LinearLayout
-            android:id="@+id/LlComments"
-            android:layout_width="350dp"
-            android:layout_height="390dp"
-            android:layout_alignParentEnd="true"
-            android:layout_below="@+id/tvLikesWord"
-            android:isScrollContainer="true"
-            android:orientation="vertical"
-            android:verticalScrollbarPosition="right">
-
-
-            <android.support.v7.widget.RecyclerView
-                android:id="@+id/rvComments"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent" />
-        </LinearLayout>
 
     </RelativeLayout>
 
@@ -279,3 +272,5 @@
 
 
 </RelativeLayout>
+
+</ScrollView>

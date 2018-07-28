@@ -36,6 +36,7 @@ import com.parse.SaveCallback;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.w3c.dom.Comment;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -109,6 +110,8 @@ public class DetailFragment extends Fragment {
     private Unbinder unbinder;
 
     public JSONArray participant_list;
+    public JSONArray comment_list;
+
 
 
     public DetailFragment() {
@@ -152,6 +155,8 @@ public class DetailFragment extends Fragment {
         tvDescription.setText(workout.getDescription());
 
         participant_list = new JSONArray();
+        comment_list = new JSONArray();
+
         participant_list = workout.getParticipants();
 
         Log.d(TAG, "Tag 1" + workout.get("eventParticipants").toString());
@@ -202,6 +207,7 @@ public class DetailFragment extends Fragment {
         rvParticipants.setAdapter(participantAdapter);
 
         loadParticipants(workout.getParticipants());
+        loadComments(workout);
 
         // set up comment adapter
 
@@ -323,10 +329,6 @@ public class DetailFragment extends Fragment {
     public void getLikesCount(Workout workout_event){
         String workoutId = workout_event.getObjectId();
 
-
-
-        ParseQuery<ParseObject> exerciseEvent = ParseQuery.getQuery("exerciseEvent");
-
         ParseQuery<ParseObject> query = ParseQuery.getQuery("Likes");
 
         query.whereEqualTo("likedPost",workout_event).countInBackground(new CountCallback() {
@@ -351,42 +353,63 @@ public class DetailFragment extends Fragment {
 
     public void loadComments(Workout workout_event){
 
-        comments.clear();
 
         final JSONArray comment_ids = new JSONArray();
 
-        final List<Comments> comment_list = new ArrayList<>();
+//         get list of comment object ids
+        Comments.Query commentQuery = new Comments.Query();
 
-        // get list of comment object ids
-        ParseQuery<ParseObject> commentQuery = ParseQuery.getQuery("Comments");
-
-        commentQuery.whereEqualTo("postedTo",workout_event).findInBackground(new FindCallback<ParseObject>() {
+        commentQuery.whereEqualTo("PostedTo",workout_event).findInBackground(new FindCallback<Comments>() {
             @Override
-            public void done(List<ParseObject> objects, ParseException e) {
+            public void done(List<Comments> objects, ParseException e) {
                 for(int i =0;i< objects.size();i++) {
-                    String commentId = (String) objects.get(i).get("objectId");
+                    Comments comments1 = objects.get(i);
+                    String commentId = comments1.getObjectId();
                     Log.d(TAG, "comment ID to add to JSONArray" + commentId);
                     comment_ids.put(commentId);
                     Log.d(TAG, "updated list of comment ids" + comment_ids);
 
                 }
+                Log.d(TAG, "full JSON Array of comment IDs" + comment_ids);
+//                comments.clear();
+                final List<Comments> comment_list = new ArrayList<>();
+
+                for (int i=0;i<comment_ids.length();i++){
+
+                    try {
+                        Comments.Query getCommentQuery = new Comments.Query();
+
+                        getCommentQuery.whereEqualTo("objectId",comment_ids.get(i));
+
+                        getCommentQuery.findInBackground(new FindCallback<Comments>() {
+                            public void done(List<Comments> object, ParseException e) {
+                                if (e == null) {
+//                                    Comments comment = (Comments) object.get(0);
+
+                                    comments.add(object.get(0));
+                                    commentAdapter.notifyDataSetChanged();
+//                                    Log.d(TAG, "comment ID:" + comment.get("objectID") + "," + "comment text" + comment.get("description"));
+
+                                } else {
+                                    // something went wrong
+                                    Log.d(TAG, "comment object not added");
+                                }
+                            }
+
+                        });
+
+
+                    } catch (JSONException e1) {
+                        e1.printStackTrace();
+                    }
+                }
             }
         });
 
 
+
 //        for(int i=0; i<)
-
-
-
-
-
-
     }
-
-
-
-
-
 
     // get participant data and add it to list to assemble adapter
 

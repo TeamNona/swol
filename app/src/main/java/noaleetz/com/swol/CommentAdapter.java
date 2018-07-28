@@ -12,6 +12,7 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.parse.ParseException;
+import com.parse.ParseObject;
 import com.parse.ParseUser;
 
 import java.util.List;
@@ -36,7 +37,7 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.ViewHold
 
     @NonNull
     @Override
-    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int i) {
+    public CommentAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int i) {
         //Define a layout file for individual list item
 // This defines a layout file for individual list item
         // Set the layout for individual list item inside onCreateViewHolder
@@ -48,16 +49,18 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.ViewHold
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ViewHolder holder, int i) {
+    public void onBindViewHolder(@NonNull CommentAdapter.ViewHolder holder, int i) {
         //Set data to the individual list item
         final Comments comment = mcomments.get(i);
 
-        holder.tvCommentUsername.setText();
-        holder.tvComment.setText();
+
+        holder.tvCommentUsername.setText(comment.getParseUser("postedBy").get("username").toString());
+        holder.tvComment.setText(comment.get("description").toString());
         // Load commenter avatar
         try {
             url = comment
                     .fetchIfNeeded()
+                    .getParseUser("postedBy")
                     .getParseFile("profilePicture")
                     .getUrl();
         } catch (ParseException e) {
@@ -69,14 +72,22 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.ViewHold
                 .load(url)
                 .into(holder.ivAvatar);
 
-//        holder.itemView.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-////                mAdapterCallback.onMethodCallback(position);
-//                ((MainActivity) mcontext).changeToProfileFragment(participant);
-//
-//            }
-//        });
+        holder.ivAvatar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+//                mAdapterCallback.onMethodCallback(position);
+                ((MainActivity) mcontext).changeToProfileFragment(comment.getPostedBy());
+
+            }
+        });
+        holder.tvCommentUsername.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+//                mAdapterCallback.onMethodCallback(position);
+                ((MainActivity) mcontext).changeToProfileFragment(comment.getPostedBy());
+
+            }
+        });
 
 
 
@@ -94,9 +105,9 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.ViewHold
         @BindView(R.id.ivAvatar)
         ImageView ivAvatar;
         @BindView(R.id.tvCommentUsername)
-        TextView tvFullName;
+        TextView tvCommentUsername;
         @BindView(R.id.tvComment)
-        TextView tvUsername;
+        TextView tvComment;
 
         public ViewHolder (View itemView) {
             super(itemView);
@@ -110,5 +121,18 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.ViewHold
         public void onClick(View view) {
             // TODO- setup link to comment thread when clicked
         }
+    }
+
+
+    // Clean all elements of the recycler
+    public void clear() {
+        mcomments.clear();
+        notifyDataSetChanged();
+    }
+
+    // Add a list of items -- change to type used
+    public void addAll(List<Comments> list) {
+        mcomments.addAll(list);
+        notifyDataSetChanged();
     }
 }
