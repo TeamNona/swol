@@ -173,6 +173,11 @@ public class Workout extends ParseObject{
             whereWithinMiles("eventLocation", currentLocation, maxRange);
             return this;
         }
+
+        public Query getwithTags() {
+            whereContains(KEY_TAGS, "High Intensity");
+            return this;
+        }
     }
 
 }
