@@ -258,6 +258,7 @@ public class MainActivity extends AppCompatActivity implements AddFragment.NewMa
                         }
                     });
         }
+
         FragmentManager fragmentManager = getSupportFragmentManager();
         fragmentManager.beginTransaction().replace(R.id.flContent, new FeedFragment()).commit();
 
