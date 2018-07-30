@@ -37,25 +37,25 @@ class CustomWindowAdapter implements GoogleMap.InfoWindowAdapter {
 
         Workout assigned_workout = (Workout) Parcels.unwrap((Parcelable) marker.getTag());
 
-        TextView tvInfoTitle = v.findViewById(R.id.tvInfoTitle);
-        tvInfoTitle.setText(assigned_workout.getName());
-
-        TextView tvCreatedBy = v.findViewById(R.id.tvInfoCreatedBy);
-
-        String user = null;
-        try {
-            user = assigned_workout.getUser().fetchIfNeeded().getUsername();
-            tvCreatedBy.setText("Created By: "+ user);
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-
-
-        TextView tvInfoTimeUntil = v.findViewById(R.id.tvInfoTimeUntil);
-        tvInfoTimeUntil.setText(assigned_workout.getTimeUntil());
-
-        ImageView ivInfoImage = v.findViewById(R.id.ivInfoImage);
-        Glide.with(v).load(assigned_workout.getMedia().getUrl()).into(ivInfoImage);
+//        TextView tvInfoTitle = v.findViewById(R.id.tvInfoTitle);
+//        tvInfoTitle.setText(assigned_workout.getName());
+//
+//        TextView tvCreatedBy = v.findViewById(R.id.tvInfoCreatedBy);
+//
+//        String user = null;
+//        try {
+//            user = assigned_workout.getUser().fetchIfNeeded().getUsername();
+//            tvCreatedBy.setText("Created By: "+ user);
+//        } catch (ParseException e) {
+//            e.printStackTrace();
+//        }
+//
+//
+//        TextView tvInfoTimeUntil = v.findViewById(R.id.tvInfoTimeUntil);
+//        tvInfoTimeUntil.setText(assigned_workout.getTimeUntil());
+//
+//        ImageView ivInfoImage = v.findViewById(R.id.ivInfoImage);
+//        Glide.with(v).load(assigned_workout.getMedia().getUrl()).into(ivInfoImage);
         // Return info window contents
         return v;
     }
