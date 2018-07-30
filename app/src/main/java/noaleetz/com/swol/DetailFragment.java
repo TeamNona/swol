@@ -27,6 +27,7 @@ import com.parse.CountCallback;
 import com.parse.FindCallback;
 import com.parse.GetCallback;
 import com.parse.Parse;
+import com.parse.ParseClassName;
 import com.parse.ParseException;
 import com.parse.ParseFile;
 import com.parse.ParseObject;
@@ -399,7 +400,7 @@ public class DetailFragment extends Fragment {
 //         get list of comment object ids
         Comments.Query commentQuery = new Comments.Query();
 
-        commentQuery.whereEqualTo("PostedTo",workout_event).findInBackground(new FindCallback<Comments>() {
+        commentQuery.getTop().whereEqualTo("PostedTo",workout_event).findInBackground(new FindCallback<Comments>() {
             @Override
             public void done(List<Comments> objects, ParseException e) {
                 for(int i =0;i< objects.size();i++) {
@@ -418,7 +419,7 @@ public class DetailFragment extends Fragment {
                     try {
                         Comments.Query getCommentQuery = new Comments.Query();
 
-                        getCommentQuery.whereEqualTo("objectId",comment_ids.get(i));
+                        getCommentQuery.getTop().whereEqualTo("objectId",comment_ids.get(i));
 
                         getCommentQuery.findInBackground(new FindCallback<Comments>() {
                             public void done(List<Comments> object, ParseException e) {
@@ -459,13 +460,17 @@ public class DetailFragment extends Fragment {
         newComment.saveInBackground(new SaveCallback() {
             @Override
             public void done(ParseException e) {
+                comments.clear();
+                loadComments(workout);
+                rvComments.scrollToPosition(0);
+                tvComment.setText("");
 
             }
         });
 
-        comments.add(newComment);
-        commentAdapter.notifyItemChanged(comments.size() - 1);
-        tvComment.setText("");
+//        comments.add(0,newComment);
+//        commentAdapter.notifyItemChanged(0);
+
 
 
 

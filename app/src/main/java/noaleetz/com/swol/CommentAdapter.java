@@ -61,7 +61,17 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.ViewHold
             Log.d(TAG, "pointer to user not found");
         }
         holder.tvComment.setText(comment.get("description").toString());
-        holder.tvCreatedTimeC.setText(comment.getTimeUntil());
+
+        if(comment.getTimeUntil() == "In 0 seconds") {
+            holder.tvCreatedTimeC.setText("0 seconds ago");
+
+
+        }
+        else{
+            holder.tvCreatedTimeC.setText(comment.getTimeUntil());
+
+
+        }
         // Load commenter avatar
         try {
             url = comment
