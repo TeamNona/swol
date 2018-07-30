@@ -12,8 +12,8 @@
     android:clickable="true"
     android:foreground="?android:attr/selectableItemBackground"
     card_view:cardBackgroundColor="@android:color/white"
-    card_view:cardCornerRadius="20dp"
-    card_view:cardElevation="24dp">
+    card_view:cardCornerRadius="5dp"
+    card_view:cardElevation="3dp">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -23,11 +23,12 @@
 
         <ImageView
             android:id="@+id/ivAvatar"
-            android:layout_width="34dp"
-            android:layout_height="50dp"
+            android:layout_width="89dp"
+            android:layout_height="match_parent"
             android:layout_gravity="start"
             android:layout_weight="1"
-            app:srcCompat="@drawable/ic_person" />
+            android:scaleType="fitXY"
+            card_view:srcCompat="@drawable/com_facebook_profile_picture_blank_square" />
 
         <LinearLayout
             android:layout_width="250dp"
@@ -41,14 +42,14 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignTop="@+id/tvCreatedTimeC"
+                android:layout_marginLeft="6dp"
                 android:layout_toEndOf="@+id/ivProfilePhotoC"
                 android:gravity="bottom"
                 android:text="Username"
                 android:textColor="#517fa4"
                 android:textSize="16sp"
-                android:textStyle="bold"
 
-                />
+                android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/tvComment"
@@ -56,6 +57,7 @@
                 android:layout_height="wrap_content"
                 android:layout_alignStart="@+id/tvCommentUsername"
                 android:layout_below="@+id/tvCommentUsername"
+                android:layout_marginLeft="6dp"
                 android:maxLines="3"
                 android:minLines="1"
                 android:singleLine="false"

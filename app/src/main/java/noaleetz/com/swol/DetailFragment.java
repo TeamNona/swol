@@ -16,6 +16,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -95,10 +96,21 @@ public class DetailFragment extends Fragment {
     @BindView(R.id.ivJoin)
     ImageView ivJoin;
 
+    // Add Comment holders
+    @BindView(R.id.tvCommentUsername)
+    TextView tvCommentUsername;
+    @BindView(R.id.ivAddCommentAvatar)
+    ImageView ivAddCommentAvatar;
+    @BindView(R.id.btAddComment)
+    ImageView btAddComment;
+    @BindView(R.id.tvComment)
+    EditText tvComment;
+
     Workout workout;
 
     String url;
     String url_post;
+    String url_addComment;
 
 
     private ParticipantAdapter participantAdapter;
@@ -194,7 +206,30 @@ public class DetailFragment extends Fragment {
                 .apply(requestOptions)
                 .into(ivImage);
 
+        // load AddComment Item avatar and username
+
+        try {
+            url_addComment = ParseUser.getCurrentUser()
+                    .fetchIfNeeded()
+                    .getParseFile("profilePicture")
+                    .getUrl();
+        } catch (ParseException e) {
+            e.printStackTrace();
+            Log.d(TAG, "AvatarImage of current user did not load");
+        }
+
+        Glide.with(DetailFragment.this)
+                .load(url_addComment)
+                .into(ivAddCommentAvatar);
+
+        tvUsername.setText(ParseUser.getCurrentUser().getUsername());
+
+
+        // get Likes Count from Parse
+
         getLikesCount(workout);
+
+
 
         // set up and populate data for  participant adapter
 
@@ -220,7 +255,12 @@ public class DetailFragment extends Fragment {
 
 
 
-
+        btAddComment.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                addComment();
+            }
+        });
 
 
 
@@ -408,6 +448,27 @@ public class DetailFragment extends Fragment {
 
 
 //        for(int i=0; i<)
+    }
+
+    public void addComment() {
+        final String commentText = tvComment.getText().toString();
+        Comments newComment = new Comments();
+        newComment.setPostedBy(ParseUser.getCurrentUser());
+        newComment.setPostedTo(workout);
+        newComment.setComment(commentText);
+        newComment.saveInBackground(new SaveCallback() {
+            @Override
+            public void done(ParseException e) {
+
+            }
+        });
+
+        comments.add(newComment);
+        commentAdapter.notifyItemChanged(comments.size() - 1);
+        tvComment.setText("");
+
+
+
     }
 
     // get participant data and add it to list to assemble adapter
