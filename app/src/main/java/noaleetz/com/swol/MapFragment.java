@@ -5,6 +5,10 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
@@ -21,9 +25,11 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -36,6 +42,10 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.maps.android.clustering.Cluster;
+import com.google.maps.android.clustering.ClusterManager;
+import com.google.maps.android.clustering.view.DefaultClusterRenderer;
+import com.google.maps.android.ui.IconGenerator;
 import com.parse.FindCallback;
 import com.parse.ParseException;
 import com.parse.ParseGeoPoint;
@@ -59,7 +69,14 @@ import static noaleetz.com.swol.MainActivity.REQUEST_LOCATION_PERMISSION;
  * A simple {@link Fragment} subclass.
  */
 
-public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleMap.OnMapLongClickListener, GoogleMap.OnInfoWindowClickListener, GoogleMap.OnMapClickListener {
+public class MapFragment extends Fragment implements OnMapReadyCallback,
+                                                     GoogleMap.OnMapLongClickListener,
+                                                     GoogleMap.OnInfoWindowClickListener,
+                                                     GoogleMap.OnMapClickListener,
+                                                     ClusterManager.OnClusterClickListener<Workout>,
+                                                     ClusterManager.OnClusterInfoWindowClickListener<Workout>,
+                                                     ClusterManager.OnClusterItemClickListener<Workout>,
+                                                     ClusterManager.OnClusterItemInfoWindowClickListener<Workout> {
 
 
 
@@ -80,6 +97,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
     Location mLastKnownLocation;
     LatLngBounds workoutBounds;
     ParseGeoPoint currentGeoPoint;
+    // cluster stuff
+    private ClusterManager<Workout> clusterManager;
 
     @BindView(R.id.fabNext)
     FloatingActionButton fabNext;
@@ -210,6 +229,17 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
 
         // Set the slider to the right initial position
         Toast.makeText(getContext(), "Current Zoom: " + map.getCameraPosition().zoom, Toast.LENGTH_SHORT).show();
+
+        // fire up the cluster manager
+        clusterManager = new ClusterManager<>(getContext(), map);
+        clusterManager.setRenderer(new WorkoutRenderer());
+        map.setOnCameraIdleListener(clusterManager);
+        map.setOnMarkerClickListener(clusterManager);
+        map.setOnInfoWindowClickListener(clusterManager);
+        clusterManager.setOnClusterClickListener(this);
+        clusterManager.setOnClusterInfoWindowClickListener(this);
+        clusterManager.setOnClusterItemClickListener(this);
+        clusterManager.setOnClusterItemInfoWindowClickListener(this);
     }
 
     protected void loadMap(GoogleMap googleMap) {
@@ -267,9 +297,10 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
                     LatLngBounds bounds = LatLngBounds.builder().include(currLoc).build();
                     for (int i = 0; i < objects.size(); i++) {
                         Workout workout = objects.get(i);
-                        if (!workoutIDs.contains(workout.getID())) workoutMarkers.add(createMarker(map, workout));
+//                        if (!workoutIDs.contains(workout.getID())) workoutMarkers.add(createMarker(map, workout));
                         bounds = bounds.including(workout.getLatLng());
                         Log.i("CalculateBounds", "added workout " + i + " to the bounds: " + workout.getLocation().distanceInMilesTo(currentGeoPoint));
+                        clusterManager.addItem(workout);
                     }
                     workoutBounds = bounds;
                     showNearbyWorkouts(range);
@@ -344,7 +375,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
                     Toast.makeText(getContext(), "Workouts Size: " + objects.size(), Toast.LENGTH_SHORT).show();
                     for (int i = 0; i < objects.size(); i++) {
                         Workout workout = objects.get(i);
-                        workoutMarkers.add(createMarker(map, workout));
+//                        workoutMarkers.add(createMarker(map, workout));
+                        clusterManager.addItem(workout);
                         if (workout.isInRange(currentGeoPoint, 10)) {
                             workoutBounds = workoutBounds.including(workout.getLatLng());
                             Log.i("AddToBounds", "added workout " + i + " to the bounds: " + workout.getLocation().distanceInMilesTo(currentGeoPoint));
@@ -353,6 +385,9 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
 
                     if (showLast) viewWorkout(workoutMarkers.get(0));
                     showLast = false;
+
+
+                    clusterManager.cluster();
                 } else {
                     e.printStackTrace();
                 }
@@ -573,6 +608,101 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         if (timeUntil <= 1) return withinHour;
         if (timeUntil <= 24) return withinToday;
         return withinForever;
+    }
+
+    // INCOMING -- A LOT OF GOOGLE CODE //
+    // new class for rendering the clusters -- yes i copy and pasted this code i understand none of it yet
+    private class WorkoutRenderer extends DefaultClusterRenderer<Workout> {
+        private final IconGenerator mIconGenerator = new IconGenerator(getContext());
+        private final IconGenerator mClusterIconGenerator = new IconGenerator(getContext());
+        private final ImageView mImageView;
+        private final ImageView mClusterImageView;
+        private final int mDimension;
+
+        public WorkoutRenderer() {
+            super(getContext(), map, clusterManager);
+
+            View multiProfile = getLayoutInflater().inflate(R.layout.multi_profile, null);
+            mClusterIconGenerator.setContentView(multiProfile);
+            mClusterImageView = (ImageView) multiProfile.findViewById(R.id.image);
+
+            mImageView = new ImageView(getContext());
+            mDimension = (int) getResources().getDimension(R.dimen.custom_profile_image);
+            mImageView.setLayoutParams(new ViewGroup.LayoutParams(mDimension, mDimension));
+            int padding = (int) getResources().getDimension(R.dimen.custom_profile_padding);
+            mImageView.setPadding(padding, padding, padding, padding);
+            mIconGenerator.setContentView(mImageView);
+        }
+
+        @Override
+        protected void onBeforeClusterItemRendered(Workout workout, MarkerOptions markerOptions) {
+            // Draw a single person.
+            // Set the info window to show their name.
+            try {
+                Glide.with(getContext()).load(workout.getMedia().getFile()).into(mImageView);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+            Bitmap icon = mIconGenerator.makeIcon();
+            markerOptions.icon(BitmapDescriptorFactory.fromBitmap(icon)).title(workout.getName());
+        }
+
+        @Override
+        protected void onBeforeClusterRendered(Cluster<Workout> cluster, MarkerOptions markerOptions) {
+            // Draw multiple people.
+            // Note: this method runs on the UI thread. Don't spend too much time in here (like in this example).
+            List<Drawable> profilePhotos = new ArrayList<Drawable>(Math.min(4, cluster.getSize()));
+            int width = mDimension;
+            int height = mDimension;
+
+            for (Workout w : cluster.getItems()) {
+                // Draw 4 at most.
+                if (profilePhotos.size() == 4) break;
+                Drawable drawable = null;
+                try {
+                    drawable = new BitmapDrawable(getResources(), BitmapFactory.decodeFile(w.getMedia().getFile().getAbsolutePath()));
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+                drawable.setBounds(0, 0, width, height);
+                profilePhotos.add(drawable);
+            }
+            MultiDrawable multiDrawable = new MultiDrawable(profilePhotos);
+            multiDrawable.setBounds(0, 0, width, height);
+
+            mClusterImageView.setImageDrawable(multiDrawable);
+            Bitmap icon = mClusterIconGenerator.makeIcon(String.valueOf(cluster.getSize()));
+            markerOptions.icon(BitmapDescriptorFactory.fromBitmap(icon));
+        }
+
+        @Override
+        protected boolean shouldRenderAsCluster(Cluster cluster) {
+            // Always render clusters.
+            return cluster.getSize() > 1;
+        }
+    }
+
+    // alright now to implement the clickable methods for the clusters
+
+
+    @Override
+    public boolean onClusterClick(Cluster<Workout> cluster) {
+        Toast.makeText(getContext(), "You clicked the cluster!", Toast.LENGTH_SHORT).show();
+        return false;
+    }
+
+    @Override
+    public void onClusterInfoWindowClick(Cluster<Workout> cluster) {
+
+    }
+
+    @Override
+    public boolean onClusterItemClick(Workout workout) {
+        return false;
+    }
+
+    @Override
+    public void onClusterItemInfoWindowClick(Workout workout) {
 
     }
 

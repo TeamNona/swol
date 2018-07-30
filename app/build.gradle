@@ -73,8 +73,9 @@ dependencies {
     implementation rootProject.ext.parseFacebookUtils
     implementation rootProject.ext.parse
 
-    // Vertical SeekBar
-    implementation 'com.h6ah4i.android.widget.verticalseekbar:verticalseekbar:0.7.2'
+    // Map clustering
+    implementation 'com.google.maps.android:android-maps-utils:0.5+'
+
 
     implementation 'com.github.sharish:ShimmerRecyclerView:v1.3'
 
