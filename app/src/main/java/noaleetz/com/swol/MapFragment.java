@@ -30,6 +30,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
@@ -258,6 +259,9 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
             @Override
             public void done(List<Workout> objects, ParseException e) {
                 if (e == null) {
+                    map.clear();
+                    workoutMarkers.clear();
+                    workoutIDs.clear();
                     Log.d(TAG, "Number of nearby workouts: " + Integer.toString(objects.size()));
                     Toast.makeText(getContext(), "Workouts Size: " + objects.size(), Toast.LENGTH_SHORT).show();
                     LatLngBounds bounds = LatLngBounds.builder().include(currLoc).build();
@@ -309,9 +313,13 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
 
         LatLng loc = workout.getLatLng();
         MarkerOptions option = new MarkerOptions();
-        option.position(loc);
+        float withinHour = BitmapDescriptorFactory.HUE_RED;
+        float withinToday = BitmapDescriptorFactory.HUE_YELLOW;
+        float withinForever = BitmapDescriptorFactory.HUE_GREEN;
+        option.position(loc).icon(BitmapDescriptorFactory.defaultMarker(colorInterpolator(workout.getTime().getTime(), withinHour, withinToday, withinForever)));
 
         marker = map.addMarker(option);
+        workoutIDs.add(workout.getObjectId());
         marker.setTag(Parcels.wrap(workout));
 
         return marker;
@@ -327,8 +335,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
             public void done(List<Workout> objects, ParseException e) {
                 if (e == null) {
                     Log.d(TAG, "Number of workouts: "+ Integer.toString(objects.size()));
-//                    workoutMarkers.clear();
-//                    workoutIDs.clear();
+                    workoutMarkers.clear();
+                    workoutIDs.clear();
                     map.clear();
 
                     LatLng currLatLng = new LatLng(currentGeoPoint.getLatitude(), currentGeoPoint.getLongitude());
@@ -336,7 +344,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
                     Toast.makeText(getContext(), "Workouts Size: " + objects.size(), Toast.LENGTH_SHORT).show();
                     for (int i = 0; i < objects.size(); i++) {
                         Workout workout = objects.get(i);
-                        workoutIDs.add(workout.getObjectId());
                         workoutMarkers.add(createMarker(map, workout));
                         if (workout.isInRange(currentGeoPoint, 10)) {
                             workoutBounds = workoutBounds.including(workout.getLatLng());
@@ -557,6 +564,16 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         fab1mi.setVisibility(View.GONE);
         fab5mi.setVisibility(View.GONE);
         fab10mi.setVisibility(View.GONE);
+    }
+
+    float colorInterpolator(long time, float withinHour, float withinToday, float withinForever) {
+        float timeUntil = ((float )(time - System.currentTimeMillis())) / 3600000;
+        Log.d("ColorInterpolator", timeUntil + "");
+        if (timeUntil <= 0) return BitmapDescriptorFactory.HUE_BLUE;
+        if (timeUntil <= 1) return withinHour;
+        if (timeUntil <= 24) return withinToday;
+        return withinForever;
+
     }
 
     @Override public void onDestroyView() {
