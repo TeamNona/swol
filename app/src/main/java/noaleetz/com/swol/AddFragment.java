@@ -69,6 +69,8 @@ import com.parse.ParseUser;
 import com.parse.SaveCallback;
 
 import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
@@ -85,9 +87,12 @@ import java.util.Date;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
+import noaleetz.com.swol.models.User;
 import noaleetz.com.swol.models.Workout;
 
 import static android.support.constraint.Constraints.TAG;
+import static android.view.View.INVISIBLE;
+import static android.view.View.VISIBLE;
 
 
 /**
@@ -124,6 +129,10 @@ public class AddFragment extends Fragment{
     ImageView post;
     @BindView(R.id.spCategory)
     Spinner workoutCategory;
+    @BindView(R.id.pbLoading)
+    ProgressBar pbPost;
+
+
 
 
     // declare other variables
@@ -209,6 +218,7 @@ public class AddFragment extends Fragment{
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+
         fab = (FloatingActionButton) getActivity().findViewById(R.id.fab);
 
         // create Array of workout categories
@@ -257,8 +267,8 @@ public class AddFragment extends Fragment{
         post.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                upload.setVisibility(View.VISIBLE);
-                capture.setVisibility(View.VISIBLE);
+                upload.setVisibility(VISIBLE);
+                capture.setVisibility(VISIBLE);
             }
         });
 
@@ -351,8 +361,8 @@ public class AddFragment extends Fragment{
         upload.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                upload.setVisibility(View.INVISIBLE);
-                capture.setVisibility(View.INVISIBLE);
+                upload.setVisibility(INVISIBLE);
+                capture.setVisibility(INVISIBLE);
 
                 Intent i = new Intent(
                         Intent.ACTION_PICK,
@@ -380,8 +390,8 @@ public class AddFragment extends Fragment{
         capture.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                upload.setVisibility(View.INVISIBLE);
-                capture.setVisibility(View.INVISIBLE);
+                upload.setVisibility(INVISIBLE);
+                capture.setVisibility(INVISIBLE);
                 onLaunchCamera(view);
             }
         });
@@ -400,6 +410,7 @@ public class AddFragment extends Fragment{
             @Override
             public void onClick(View view) {
 
+
                 // ensure user enters event name
                 final String name = etName.getText().toString();
                 if (name.length() == 0) {
@@ -414,6 +425,9 @@ public class AddFragment extends Fragment{
                 } else {
                     category = (String) workoutCategory.getSelectedItem();
                 }
+
+                // on some click or some loading we need to wait for...
+                pbPost.setVisibility(ProgressBar.VISIBLE);
 
 
                 final String description = etDescription.getText().toString();
@@ -462,6 +476,10 @@ public class AddFragment extends Fragment{
                 fab.show();
                 fm.popBackStackImmediate();
 
+                // run a background job and once complete
+                //pbPost.setVisibility(ProgressBar.INVISIBLE);
+
+
             }
         });
 
@@ -506,7 +524,6 @@ public class AddFragment extends Fragment{
                 }
             }
         });
-
 
     }
 

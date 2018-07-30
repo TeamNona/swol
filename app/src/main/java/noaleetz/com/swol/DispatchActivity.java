@@ -8,4 +8,5 @@ public class DispatchActivity extends ParseLoginDispatchActivity {
     protected Class<?> getTargetClass() {
         return MainActivity.class;
     }
+
 }

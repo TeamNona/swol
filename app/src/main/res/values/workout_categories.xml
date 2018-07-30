@@ -1,16 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string-array name="workout_categories">
+
         <item>Choose a Workout Category</item>
-        <item>Run</item>
-        <item>Hike</item>
         <item>Bike</item>
-        <item>Swim</item>
-        <item>Weight</item>
         <item>Cardio</item>
+        <item>Class</item>
         <item>Dance</item>
         <item>Game</item>
-        <item>Class</item>
+        <item>Gym</item>
+        <item>High Intensity Interval Training</item>
+        <item>Hike</item>
         <item>Meditation</item>
+        <item>Run</item>
+        <item>Swim</item>
+        <item>Weight</item>
+
     </string-array>
 </resources>
