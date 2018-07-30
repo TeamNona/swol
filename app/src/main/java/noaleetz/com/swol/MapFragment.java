@@ -567,7 +567,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
     }
 
     float colorInterpolator(long time, float withinHour, float withinToday, float withinForever) {
-        float timeUntil = (time - System.currentTimeMillis()) / 3600000;
+        float timeUntil = ((float )(time - System.currentTimeMillis())) / 3600000;
+        Log.d("ColorInterpolator", timeUntil + "");
         if (timeUntil <= 0) return BitmapDescriptorFactory.HUE_BLUE;
         if (timeUntil <= 1) return withinHour;
         if (timeUntil <= 24) return withinToday;
