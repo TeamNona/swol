@@ -372,7 +372,6 @@ public class DetailFragment extends Fragment {
                 }
                 Log.d(TAG, "full JSON Array of comment IDs" + comment_ids);
 //                comments.clear();
-                final List<Comments> comment_list = new ArrayList<>();
 
                 for (int i=0;i<comment_ids.length();i++){
 

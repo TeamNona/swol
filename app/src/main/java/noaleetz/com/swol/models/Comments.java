@@ -1,9 +1,13 @@
 package noaleetz.com.swol.models;
 
+import android.text.format.DateUtils;
+
 import com.parse.ParseClassName;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
+
+import java.util.Date;
 
 @ParseClassName("Comments")
 public class Comments extends ParseObject{
@@ -42,7 +46,17 @@ public class Comments extends ParseObject{
         put(KEY_POST, workout);
     }
 
+    @Override
+    public Date getCreatedAt() {
+        return super.getCreatedAt();
+    }
 
+    public String getTimeUntil() {
+        String relativeDate;
+        long dateMillis = getCreatedAt().getTime();
+        relativeDate = DateUtils.getRelativeTimeSpanString(dateMillis, System.currentTimeMillis(), DateUtils.SECOND_IN_MILLIS).toString();
+        return relativeDate;
+    }
     // define the queries
     public static class Query extends ParseQuery<Comments> {
 

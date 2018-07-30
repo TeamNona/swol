@@ -54,8 +54,14 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.ViewHold
         final Comments comment = mcomments.get(i);
 
 
-        holder.tvCommentUsername.setText(comment.getParseUser("postedBy").get("username").toString());
+        try {
+            holder.tvCommentUsername.setText(comment.getPostedBy().fetchIfNeeded().getUsername().toString());
+        } catch (ParseException e) {
+            e.printStackTrace();
+            Log.d(TAG, "pointer to user not found");
+        }
         holder.tvComment.setText(comment.get("description").toString());
+        holder.tvCreatedTimeC.setText(comment.getTimeUntil());
         // Load commenter avatar
         try {
             url = comment
@@ -108,6 +114,8 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.ViewHold
         TextView tvCommentUsername;
         @BindView(R.id.tvComment)
         TextView tvComment;
+        @BindView(R.id.tvCreatedTimeC)
+        TextView tvCreatedTimeC;
 
         public ViewHolder (View itemView) {
             super(itemView);
