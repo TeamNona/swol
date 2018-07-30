@@ -524,6 +524,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
     }
 
     void showNearbyWorkouts(int range) {
+        getLocation();
         if (currentGeoPoint == null) return;
         Log.i("MapView", "Showing workout bounds");
         map.animateCamera(CameraUpdateFactory.newLatLngBounds(workoutBounds,convertDpToPixel(42)));
