@@ -38,6 +38,8 @@ public class Workout extends ParseObject{
 
     private static final String KEY_ID = "objectId";
 
+    private static final String KEY_CATEGORY = "eventCategory";
+
     // define setters and getters
 
     public String getName() {
@@ -104,6 +106,14 @@ public class Workout extends ParseObject{
         put(KEY_TAGS, tags);
     }
 
+    public String getCategory() {
+        return getString(KEY_CATEGORY);
+    }
+
+    public void setCategory(String category) {
+        put(KEY_CATEGORY, category);
+    }
+
     public String getID() {
         return (String) get(KEY_ID);
     }
@@ -161,6 +171,11 @@ public class Workout extends ParseObject{
 
         public Query getWithinRange(ParseGeoPoint currentLocation, double maxRange) {
             whereWithinMiles("eventLocation", currentLocation, maxRange);
+            return this;
+        }
+
+        public Query getwithTags() {
+            whereContains(KEY_TAGS, "High Intensity");
             return this;
         }
     }

@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string-array name="tags">
-        <item>Choose up to 5 Tags</item>
+        <item>Choose up to 5 tags</item>
         <item>Aerobic</item>
         <item>Anaerobic</item>
         <item>Fitness</item>
         <item>High Intensity</item>
         <item>Calorie Burning</item>
+        <item>Low Impact</item>
+
     </string-array>
 </resources>

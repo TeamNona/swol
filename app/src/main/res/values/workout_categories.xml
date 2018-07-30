@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string-array name="workout_categories">
+        <item>Choose a Workout Category</item>
         <item>Run</item>
         <item>Hike</item>
         <item>Bike</item>
