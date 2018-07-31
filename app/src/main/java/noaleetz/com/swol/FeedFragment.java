@@ -9,11 +9,13 @@ import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SearchView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.ImageView;
 
 import com.parse.FindCallback;
 import com.parse.ParseException;
@@ -41,6 +43,10 @@ public class FeedFragment extends Fragment {
     RecyclerView rvPosts;
     @BindView(R.id.swipeContainer)
     SwipeRefreshLayout swipeContainer;
+    @BindView(R.id.svSearch)
+    SearchView svSearch;
+    @BindView(R.id.ivAddTag)
+    ImageView ivAddTag;
     private FeedAdapter adapter;
     private List<Workout> posts;
     private Unbinder unbinder;
@@ -101,6 +107,7 @@ public class FeedFragment extends Fragment {
 
         loadTopPosts();
 
+
         swipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
@@ -118,7 +125,24 @@ public class FeedFragment extends Fragment {
 
 
         });
+        ivAddTag.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String searchedString = svSearch.getQuery().toString();
+                // TODO- add tag to flow layout
+
+                // if query is a tag, sort feed based on tag
+
+            }
+        });
+
+
     }
+
+
+
+
+
 
 
     public void loadTopPosts() {

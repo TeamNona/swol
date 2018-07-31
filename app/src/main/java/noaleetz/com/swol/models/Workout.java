@@ -14,6 +14,7 @@ import org.json.JSONArray;
 import org.parceler.Parcel;
 
 import java.util.Date;
+import java.util.Locale;
 
 @ParseClassName("exerciseEvent")
 public class Workout extends ParseObject{
@@ -179,5 +180,6 @@ public class Workout extends ParseObject{
             return this;
         }
     }
+
 
 }
