@@ -36,6 +36,7 @@ public class ClusterWindowAdapter extends RecyclerView.Adapter<ClusterWindowAdap
     public List<Workout> workouts;
     private Context context;
     private View postView;
+    private itemClickListener listener;
 
 
     public ClusterWindowAdapter(List<Workout> workouts) {
@@ -49,6 +50,15 @@ public class ClusterWindowAdapter extends RecyclerView.Adapter<ClusterWindowAdap
         // Set the layout for individual list item inside onCreateViewHolder
         // Referencing the layout created for individual list item to get attached to RecyclerView
         context = parent.getContext();
+
+        if (context instanceof itemClickListener) {
+            listener = (itemClickListener) context;
+        } else {
+            throw new ClassCastException(parent.toString()
+                    + " must implement ClusterWindowAdapter.itemClickListener");
+        }
+
+
 
         LayoutInflater inflater = LayoutInflater.from(context);
 
@@ -98,7 +108,7 @@ public class ClusterWindowAdapter extends RecyclerView.Adapter<ClusterWindowAdap
             @Override
             public void onClick(View v) {
                 // TODO: make it zoom in
-                ((MainActivity) context).changeToDetailFragment(workout);
+                listener.onWorkoutSelected(workout);
 
             }
         });
@@ -156,5 +166,9 @@ public class ClusterWindowAdapter extends RecyclerView.Adapter<ClusterWindowAdap
     public void addAll(List<Workout> list) {
         workouts.addAll(list);
         notifyDataSetChanged();
+    }
+
+    public interface itemClickListener {
+        void onWorkoutSelected(Workout workout);
     }
 }

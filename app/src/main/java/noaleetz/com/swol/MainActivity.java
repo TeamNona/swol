@@ -48,7 +48,7 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import noaleetz.com.swol.models.Workout;
 
-public class MainActivity extends AppCompatActivity implements AddFragment.NewMapItemListener {
+public class MainActivity extends AppCompatActivity implements AddFragment.NewMapItemListener, ClusterWindowAdapter.itemClickListener {
 
     private static final String TAG = "LOCATION";
     private ActionBarDrawerToggle drawerToggle;
@@ -310,6 +310,10 @@ public class MainActivity extends AppCompatActivity implements AddFragment.NewMa
         mDrawer.closeDrawers();
     }
 
+    @Override
+    public void onWorkoutSelected(Workout workout) {
+        mapFragment.onWorkoutSelected(workout);
+    }
 
     @Override
     public void updateMap() {
@@ -339,7 +343,6 @@ public class MainActivity extends AppCompatActivity implements AddFragment.NewMa
     }
 
     public void changeToDetailFragment(Workout workout) {
-        //TODO that
         DetailFragment detailFragment = new DetailFragment();
         Bundle bundle = new Bundle();
         bundle.putParcelable("workout",workout);
@@ -350,7 +353,6 @@ public class MainActivity extends AppCompatActivity implements AddFragment.NewMa
     }
 
     public void changeToProfileFragment(ParseUser user) {
-        //TODO that
         ProfileFragment profileFragment = new ProfileFragment();
         Bundle bundle = new Bundle();
         bundle.putParcelable("user", user);

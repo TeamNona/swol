@@ -4,6 +4,7 @@ package noaleetz.com.swol;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
@@ -80,7 +81,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
                                                      GoogleMap.OnMapClickListener,
                                                      ClusterManager.OnClusterClickListener<Workout>,
                                                      ClusterManager.OnClusterItemClickListener<Workout>,
-                                                     ClusterManager.OnClusterItemInfoWindowClickListener<Workout> {
+                                                     ClusterManager.OnClusterItemInfoWindowClickListener<Workout>,
+                                                     ClusterWindowAdapter.itemClickListener {
 
 
 
@@ -256,9 +258,10 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
             });
 
             // fire up the cluster manager
+            adapter = new ClusterInfoWindowAdapter();
             clusterManager = new ClusterManager<>(getContext(), map);
             clusterManager.setRenderer(new WorkoutRenderer());
-            clusterManager.getClusterMarkerCollection().setOnInfoWindowAdapter(new ClusterInfoWindowAdapter());
+            clusterManager.getClusterMarkerCollection().setOnInfoWindowAdapter(adapter);
             map.setOnCameraIdleListener(clusterManager);
             map.setOnMarkerClickListener(clusterManager);
 //            map.setOnInfoWindowClickListener(clusterManager);
@@ -756,8 +759,12 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
 
     }
 
+    public static void toWorkoutDetail(Workout workout) {
+
+    }
+
     // Cluster info window adapter
-    public class ClusterInfoWindowAdapter implements GoogleMap.InfoWindowAdapter {
+    public class ClusterInfoWindowAdapter implements GoogleMap.InfoWindowAdapter, ClusterWindowAdapter.itemClickListener {
 
         //TODO: the butterknives
 
@@ -765,9 +772,12 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
         private ClusterWindowAdapter adapter;
         private RecyclerView rvNearby;
         private List<Workout> workouts;
+        private AlertDialog alertDialog;
+        private Context context;
 
         ClusterInfoWindowAdapter() {
             myContentsView = getLayoutInflater().inflate(R.layout.cluster_info_window, null);
+            context = getContext();
         }
 
         @Override
@@ -788,17 +798,17 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
             // inflate the xml
             View messageView = LayoutInflater.from(getContext()).inflate(R.layout.cluster_info_window, null);
             // create the alert dialog builder
-            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getContext());
+            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(context);
             // set the xml to the alert dialog builder
             alertDialogBuilder.setView(messageView);
 
             // create the alertDialog
-            final AlertDialog alertDialog = alertDialogBuilder.create();
+            alertDialog = alertDialogBuilder.create();
 
             workouts = new ArrayList<>();
             rvNearby = messageView.findViewById(R.id.rvNearby);
             adapter = new ClusterWindowAdapter(workouts);
-            LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext());
+            LinearLayoutManager linearLayoutManager = new LinearLayoutManager(context);
             rvNearby.setLayoutManager(linearLayoutManager);
             rvNearby.setAdapter(adapter);
 
@@ -808,6 +818,16 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
             // display the dialog
             alertDialog.show();
         }
+
+        @Override
+        public void onWorkoutSelected(Workout workout) {
+            alertDialog.dismiss();
+            ((MainActivity) context).changeToDetailFragment(workout);
+        }
     }
 
+    @Override
+    public void onWorkoutSelected(Workout workout) {
+        adapter.onWorkoutSelected(workout);
+    }
 }
