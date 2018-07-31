@@ -3,59 +3,61 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     android:background="#FFFFFF"
-    android:orientation="vertical" >
-
-    <!--<TextView-->
-        <!--android:id="@+id/tvInfoCreatedBy"-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:layout_marginStart="8dp"-->
-        <!--android:singleLine="true"-->
-        <!--android:text="created by"-->
-        <!--android:textColor="#ff669900"-->
-        <!--android:textStyle="bold"-->
-        <!--app:layout_constraintBottom_toTopOf="@+id/tvInfoTimeUntil"-->
-        <!--app:layout_constraintStart_toEndOf="@+id/ivInfoImage" />-->
-
-    <!--<TextView-->
-        <!--android:id="@+id/tvInfoTimeUntil"-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:layout_marginStart="8dp"-->
-        <!--android:text="time until"-->
-        <!--android:textColor="#ff0099cc"-->
-        <!--app:layout_constraintBottom_toBottomOf="@+id/ivInfoImage"-->
-        <!--app:layout_constraintStart_toEndOf="@+id/ivInfoImage" />-->
-
-    <!--<TextView-->
-        <!--android:id="@+id/tvInfoTitle"-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:layout_marginStart="8dp"-->
-        <!--android:layout_marginTop="8dp"-->
-        <!--android:text="title"-->
-        <!--app:layout_constraintStart_toEndOf="@+id/ivInfoImage"-->
-        <!--app:layout_constraintTop_toTopOf="parent" />-->
-
-    <!--<ImageView-->
-        <!--android:id="@+id/ivInfoImage"-->
-        <!--android:layout_width="64dp"-->
-        <!--android:layout_height="64dp"-->
-        <!--android:layout_marginStart="8dp"-->
-        <!--android:layout_marginTop="8dp"-->
-        <!--app:layout_constraintStart_toStartOf="parent"-->
-        <!--app:layout_constraintTop_toTopOf="parent"-->
-        <!--app:srcCompat="@drawable/ic_directions_run_black_24dp" />-->
+    android:orientation="vertical">
 
     <TextView
-        android:id="@+id/tvTest"
+        android:id="@+id/tvInfoCreatedBy"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:singleLine="true"
+        android:text="created by"
+        android:textColor="#ff669900"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/tvInfoTimeUntil"
+        app:layout_constraintStart_toEndOf="@+id/ivInfoImage" />
+
+    <TextView
+        android:id="@+id/tvInfoTimeUntil"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:text="time until"
+        android:textColor="#ff0099cc"
+        app:layout_constraintBottom_toBottomOf="@+id/ivInfoImage"
+        app:layout_constraintStart_toEndOf="@+id/ivInfoImage" />
+
+    <TextView
+        android:id="@+id/tvInfoTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
-        android:text="TextView"
-        app:layout_constraintStart_toStartOf="parent"
+        android:text="title"
+        app:layout_constraintStart_toEndOf="@+id/ivInfoImage"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/ivInfoImage"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:layout_marginBottom="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/ic_directions_run_black_24dp" />
+
+    <!--<TextView-->
+    <!--android:id="@+id/tvTest"-->
+    <!--android:layout_width="wrap_content"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:layout_marginStart="8dp"-->
+    <!--android:layout_marginTop="8dp"-->
+    <!--android:text="TextView"-->
+    <!--app:layout_constraintStart_toStartOf="parent"-->
+    <!--app:layout_constraintTop_toTopOf="parent" />-->
 </android.support.constraint.ConstraintLayout>

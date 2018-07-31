@@ -3,6 +3,7 @@ package noaleetz.com.swol;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
@@ -21,6 +22,8 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -76,7 +79,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
                                                      GoogleMap.OnInfoWindowClickListener,
                                                      GoogleMap.OnMapClickListener,
                                                      ClusterManager.OnClusterClickListener<Workout>,
-                                                     ClusterManager.OnClusterInfoWindowClickListener<Workout>,
                                                      ClusterManager.OnClusterItemClickListener<Workout>,
                                                      ClusterManager.OnClusterItemInfoWindowClickListener<Workout> {
 
@@ -103,6 +105,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
     private ClusterManager<Workout> clusterManager;
     private Cluster<Workout> clickedCluster;
     private Workout clickedClusterItem;
+    private ClusterInfoWindowAdapter adapter;
 
     @BindView(R.id.fabNext)
     FloatingActionButton fabNext;
@@ -258,12 +261,22 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
             clusterManager.getClusterMarkerCollection().setOnInfoWindowAdapter(new ClusterInfoWindowAdapter());
             map.setOnCameraIdleListener(clusterManager);
             map.setOnMarkerClickListener(clusterManager);
-            map.setOnInfoWindowClickListener(clusterManager);
-            clusterManager.setOnClusterClickListener(this);
-            clusterManager.setOnClusterInfoWindowClickListener(this);
-            clusterManager.setOnClusterItemClickListener(this);
+//            map.setOnInfoWindowClickListener(clusterManager);
+            clusterManager.setOnClusterClickListener(new ClusterManager.OnClusterClickListener<Workout>() {
+                @Override
+                public boolean onClusterClick(Cluster<Workout> cluster) {
+                    clickedCluster = cluster;
+                    return false;
+                }
+            });
+            clusterManager.setOnClusterItemClickListener(new ClusterManager.OnClusterItemClickListener<Workout>() {
+                @Override
+                public boolean onClusterItemClick(Workout workout) {
+                    clickedClusterItem = workout;
+                    return false;
+                }
+            });
             clusterManager.setOnClusterItemInfoWindowClickListener(this);
-
             map.setInfoWindowAdapter(clusterManager.getMarkerManager());
 
             map.setOnInfoWindowClickListener(this);
@@ -290,8 +303,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
             public void done(List<Workout> objects, ParseException e) {
                 if (e == null) {
                     map.clear();
-                    workoutMarkers.clear();
-                    workoutIDs.clear();
+                    clusterManager.clearItems();
                     Log.d(TAG, "Number of nearby workouts: " + Integer.toString(objects.size()));
                     Toast.makeText(getContext(), "Workouts Size: " + objects.size(), Toast.LENGTH_SHORT).show();
                     LatLngBounds bounds = LatLngBounds.builder().include(currLoc).build();
@@ -320,13 +332,13 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
 
     }
 
-    @Override
-    public void onInfoWindowClick(Marker marker) {
-        Workout assigned_workout = (Workout) Parcels.unwrap((Parcelable) marker.getTag());
-        ((MainActivity) getContext()).changeToDetailFragment(assigned_workout);
-
-        Toast.makeText(getContext(), "Go to detailed screen", Toast.LENGTH_SHORT).show();
-    }
+//    @Override
+//    public void onInfoWindowClick(Marker marker) {
+//        Workout assigned_workout = (Workout) Parcels.unwrap((Parcelable) marker.getTag());
+//        ((MainActivity) getContext()).changeToDetailFragment(assigned_workout);
+//
+//        Toast.makeText(getContext(), "Go to detailed screen", Toast.LENGTH_SHORT).show();
+//    }
 
     // Fires when a long press happens on the map
     @Override
@@ -617,6 +629,11 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
         return withinForever;
     }
 
+    @Override public void onDestroyView() {
+        super.onDestroyView();
+        unbinder.unbind();
+    }
+
     // INCOMING -- A LOT OF CLUSTER CODE //
     // new class for rendering the clusters -- yes i copy and pasted this code i understand none of it yet
     private class WorkoutRenderer extends DefaultClusterRenderer<Workout> {
@@ -659,7 +676,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
         protected void onBeforeClusterRendered(Cluster<Workout> cluster, MarkerOptions markerOptions) {
             // Draw multiple people.
             // Note: this method runs on the UI thread. Don't spend too much time in here (like in this example).
-            List<Drawable> profilePhotos = new ArrayList<Drawable>(Math.min(4, cluster.getSize()));
+            List<Drawable> profilePhotos = new ArrayList<>(Math.min(4, cluster.getSize()));
             int width = dimension;
             int height = dimension;
 
@@ -696,7 +713,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
         }
     }
 
-    // alright now to implement the clickable methods for the clusters
+//     alright now to implement the clickable methods for the clusters
     @Override
     public boolean onClusterClick(Cluster<Workout> cluster) {
 //        // Show a toast with some info when the cluster is clicked.
@@ -721,11 +738,11 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
 //            e.printStackTrace();
 //        }
 
-        return true;
+        return false;
     }
 
     @Override
-    public void onClusterInfoWindowClick(Cluster<Workout> cluster) {
+    public void onInfoWindowClick(Marker marker) {
 
     }
 
@@ -745,10 +762,12 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
         //TODO: the butterknives
 
         private final View myContentsView;
+        private ClusterWindowAdapter adapter;
+        private RecyclerView rvNearby;
+        private List<Workout> workouts;
 
         ClusterInfoWindowAdapter() {
-            myContentsView = getLayoutInflater().inflate(
-                    R.layout.custom_info_window, null);
+            myContentsView = getLayoutInflater().inflate(R.layout.cluster_info_window, null);
         }
 
         @Override
@@ -760,22 +779,35 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
         public View getInfoWindow(Marker marker) {
             // TODO Auto-generated method stub
 
+            if (clickedCluster != null) showAlertDialogForCluster(clickedCluster);
 
-            TextView tvTest = ((TextView) myContentsView
-                    .findViewById(R.id.tvTest));
-
-
-            if (clickedCluster != null) {
-                tvTest.setText(String
-                        .valueOf(clickedCluster.getItems().size())
-                        + " more offers available");
-            }
             return myContentsView;
+        }
+
+        public void showAlertDialogForCluster(Cluster<Workout> cluster) {
+            // inflate the xml
+            View messageView = LayoutInflater.from(getContext()).inflate(R.layout.cluster_info_window, null);
+            // create the alert dialog builder
+            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getContext());
+            // set the xml to the alert dialog builder
+            alertDialogBuilder.setView(messageView);
+
+            // create the alertDialog
+            final AlertDialog alertDialog = alertDialogBuilder.create();
+
+            workouts = new ArrayList<>();
+            rvNearby = messageView.findViewById(R.id.rvNearby);
+            adapter = new ClusterWindowAdapter(workouts);
+            LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext());
+            rvNearby.setLayoutManager(linearLayoutManager);
+            rvNearby.setAdapter(adapter);
+
+            workouts.addAll(cluster.getItems());
+            adapter.notifyDataSetChanged();
+
+            // display the dialog
+            alertDialog.show();
         }
     }
 
-    @Override public void onDestroyView() {
-        super.onDestroyView();
-        unbinder.unbind();
-    }
 }
