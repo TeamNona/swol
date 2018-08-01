@@ -472,9 +472,9 @@ public class AddFragment extends Fragment{
 
 
                 createNewWorkout(category, name, description, date, location, media, participants, tags);
-                FragmentManager fm = getActivity().getSupportFragmentManager();
-                fab.show();
-                fm.popBackStackImmediate();
+//                FragmentManager fm = getActivity().getSupportFragmentManager();
+//                fab.show();
+//                fm.popBackStackImmediate();
 
                 // run a background job and once complete
                 //pbPost.setVisibility(ProgressBar.INVISIBLE);

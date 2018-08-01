@@ -22,12 +22,25 @@
                 android:icon="@drawable/ic_person"
                 android:title="My Profile"
                 app:srcCompat="@drawable/ic_person" />
-            <item
-                android:id="@+id/nav_logout"
-                android:icon="@drawable/ic_fitness_center_black_24dp"
-                android:title="Logout"
-                app:srcCompat="@drawable/ic_fitness_center_black_24dp" />
+
+            <!--<item-->
+                <!--android:id="@+id/nav_rate_us_fragment"-->
+                <!--android:icon="@drawable/ic_sentiment_satisfied_black_24dp"-->
+                <!--android:title="Rate Us"-->
+                <!--app:srcCompat="@drawable/ic_sentiment_satisfied_black_24dp" />-->
+            <!---->
+            <!--<item-->
+                <!--android:id="@+id/nav_logout"-->
+                <!--android:icon="@drawable/ic_fitness_center_black_24dp"-->
+                <!--android:title="Logout"-->
+                <!--app:srcCompat="@drawable/ic_fitness_center_black_24dp" />-->
         </group>
+
+
+
+
+
+
 
 
 </menu>
