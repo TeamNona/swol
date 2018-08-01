@@ -67,6 +67,8 @@ public class FeedFragment extends Fragment {
     private Unbinder unbinder;
     String maxMileString;
     String tagString;
+    ParseGeoPoint currentGeoPoint;
+
 
 //    ArrayList<String> tags = ["Bike", "Cardio","Class","Dance","Game","Gym","High Intensuty Interval Training","Hike","Meditation","Run","Swim","Weight"]
 
@@ -249,9 +251,12 @@ public class FeedFragment extends Fragment {
     public void QueryByDistance(double maxMileNumber) {
 
         final Workout.Query postDistanceQuery = new Workout.Query();
-        ParseGeoPoint currentLocation = ParseUser.getCurrentUser().getParseGeoPoint("currentLocation");
+
+        currentGeoPoint = ParseUser.getCurrentUser().getParseGeoPoint("currentLocation");
+
 //        postDistanceQuery.withUser().orderByLastCreated().getWithinRange(currentLocation,maxMileNumber);
-        postDistanceQuery.withUser().orderByLastCreated();
+
+        postDistanceQuery.withUser().orderByLastCreated().getWithinRange(currentGeoPoint, maxMileNumber);
 
         postDistanceQuery.findInBackground(new FindCallback<Workout>() {
             @Override
