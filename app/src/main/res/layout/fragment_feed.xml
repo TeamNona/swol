@@ -18,7 +18,7 @@
 
             <SearchView
                 android:id="@+id/svSearch"
-                android:layout_width="wrap_content"
+                android:layout_width="297dp"
                 android:layout_height="wrap_content"
                 android:clickable="true"
                 android:elevation="4dp"
@@ -30,14 +30,22 @@
             </SearchView>
 
             <ImageView
-                android:id="@+id/ivAddTag"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_marginTop="5dp"
+                android:id="@+id/ivSubmit"
+                android:layout_width="wrap_content"
+                android:layout_height="47dp"
                 android:layout_weight="1"
+                app:srcCompat="@drawable/ic_submit_arrow" />
+
+            <ImageView
+                android:id="@+id/ivFilterOptions"
+                android:layout_width="wrap_content"
+                android:layout_height="39dp"
+                android:layout_margin="10dp"
+                android:layout_marginTop="5dp"
+                android:background="@android:drawable/toast_frame"
                 android:hapticFeedbackEnabled="true"
-                android:scaleType="centerCrop"
-                android:src="@drawable/ic_filter" />
+                android:scaleType="fitXY"
+                app:srcCompat="@drawable/ic_arrow" />
         </LinearLayout>
 
         <android.support.v4.widget.SwipeRefreshLayout

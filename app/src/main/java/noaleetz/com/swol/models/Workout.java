@@ -1,5 +1,6 @@
 package noaleetz.com.swol.models;
 
+import android.support.annotation.NonNull;
 import android.text.format.DateUtils;
 
 import com.google.android.gms.maps.model.LatLng;
@@ -17,7 +18,7 @@ import java.util.Date;
 import java.util.Locale;
 
 @ParseClassName("exerciseEvent")
-public class Workout extends ParseObject{
+public class Workout extends ParseObject implements Comparable<Workout>{
 
     // declare database fields
 
@@ -127,6 +128,9 @@ public class Workout extends ParseObject{
     public Boolean isInRange(ParseGeoPoint other, double maxRange) {
         return getLocation().distanceInMilesTo(other) < maxRange;
     }
+    public double getDistance(ParseGeoPoint user) {
+        return getLocation().distanceInMilesTo(user);
+    }
 
     // helper methods for other functions
 
@@ -139,10 +143,20 @@ public class Workout extends ParseObject{
         return relativeDate;
     }
 
+    @Override
+    public int compareTo(@NonNull Workout workoutToCompare) {
+        double otherWorkoutDistance = workoutToCompare.getDistance(ParseUser.getCurrentUser().getParseGeoPoint("currentLocation"));
+        double currentWorkoutDistance = this.getDistance(ParseUser.getCurrentUser().getParseGeoPoint("currentLocation"));
+        int difference = (int) (currentWorkoutDistance - otherWorkoutDistance);
+
+        return difference;
+    }
+
     public static class Query extends ParseQuery<Workout> {
         public Query() {
             super(Workout.class);
         }
+
 
         public Query getTop() {
             setLimit(20);
@@ -179,6 +193,12 @@ public class Workout extends ParseObject{
             whereContains(KEY_TAGS, "High Intensity");
             return this;
         }
+        public Query orderByRange(){
+
+
+            return this;
+        }
+
     }
 
 

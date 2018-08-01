@@ -2,31 +2,44 @@ package noaleetz.com.swol;
 
 
 import android.content.Context;
+import android.content.Intent;
+import android.graphics.Point;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ImageView;
+import android.widget.PopupMenu;
+import android.widget.Toast;
 
 import com.parse.FindCallback;
 import com.parse.ParseException;
+import com.parse.ParseGeoPoint;
+import com.parse.ParseUser;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
 import noaleetz.com.swol.models.Workout;
+
+import static com.parse.ParseUser.getCurrentUser;
 
 
 /**
@@ -44,12 +57,19 @@ public class FeedFragment extends Fragment {
     @BindView(R.id.swipeContainer)
     SwipeRefreshLayout swipeContainer;
     @BindView(R.id.svSearch)
-    SearchView svSearch;
-    @BindView(R.id.ivAddTag)
-    ImageView ivAddTag;
+    android.widget.SearchView svSearch;
+    @BindView(R.id.ivFilterOptions)
+    ImageView ivFilterOptions;
+    @BindView(R.id.ivSubmit)
+    ImageView ivSubmit;
     private FeedAdapter adapter;
     private List<Workout> posts;
     private Unbinder unbinder;
+    String maxMileString;
+    String tagString;
+
+//    ArrayList<String> tags = ["Bike", "Cardio","Class","Dance","Game","Gym","High Intensuty Interval Training","Hike","Meditation","Run","Swim","Weight"]
+
 
 
 
@@ -125,23 +145,144 @@ public class FeedFragment extends Fragment {
 
 
         });
-        ivAddTag.setOnClickListener(new View.OnClickListener() {
+        ivFilterOptions.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String searchedString = svSearch.getQuery().toString();
-                // TODO- add tag to flow layout
 
-                // if query is a tag, sort feed based on tag
+                //Creating the instance of PopupMenu
+                final PopupMenu popup = new PopupMenu(view.getContext(), ivFilterOptions);
+                //Inflating the Popup using xml file
+                popup.getMenuInflater()
+                        .inflate(R.menu.popup_icon, popup.getMenu());
 
+                //registering popup with OnMenuItemClickListener
+
+                popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                    public boolean onMenuItemClick(MenuItem item) {
+                        // toast on item click
+                        Toast.makeText(
+                                getContext(),
+                                "You Clicked : " + item.getTitle(),
+                                Toast.LENGTH_SHORT
+                        ).show();
+                        // select icon
+                        selectPopupItem(item);
+                        popup.dismiss();
+                        return true;
+                    }
+                });
+
+                popup.show(); //showing popup menu
             }
+
+
         });
 
 
     }
 
+    public void selectPopupItem(MenuItem menuItem) {
+        ivFilterOptions.setImageDrawable(menuItem.getIcon());
+
+        switch (menuItem.getItemId()) {
+            case R.id.filterByTag:
+                svSearch.setQueryHint("filter by a workout category");
+                tagString = svSearch.getQuery().toString();
+
+                ivSubmit.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        QueryByString(tagString);
+
+                    }
+                });
 
 
+                break;
+            case R.id.filterByTime:
 
+                break;
+            case R.id.filterByDistance:
+                svSearch.setQueryHint("filter by number of miles");
+
+                ivSubmit.setOnClickListener(new View.OnClickListener() {
+
+                    @Override
+                    public void onClick(View view) {
+
+                        maxMileString = String.valueOf(svSearch.getQuery());
+
+                        double maxMileDouble = Double.parseDouble(maxMileString);
+                        QueryByDistance(maxMileDouble);
+                    }
+                });
+
+                break;
+            case R.id.filterByTitle:
+
+                break;
+            case R.id.filterByUser:
+
+                break;
+            default:
+                return;
+        }
+
+        // Highlight the selected item has been done by NavigationView
+        menuItem.setChecked(true);
+
+        // Close the navigation drawer
+
+    }
+
+    private void QueryByString(String tagString) {
+
+
+    }
+
+
+    public void QueryByUser() {
+        final Workout.Query postQuery = new Workout.Query();
+
+
+    }
+    public void QueryByDistance(double maxMileNumber) {
+
+        final Workout.Query postDistanceQuery = new Workout.Query();
+        ParseGeoPoint currentLocation = ParseUser.getCurrentUser().getParseGeoPoint("currentLocation");
+//        postDistanceQuery.withUser().orderByLastCreated().getWithinRange(currentLocation,maxMileNumber);
+        postDistanceQuery.withUser().orderByLastCreated();
+
+        postDistanceQuery.findInBackground(new FindCallback<Workout>() {
+            @Override
+            public void done(List<Workout> objects, ParseException e) {
+                if (e == null) {
+                    Log.d(TAG, Integer.toString(objects.size()));
+                    for (int i = 0; i < objects.size(); i++) {
+//                        Log.d(TAG, "Post [" + i + "] = " + objects.get(i).getDescription()
+//                                + "\nusername: " + objects.get(i).getUser().getUsername());
+                    }
+
+                    // order objects in distance order
+                    Collections.sort(objects, new Comparator<Workout>() {
+                        @Override
+                        public int compare(Workout o1, Workout o2) {
+                            return o1.compareTo(o2);
+                        }
+                    });
+
+                    posts.clear();
+
+                    posts.addAll(objects);
+                    adapter.notifyDataSetChanged();
+                } else {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+
+    }
 
 
 

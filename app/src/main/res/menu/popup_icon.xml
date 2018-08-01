@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/filterByTag"
+        android:checked="true"
+        android:icon="@drawable/ic_add_tag"
+        android:title="Workout Tag"
+        app:srcCompat="@drawable/ic_add_tag" />
+
+    <item
+        android:id="@+id/filterByTime"
+        android:checked="true"
+        android:icon="@drawable/ic_access_time_black_24dp"
+        android:title="Time Away"
+        app:srcCompat="@drawable/ic_access_time_black_24dp" />
+
+    <item
+        android:id="@+id/filterByDistance"
+        android:checked="true"
+        android:icon="@drawable/ic_location_on_black_24dp"
+        android:title="Distance Away"
+        app:srcCompat="@drawable/ic_location_on_black_24dp" />
+
+    <item
+        android:id="@+id/filterByUser"
+        android:checked="true"
+        android:icon="@drawable/ic_person"
+        android:title="Created By"
+        app:srcCompat="@drawable/ic_person" />
+
+    <item
+        android:id="@+id/filterByTitle"
+        android:checked="true"
+        android:icon="@drawable/ic_filter_list_black_24dp"
+        android:title="Title"
+        app:srcCompat="@drawable/ic_filter_list_black_24dp" />
+
+
+
+
+
+
+</menu>
