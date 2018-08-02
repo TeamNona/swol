@@ -253,13 +253,13 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
             map.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
 
                 @Override
-                public boolean onMarkerClick(final Marker mark) {
-                    mark.showInfoWindow();
+                public boolean onMarkerClick(final Marker m) {
+                    m.showInfoWindow();
                     final Handler handler = new Handler();
                     handler.postDelayed(new Runnable() {
                         @Override
                         public void run() {
-                            mark.showInfoWindow();
+                            m.showInfoWindow();
                         }
                     }, 200);
                     return true;
@@ -267,28 +267,42 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
             });
 
             // fire up the cluster manager
-            adapter = new ClusterInfoWindowAdapter();
             clusterManager = new ClusterManager<>(getContext(), map);
-            clusterManager.setRenderer(new WorkoutRenderer());
+            adapter = new ClusterInfoWindowAdapter();
             clusterManager.getClusterMarkerCollection().setOnInfoWindowAdapter(adapter);
             clusterManager.getMarkerCollection().setOnInfoWindowAdapter(new CustomInfoWindowAdapter(LayoutInflater.from(getContext())));
+            final WorkoutRenderer renderer = new WorkoutRenderer();
+            clusterManager.setRenderer(renderer);
             map.setOnMapClickListener(this);
             map.setOnCameraIdleListener(clusterManager);
             map.setOnMarkerClickListener(clusterManager);
             map.setOnInfoWindowClickListener(clusterManager);
             map.setInfoWindowAdapter(clusterManager.getMarkerManager());
-
-            clusterManager.setOnClusterClickListener(new ClusterManager.OnClusterClickListener<Workout>() {
-                @Override
-                public boolean onClusterClick(Cluster<Workout> cluster) {
-                    clickedCluster = cluster;
-                    return false;
-                }
-            });
             clusterManager.setOnClusterItemClickListener(new ClusterManager.OnClusterItemClickListener<Workout>() {
                 @Override
                 public boolean onClusterItemClick(Workout workout) {
                     clickedClusterItem = workout;
+                    final Marker m = renderer.getMarker(workout);
+
+                    // TODO: same as the onInfoWindowClick
+                    m.showInfoWindow();
+
+                    final Handler handler = new Handler();
+                    handler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            m.showInfoWindow();
+
+                        }
+                    }, 400);
+
+                    return false;
+                }
+            });
+            clusterManager.setOnClusterClickListener(new ClusterManager.OnClusterClickListener<Workout>() {
+                @Override
+                public boolean onClusterClick(Cluster<Workout> cluster) {
+                    clickedCluster = cluster;
                     return false;
                 }
             });
@@ -361,21 +375,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
     @Override
     public void onMapClick(LatLng latLng) {
         hideZoomButtons();
-    }
-
-    private Marker createMarker(GoogleMap googleMap, Workout workout) {
-        map = googleMap;
-        Marker marker;
-
-        LatLng loc = workout.getLatLng();
-        MarkerOptions option = new MarkerOptions();
-        option.position(loc).icon(BitmapDescriptorFactory.defaultMarker(colorInterpolator(workout.getTime().getTime())));
-        marker = map.addMarker(option);
-        workoutIDs.add(workout.getObjectId());
-        marker.setTag(Parcels.wrap(workout));
-
-        return marker;
-
     }
 
     public void loadTopWorkouts() {
@@ -524,6 +523,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
         super.onDestroy();
     }
 
+    @Deprecated
     void viewWorkout(Marker marker) {
         final Marker m = marker;
         Log.i("MapView", "Showing workout [" + mod + "] @ " + m.getPosition().toString());
@@ -668,15 +668,11 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
             return cluster.getSize() > 1;
         }
 
-//        @Override
-//        protected void onClusterRendered(Cluster<Workout> cluster, Marker marker) {
-//            super.onClusterRendered(cluster, marker);
-//            marker.showInfoWindow();
-//        }
+
     }
 
 //     alright now to implement the clickable methods for the clusters
-@Override
+    @Override
     public void onInfoWindowClick(Marker marker) {
 
     }
