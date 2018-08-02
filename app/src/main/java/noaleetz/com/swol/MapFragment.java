@@ -41,12 +41,14 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.maps.android.MarkerManager;
 import com.google.maps.android.clustering.Cluster;
 import com.google.maps.android.clustering.ClusterItem;
 import com.google.maps.android.clustering.ClusterManager;
@@ -60,6 +62,7 @@ import com.parse.ParseUser;
 import org.parceler.Parcels;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import butterknife.BindView;
@@ -79,7 +82,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
                                                      GoogleMap.OnMapLongClickListener,
                                                      GoogleMap.OnInfoWindowClickListener,
                                                      GoogleMap.OnMapClickListener,
-                                                     ClusterManager.OnClusterClickListener<Workout>,
                                                      ClusterManager.OnClusterItemClickListener<Workout>,
                                                      ClusterManager.OnClusterItemInfoWindowClickListener<Workout>,
                                                      ClusterWindowAdapter.itemClickListener {
@@ -108,6 +110,9 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
     private Cluster<Workout> clickedCluster;
     private Workout clickedClusterItem;
     private ClusterInfoWindowAdapter adapter;
+    float withinHour = BitmapDescriptorFactory.HUE_RED;
+    float withinToday = BitmapDescriptorFactory.HUE_YELLOW;
+    float withinForever = BitmapDescriptorFactory.HUE_GREEN;
 
     @BindView(R.id.fabNext)
     FloatingActionButton fabNext;
@@ -124,7 +129,10 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
     @BindView(R.id.fab10mi)
     FloatingActionButton fab10mi;
 
-    boolean showLast;
+    boolean init = true;
+
+    boolean showNew;
+    Workout newWorkout = null;
 
     Unbinder unbinder;
 
@@ -305,6 +313,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
             @Override
             public void done(List<Workout> objects, ParseException e) {
                 if (e == null) {
+                    LatLngBounds.Builder builder = new LatLngBounds.Builder();
                     map.clear();
                     clusterManager.clearItems();
                     Log.d(TAG, "Number of nearby workouts: " + Integer.toString(objects.size()));
@@ -317,12 +326,11 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
                             clusterManager.addItem(workout);
                             workoutIDs.add(workout.getObjectId());
                         }
-                        bounds = bounds.including(workout.getLatLng());
+                        builder.include(workout.getLatLng());
                         Log.i("CalculateBounds", "added workout " + i + " to the bounds: " + workout.getLocation().distanceInMilesTo(currentGeoPoint));
                     }
                     clusterManager.cluster();
-                    workoutBounds = bounds;
-                    showNearbyWorkouts(range);
+                    showNearbyWorkouts(builder.build());
 
                     Log.d("ArrayCheck(calcBounds)", "markers [" + workoutMarkers.size() + "]" +
                             "\nids " + "[" + workoutIDs.size() + "]:"  + workoutIDs.toString());
@@ -334,14 +342,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
         });
 
     }
-
-//    @Override
-//    public void onInfoWindowClick(Marker marker) {
-//        Workout assigned_workout = (Workout) Parcels.unwrap((Parcelable) marker.getTag());
-//        ((MainActivity) getContext()).changeToDetailFragment(assigned_workout);
-//
-//        Toast.makeText(getContext(), "Go to detailed screen", Toast.LENGTH_SHORT).show();
-//    }
 
     // Fires when a long press happens on the map
     @Override
@@ -363,11 +363,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
 
         LatLng loc = workout.getLatLng();
         MarkerOptions option = new MarkerOptions();
-        float withinHour = BitmapDescriptorFactory.HUE_RED;
-        float withinToday = BitmapDescriptorFactory.HUE_YELLOW;
-        float withinForever = BitmapDescriptorFactory.HUE_GREEN;
-        option.position(loc).icon(BitmapDescriptorFactory.defaultMarker(colorInterpolator(workout.getTime().getTime(), withinHour, withinToday, withinForever)));
-
+        option.position(loc).icon(BitmapDescriptorFactory.defaultMarker(colorInterpolator(workout.getTime().getTime())));
         marker = map.addMarker(option);
         workoutIDs.add(workout.getObjectId());
         marker.setTag(Parcels.wrap(workout));
@@ -390,11 +386,11 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
                     map.clear();
 
                     LatLng currLatLng = new LatLng(currentGeoPoint.getLatitude(), currentGeoPoint.getLongitude());
+
                     workoutBounds = new LatLngBounds(currLatLng, currLatLng);
                     Toast.makeText(getContext(), "Workouts Size: " + objects.size(), Toast.LENGTH_SHORT).show();
                     for (int i = 0; i < objects.size(); i++) {
                         Workout workout = objects.get(i);
-//                        workoutMarkers.add(createMarker(map, workout));
                         workoutIDs.add(workout.getObjectId());
                         clusterManager.addItem(workout);
                         if (workout.isInRange(currentGeoPoint, 10)) {
@@ -402,10 +398,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
                             Log.i("AddToBounds", "added workout " + i + " to the bounds: " + workout.getLocation().distanceInMilesTo(currentGeoPoint));
                         }
                     }
-
-                    if (showLast) viewWorkout(workoutMarkers.get(0));
-                    showLast = false;
-
 
                     clusterManager.cluster();
                 } else {
@@ -504,8 +496,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
                                 ParseUser.getCurrentUser().put("currentLocation",currentGeoPoint);
                                 ParseUser.getCurrentUser().saveInBackground();
                                 // move the map to the current location
-                                map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(mLastKnownLocation.getLatitude(), mLastKnownLocation.getLongitude()), 15));
-
+                                if (init) map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(mLastKnownLocation.getLatitude(), mLastKnownLocation.getLongitude()), 15));
+                                init = false;
                             }
                             else{
 
@@ -524,14 +516,12 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
     @Override
     public void onDestroy() {
         super.onDestroy();
-        unbinder.unbind();
     }
 
     void viewWorkout(Marker marker) {
         final Marker m = marker;
-        Workout workout = Parcels.unwrap((Parcelable) marker.getTag());
-        Log.i("MapView", "Showing workout [" + mod + "] @ " + workout.getLatLng().toString());
-        map.animateCamera(CameraUpdateFactory.newLatLngZoom(workout.getLatLng(), 17), new GoogleMap.CancelableCallback() {
+        Log.i("MapView", "Showing workout [" + mod + "] @ " + m.getPosition().toString());
+        map.animateCamera(CameraUpdateFactory.newLatLngZoom(m.getPosition(), 17), new GoogleMap.CancelableCallback() {
             @Override
             public void onFinish() {
                 // TODO: same as the onInfoWindowClick
@@ -585,11 +575,11 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
         counter++;
     }
 
-    void showNearbyWorkouts(int range) {
+    void showNearbyWorkouts(LatLngBounds bounds) {
         getLocation();
         if (currentGeoPoint == null) return;
-        Log.i("MapView", "Showing workout bounds");
-        map.animateCamera(CameraUpdateFactory.newLatLngBounds(workoutBounds,convertDpToPixel(42)));
+        Log.i("MapView", "Showing workout bounds: " + bounds.northeast.toString() + " --> " + bounds.southwest.toString());
+        map.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds,convertDpToPixel(42)));
         Toast.makeText(getContext(), "Showing Nearby Workouts", Toast.LENGTH_SHORT).show();
     }
 
@@ -604,7 +594,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
     }
 
     public void addMarker() {
-        showLast = true;
+        showNew = true;
+
     }
 
     // TODO: animate this
@@ -623,7 +614,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
         fab10mi.setVisibility(View.GONE);
     }
 
-    float colorInterpolator(long time, float withinHour, float withinToday, float withinForever) {
+    float colorInterpolator(long time) {
         float timeUntil = ((float )(time - System.currentTimeMillis())) / 3600000;
         Log.d("ColorInterpolator", timeUntil + "");
         if (timeUntil <= 0) return BitmapDescriptorFactory.HUE_BLUE;
@@ -638,69 +629,18 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
     }
 
     // INCOMING -- A LOT OF CLUSTER CODE //
-    // new class for rendering the clusters -- yes i copy and pasted this code i understand none of it yet
     private class WorkoutRenderer extends DefaultClusterRenderer<Workout> {
-        private final IconGenerator iconGenerator = new IconGenerator(getContext());
-        private final IconGenerator clusterIconGenerator = new IconGenerator(getContext());
-        private final ImageView imageView;
-        private final ImageView clusterImageView;
-        private final int dimension;
 
         public WorkoutRenderer() {
             super(getContext(), map, clusterManager);
-
-            View multiProfile = getLayoutInflater().inflate(R.layout.multi_profile, null);
-            clusterIconGenerator.setContentView(multiProfile);
-            clusterImageView = (ImageView) multiProfile.findViewById(R.id.image);
-
-            imageView = new ImageView(getContext());
-            dimension = (int) getResources().getDimension(R.dimen.custom_profile_image);
-            imageView.setLayoutParams(new ViewGroup.LayoutParams(dimension, dimension));
-            int padding = (int) getResources().getDimension(R.dimen.custom_profile_padding);
-            imageView.setPadding(padding, padding, padding, padding);
-            iconGenerator.setContentView(imageView);
         }
 
         @Override
         protected void onBeforeClusterItemRendered(Workout workout, MarkerOptions markerOptions) {
-            // Draw a single person.
-            // Set the info window to show their name.
-            try {
-                Drawable drawable = new BitmapDrawable(getResources(), BitmapFactory.decodeFile(workout.getMedia().getFile().getAbsolutePath()));
-                imageView.setImageDrawable(drawable);
-            } catch (ParseException e) {
-                e.printStackTrace();
-            }
-            Bitmap icon = iconGenerator.makeIcon();
-            markerOptions.icon(BitmapDescriptorFactory.fromBitmap(icon)).title(workout.getName());
-        }
+            final BitmapDescriptor markerDescriptor = BitmapDescriptorFactory.defaultMarker(colorInterpolator(workout.getTime().getTime()));
 
-        @Override
-        protected void onBeforeClusterRendered(Cluster<Workout> cluster, MarkerOptions markerOptions) {
-            // Draw multiple people.
-            // Note: this method runs on the UI thread. Don't spend too much time in here (like in this example).
-            List<Drawable> profilePhotos = new ArrayList<>(Math.min(4, cluster.getSize()));
-            int width = dimension;
-            int height = dimension;
+            markerOptions.icon(markerDescriptor).snippet(workout.getName());
 
-            for (Workout w : cluster.getItems()) {
-                // Draw 4 at most.
-                if (profilePhotos.size() == 4) break;
-                Drawable drawable = null;
-                try {
-                    drawable = new BitmapDrawable(getResources(), BitmapFactory.decodeFile(w.getMedia().getFile().getAbsolutePath()));
-                } catch (ParseException e) {
-                    e.printStackTrace();
-                }
-                drawable.setBounds(0, 0, width, height);
-                profilePhotos.add(drawable);
-            }
-            MultiDrawable multiDrawable = new MultiDrawable(profilePhotos);
-            multiDrawable.setBounds(0, 0, width, height);
-
-            clusterImageView.setImageDrawable(multiDrawable);
-            Bitmap icon = clusterIconGenerator.makeIcon(String.valueOf(cluster.getSize()));
-            markerOptions.icon(BitmapDescriptorFactory.fromBitmap(icon));
         }
 
         @Override
@@ -709,42 +649,15 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
             return cluster.getSize() > 1;
         }
 
-        @Override
-        protected void onClusterRendered(Cluster<Workout> cluster, Marker marker) {
-            super.onClusterRendered(cluster, marker);
-            marker.showInfoWindow();
-        }
+//        @Override
+//        protected void onClusterRendered(Cluster<Workout> cluster, Marker marker) {
+//            super.onClusterRendered(cluster, marker);
+//            marker.showInfoWindow();
+//        }
     }
 
 //     alright now to implement the clickable methods for the clusters
-    @Override
-    public boolean onClusterClick(Cluster<Workout> cluster) {
-//        // Show a toast with some info when the cluster is clicked.
-//        String title = cluster.getItems().iterator().next().getName();
-//        Toast.makeText(getContext(), cluster.getSize() + " (including " + title + ")", Toast.LENGTH_SHORT).show();
-//
-//        // Zoom in the cluster. Need to create LatLngBounds and including all the cluster items
-//        // inside of bounds, then animate to center of the bounds.
-//
-//        // Create the builder to collect all essential cluster items for the bounds.
-//        LatLngBounds.Builder builder = LatLngBounds.builder();
-//        for (ClusterItem item : cluster.getItems()) {
-//            builder.include(item.getPosition());
-//        }
-//        // Get the LatLngBounds
-//        final LatLngBounds bounds = builder.build();
-//
-//        // Animate camera to the bounds
-//        try {
-//            map.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, 100));
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-
-        return false;
-    }
-
-    @Override
+@Override
     public void onInfoWindowClick(Marker marker) {
 
     }
@@ -756,10 +669,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
 
     @Override
     public void onClusterItemInfoWindowClick(Workout workout) {
-
-    }
-
-    public static void toWorkoutDetail(Workout workout) {
 
     }
 

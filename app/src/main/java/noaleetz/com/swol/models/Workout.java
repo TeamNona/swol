@@ -17,7 +17,7 @@ import org.parceler.Parcel;
 import java.util.Date;
 
 @ParseClassName("exerciseEvent")
-public class Workout extends ParseObject implements ClusterItem{
+public class Workout extends ParseObject implements ClusterItem {
     // the reason it is implementing cluster item is that now it can be used as a marker for clusters
     // declare database fields
 
