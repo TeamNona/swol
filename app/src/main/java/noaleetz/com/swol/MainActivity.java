@@ -1,12 +1,20 @@
 package noaleetz.com.swol;
 
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.drawable.Drawable;
 import android.location.Location;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
@@ -36,12 +44,35 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.parse.LogInCallback;
+import com.parse.Parse;
 import com.parse.ParseException;
+import com.parse.ParseFile;
 import com.parse.ParseGeoPoint;
 import com.parse.ParseUser;
+import com.parse.SaveCallback;
+import com.parse.facebook.ParseFacebookUtils;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.util.Arrays;
+import java.util.Collection;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -75,8 +106,12 @@ public class MainActivity extends AppCompatActivity implements AddFragment.NewMa
     DrawerLayout mDrawer;
     @BindView(R.id.toolbar)
     Toolbar toolbar;
-    @BindView(R.id.nvView)
+    @BindView(R.id.navigation_drawer)
     NavigationView nvDrawer;
+    @BindView(R.id.navigation_drawer_bottom)
+    NavigationView nvDrawerBottom;
+
+    ImageView ivAvatar;
 
 
     @OnClick(R.id.fab)
@@ -92,12 +127,14 @@ public class MainActivity extends AppCompatActivity implements AddFragment.NewMa
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
         // Let toolbar replace action bar
 
         setSupportActionBar(toolbar);
         setupDrawerContent(nvDrawer);
+        setupDrawerContent(nvDrawerBottom);
         drawerToggle = setupDrawerToggle();
 
 
@@ -118,7 +155,8 @@ public class MainActivity extends AppCompatActivity implements AddFragment.NewMa
         // sets the username in the drawer
         final TextView navUserame = hView.findViewById(R.id.tvNavUsername);
         // sets the profile pic in the drawer
-        final ImageView ivAvatar = hView.findViewById(R.id.ivAvatar);
+        // final ImageView ivAvatar = hView.findViewById(R.id.ivAvatar);
+        ivAvatar = hView.findViewById(R.id.ivAvatar);
 
 
         try {
@@ -129,41 +167,82 @@ public class MainActivity extends AppCompatActivity implements AddFragment.NewMa
 
         if (isFacebookUser(ParseUser.getCurrentUser())) {
             navUserame.setVisibility(View.GONE);
-            // pulls the profile pic
-            GraphRequest request = GraphRequest.newGraphPathRequest(
-                    AccessToken.getCurrentAccessToken(),
-                    "100027668556706/picture?redirect=0&fields=url",
-                    new GraphRequest.Callback() {
-                        @Override
-                        public void onCompleted(GraphResponse response) {
-                            try {
-                                Log.d("FBPP", response.getJSONObject().optJSONObject("data").get("url").toString());
-                                Glide.with(hView).load(response.getJSONObject().optJSONObject("data").get("url").toString())
-                                        .apply(RequestOptions.circleCropTransform()
-                                                .placeholder(R.drawable.ic_person)
-                                                .error(R.drawable.ic_person))
-                                        .into(ivAvatar);
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    });
 
-            request.executeAsync();
+
+            // pulls the profile pic
+            String url = "https://graph.facebook.com/" + getFBID() + "/picture?type=large";
+
+
+            Glide.with(hView).load(url)
+                    .apply(RequestOptions.circleCropTransform()
+                            .placeholder(R.drawable.ic_person)
+                            .error(R.drawable.ic_person))
+                    .into(ivAvatar);
+
+           // save profile image onto parse
+            if (ParseUser.getCurrentUser().get("profilePicture") == null) {
+                Drawable drawable = ivAvatar.getDrawable();
+                Bitmap bitmap = convertToBitmap(drawable, 500, 500);
+                ParseFile parseFile = conversionBitmapParseFile(bitmap);
+                ParseUser.getCurrentUser().put("profilePicture", parseFile);
+            }
+
+            if (ParseUser.getCurrentUser().get("username").toString().length() >= 25) {
+                String name = ParseUser.getCurrentUser().get("name").toString().toLowerCase();
+                String[] splitName = name.split(" ");
+                name = splitName[0];
+                for (int i = 1; i < splitName.length; i++) {
+                    name = name + "_" + splitName[i];
+                }
+                ParseUser.getCurrentUser().setUsername(name);
+            }
+
+
+//            GraphRequest request = GraphRequest.newGraphPathRequest(
+//                    AccessToken.getCurrentAccessToken(),
+//                    "100027668556706/picture?redirect=0&fields=url",
+//                    new GraphRequest.Callback() {
+//                        @Override
+//                        public void onCompleted(GraphResponse response) {
+//                            try {
+//                                Log.d("FBPP", response.getJSONObject().getJSONObject("picture").optJSONObject("data").get("url").toString());
+//                                Glide.with(hView).load("https://graph.facebook.com/" + getFBID() + "/picture?type=large")
+//                                //Glide.with(hView).load(response.getJSONObject().getJSONObject("picture").optJSONObject("url").get("url").toString())
+//                                        .apply(RequestOptions.circleCropTransform()
+//                                                .placeholder(R.drawable.ic_person)
+//                                                .error(R.drawable.ic_person))
+//                                        .into(ivAvatar);
+//                            } catch (JSONException e) {
+//                                e.printStackTrace();
+//                                Log.e("No work", "no work");
+//                            }
+//                        }
+//                    });
+//
+//            request.executeAsync();
 
         } else {
             navUserame.setText("@" + ParseUser.getCurrentUser().getUsername());
             navUserame.setVisibility(View.VISIBLE);
 
-            try {
-                Glide.with(hView).load(ParseUser.getCurrentUser().fetchIfNeeded().getParseFile("profilePicture").getFile())
+            if (ParseUser.getCurrentUser().getParseFile("profilePicture") == null) {
+                Glide.with(hView).load(R.drawable.ic_person)
                         .apply(RequestOptions.circleCropTransform()
                                 .placeholder(R.drawable.ic_person)
                                 .error(R.drawable.ic_person))
                         .into(ivAvatar);
-            } catch (ParseException e) {
-                e.printStackTrace();
+            } else {
+                try {
+                    Glide.with(hView).load(ParseUser.getCurrentUser().fetchIfNeeded().getParseFile("profilePicture").getFile())
+                        .apply(RequestOptions.circleCropTransform()
+                                .placeholder(R.drawable.ic_person)
+                                .error(R.drawable.ic_person))
+                        .into(ivAvatar);
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
             }
+
 
         }
 
@@ -290,6 +369,8 @@ public class MainActivity extends AppCompatActivity implements AddFragment.NewMa
                 changeToProfileFragment(ParseUser.getCurrentUser());
                 mDrawer.closeDrawers();
                 break;
+            case R.id.nav_rate_us_fragment:
+                return;
             case R.id.nav_logout:
                 ParseUser.logOut();
                 Intent i = new Intent(this, DispatchActivity.class);
@@ -369,6 +450,48 @@ public class MainActivity extends AppCompatActivity implements AddFragment.NewMa
         JSONObject authData = user.getJSONObject("authData");
         return authData.has("facebook");
     }
+
+
+
+    public String getFBID () {
+        JSONObject authData = ParseUser.getCurrentUser().getJSONObject("authData");
+        JSONObject facebook = null;
+        try {
+            facebook = authData.getJSONObject("facebook");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        String fbID = null;
+
+        try {
+            fbID = facebook.getString("id");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        return fbID;
+    }
+
+    public ParseFile conversionBitmapParseFile(Bitmap imageBitmap){
+        ByteArrayOutputStream byteArrayOutputStream=new ByteArrayOutputStream();
+        imageBitmap.compress(Bitmap.CompressFormat.PNG,100,byteArrayOutputStream);
+        byte[] imageByte = byteArrayOutputStream.toByteArray();
+        ParseFile parseFile = new ParseFile("image_file.png",imageByte);
+        return parseFile;
+    }
+
+    public Bitmap convertToBitmap(Drawable drawable, int widthPixels, int heightPixels) {
+        Bitmap mutableBitmap = Bitmap.createBitmap(widthPixels, heightPixels, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(mutableBitmap);
+        drawable.setBounds(0, 0, widthPixels, heightPixels);
+        drawable.draw(canvas);
+
+        return mutableBitmap;
+    }
+
+
+
 
 
 }

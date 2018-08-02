@@ -16,6 +16,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -26,6 +27,7 @@ import com.parse.CountCallback;
 import com.parse.FindCallback;
 import com.parse.GetCallback;
 import com.parse.Parse;
+import com.parse.ParseClassName;
 import com.parse.ParseException;
 import com.parse.ParseFile;
 import com.parse.ParseObject;
@@ -36,6 +38,7 @@ import com.parse.SaveCallback;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.w3c.dom.Comment;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -46,6 +49,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
 import jp.wasabeef.glide.transformations.RoundedCornersTransformation;
+import noaleetz.com.swol.models.Comments;
 import noaleetz.com.swol.models.User;
 import noaleetz.com.swol.models.Workout;
 
@@ -80,6 +84,8 @@ public class DetailFragment extends Fragment {
     ImageView ivImage;
     @BindView(R.id.rvParticipants)
     RecyclerView rvParticipants;
+    @BindView(R.id.rvComments)
+    RecyclerView rvComments;
     @BindView(R.id.tvDescription)
     TextView tvDescription;
     @BindView(R.id.tvLikesCt)
@@ -91,18 +97,34 @@ public class DetailFragment extends Fragment {
     @BindView(R.id.ivJoin)
     ImageView ivJoin;
 
+    // Add Comment holders
+    @BindView(R.id.tvCommentUsername)
+    TextView tvCommentUsername;
+    @BindView(R.id.ivAddCommentAvatar)
+    ImageView ivAddCommentAvatar;
+    @BindView(R.id.btAddComment)
+    ImageView btAddComment;
+    @BindView(R.id.tvComment)
+    EditText tvComment;
+
     Workout workout;
 
     String url;
     String url_post;
+    String url_addComment;
 
 
-    private ParticipantAdapter adapter;
+    private ParticipantAdapter participantAdapter;
     private List<ParseUser> participants;
+
+    private CommentAdapter commentAdapter;
+    private List<Comments> comments;
 
     private Unbinder unbinder;
 
     public JSONArray participant_list;
+    public JSONArray comment_list;
+
 
 
     public DetailFragment() {
@@ -150,6 +172,8 @@ public class DetailFragment extends Fragment {
         tvDescription.setText(workout.getDescription());
 
         participant_list = new JSONArray();
+        comment_list = new JSONArray();
+
         participant_list = workout.getParticipants();
 
         Log.d(TAG, "Tag 1" + workout.get("eventParticipants").toString());
@@ -187,20 +211,61 @@ public class DetailFragment extends Fragment {
                 .apply(requestOptions)
                 .into(ivImage);
 
+        // load AddComment Item avatar and username
+
+        try {
+            url_addComment = ParseUser.getCurrentUser()
+                    .fetchIfNeeded()
+                    .getParseFile("profilePicture")
+                    .getUrl();
+        } catch (ParseException e) {
+            e.printStackTrace();
+            Log.d(TAG, "AvatarImage of current user did not load");
+        }
+
+        Glide.with(DetailFragment.this)
+                .load(url_addComment)
+                .into(ivAddCommentAvatar);
+
+        tvUsername.setText(ParseUser.getCurrentUser().getUsername());
+
+
+        // get Likes Count from Parse
+
         getLikesCount(workout);
 
-        // set up and populate data for adapter
+
+
+        // set up and populate data for  participant adapter
 
         participants = new ArrayList<>();
 
-        this.adapter = new ParticipantAdapter(participants);
+        this.participantAdapter = new ParticipantAdapter(participants);
         Log.d(TAG, "finished setting up participant adapter");
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext());
         rvParticipants.setLayoutManager(linearLayoutManager);
-        rvParticipants.setAdapter(adapter);
+        rvParticipants.setAdapter(participantAdapter);
 
         loadParticipants(workout.getParticipants());
+        loadComments(workout);
 
+        // set up comment adapter
+
+        comments = new ArrayList<>();
+        this.commentAdapter = new CommentAdapter(comments);
+        Log.d(TAG, "finished setting up comment adapter");
+        LinearLayoutManager commentLinearLayoutManager = new LinearLayoutManager(getContext());
+        rvComments.setLayoutManager(commentLinearLayoutManager);
+        rvComments.setAdapter(commentAdapter);
+
+
+
+        btAddComment.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                addComment();
+            }
+        });
 
 
 
@@ -268,7 +333,7 @@ public class DetailFragment extends Fragment {
 
                                 exerciseEvent.put("eventParticipants", participant_list);
                                 exerciseEvent.saveInBackground();
-                                adapter.notifyDataSetChanged();
+                                participantAdapter.notifyDataSetChanged();
                                 loadParticipants(participant_list);
                                 Toast.makeText(getApplicationContext(), "Workout Joined", Toast.LENGTH_SHORT).show();
 
@@ -280,8 +345,6 @@ public class DetailFragment extends Fragment {
 
 
                 }
-
-
 
 
             }
@@ -311,10 +374,6 @@ public class DetailFragment extends Fragment {
     public void getLikesCount(Workout workout_event){
         String workoutId = workout_event.getObjectId();
 
-
-
-        ParseQuery<ParseObject> exerciseEvent = ParseQuery.getQuery("exerciseEvent");
-
         ParseQuery<ParseObject> query = ParseQuery.getQuery("Likes");
 
         query.whereEqualTo("likedPost",workout_event).countInBackground(new CountCallback() {
@@ -335,10 +394,91 @@ public class DetailFragment extends Fragment {
         });
     }
 
+    // get comment data
+
+    public void loadComments(Workout workout_event){
+
+
+        final JSONArray comment_ids = new JSONArray();
+
+//         get list of comment object ids
+        Comments.Query commentQuery = new Comments.Query();
+
+        commentQuery.getTop().whereEqualTo("PostedTo",workout_event).findInBackground(new FindCallback<Comments>() {
+            @Override
+            public void done(List<Comments> objects, ParseException e) {
+                for(int i =0;i< objects.size();i++) {
+                    Comments comments1 = objects.get(i);
+                    String commentId = comments1.getObjectId();
+                    Log.d(TAG, "comment ID to add to JSONArray" + commentId);
+                    comment_ids.put(commentId);
+                    Log.d(TAG, "updated list of comment ids" + comment_ids);
+
+                }
+                Log.d(TAG, "full JSON Array of comment IDs" + comment_ids);
+//                comments.clear();
+
+                for (int i=0;i<comment_ids.length();i++){
+
+                    try {
+                        Comments.Query getCommentQuery = new Comments.Query();
+
+                        getCommentQuery.getTop().whereEqualTo("objectId",comment_ids.get(i));
+
+                        getCommentQuery.findInBackground(new FindCallback<Comments>() {
+                            public void done(List<Comments> object, ParseException e) {
+                                if (e == null) {
+//                                    Comments comment = (Comments) object.get(0);
+
+                                    comments.add(object.get(0));
+                                    commentAdapter.notifyDataSetChanged();
+//                                    Log.d(TAG, "comment ID:" + comment.get("objectID") + "," + "comment text" + comment.get("description"));
+
+                                } else {
+                                    // something went wrong
+                                    Log.d(TAG, "comment object not added");
+                                }
+                            }
+
+                        });
+
+
+                    } catch (JSONException e1) {
+                        e1.printStackTrace();
+                    }
+                }
+            }
+        });
+
+
+
+//        for(int i=0; i<)
+    }
+
+    public void addComment() {
+        final String commentText = tvComment.getText().toString();
+        Comments newComment = new Comments();
+        newComment.setPostedBy(ParseUser.getCurrentUser());
+        newComment.setPostedTo(workout);
+        newComment.setComment(commentText);
+        newComment.saveInBackground(new SaveCallback() {
+            @Override
+            public void done(ParseException e) {
+                comments.clear();
+                loadComments(workout);
+                rvComments.scrollToPosition(0);
+                tvComment.setText("");
+
+            }
+        });
+
+//        comments.add(0,newComment);
+//        commentAdapter.notifyItemChanged(0);
 
 
 
 
+    }
 
     // get participant data and add it to list to assemble adapter
 
@@ -364,7 +504,7 @@ public class DetailFragment extends Fragment {
                         if (e == null) {
                             ParseUser user = object.get(0);
                             participants.add(user);
-                            adapter.notifyDataSetChanged();
+                            participantAdapter.notifyDataSetChanged();
 
                             // object will be your User
 //                            participant_list.add((ParseUser) object);
@@ -390,6 +530,8 @@ public class DetailFragment extends Fragment {
 //        participants.clear();
 //        participants.addAll(participant_list);
     }
+
+
 
 
 

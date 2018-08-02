@@ -42,9 +42,8 @@
         android:id="@+id/btnCapture"
         android:layout_width="75dp"
         android:layout_height="wrap_content"
-        android:layout_alignEnd="@+id/tvDate"
-        android:layout_alignParentTop="true"
-        android:layout_marginTop="83dp"
+        android:layout_alignParentEnd="true"
+        android:layout_below="@+id/btnUpload"
         android:text="Capture Photo"
         android:textAllCaps="false"
         android:visibility="invisible" />
@@ -53,8 +52,9 @@
         android:id="@+id/btnUpload"
         android:layout_width="73dp"
         android:layout_height="wrap_content"
-        android:layout_alignStart="@+id/btnCapture"
-        android:layout_alignTop="@+id/ivMedia"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="75dp"
         android:text="Upload Photo"
         android:textAllCaps="false"
         android:visibility="invisible" />
@@ -69,9 +69,8 @@
         android:id="@+id/tvDate"
         android:layout_width="125dp"
         android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
         android:layout_alignTop="@+id/tvTime"
-        android:layout_marginEnd="11dp"
+        android:layout_toEndOf="@+id/ibDate"
         android:textAlignment="textStart"
         android:textSize="18sp" />
 
@@ -108,16 +107,16 @@
         android:id="@+id/ibTime"
         android:layout_width="50dp"
         android:layout_height="50dp"
-        android:layout_alignParentStart="true"
         android:layout_below="@+id/place_autocomplete_fragment"
+        android:layout_toEndOf="@+id/tvDate"
         app:srcCompat="@drawable/ic_access_time_black_24dp" />
 
     <ImageButton
         android:id="@+id/ibDate"
         android:layout_width="50dp"
         android:layout_height="50dp"
+        android:layout_alignParentStart="true"
         android:layout_below="@+id/place_autocomplete_fragment"
-        android:layout_toStartOf="@+id/tvDate"
         app:srcCompat="@drawable/ic_date_range_black_24dp" />
 
     <Spinner
@@ -145,6 +144,17 @@
         android:layout_marginTop="20dp"
         android:text="Share your workout."
         android:textAllCaps="false" />
+
+    <ProgressBar
+        android:id="@+id/pbLoading"
+        style="@style/Widget.AppCompat.ProgressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_below="@+id/btnPost"
+        android:layout_centerHorizontal="true"
+        android:indeterminate="true"
+        android:visibility="invisible" />
 
 
 </RelativeLayout>

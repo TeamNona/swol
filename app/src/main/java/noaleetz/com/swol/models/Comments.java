@@ -1,9 +1,18 @@
 package noaleetz.com.swol.models;
 
+import android.text.format.DateUtils;
+
 import com.parse.ParseClassName;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
+
+import java.util.Calendar;
+
+
+import java.util.Date;
+
+import static java.util.Calendar.*;
 
 @ParseClassName("Comments")
 public class Comments extends ParseObject{
@@ -12,7 +21,7 @@ public class Comments extends ParseObject{
 
     private static final String KEY_DESCRIPTION = "description";
 
-    private static final String KEY_POST = "postedTo";
+    private static final String KEY_POST = "PostedTo";
 
     private static final String KEY_USER = "postedBy";
 
@@ -42,13 +51,26 @@ public class Comments extends ParseObject{
         put(KEY_POST, workout);
     }
 
+    @Override
+    public Date getCreatedAt() {
+        return super.getCreatedAt();
+    }
 
+    public String getTimeUntil() {
+        String relativeDate;
+
+            long dateMillis = getCreatedAt().getTime();
+            relativeDate = DateUtils.getRelativeTimeSpanString(dateMillis, System.currentTimeMillis(), DateUtils.SECOND_IN_MILLIS).toString();
+            return relativeDate;
+
+    }
     // define the queries
     public static class Query extends ParseQuery<Comments> {
 
         public Query() {
             super(Comments.class);
         }
+
 
         public Query getPostComments (ParseObject post) {
             whereEqualTo(KEY_POST, post.getObjectId());
@@ -57,7 +79,7 @@ public class Comments extends ParseObject{
 
         public Query getTop () {
             setLimit(10);
-            orderByAscending("createdAt");
+            orderByDescending("createdAt");
             return this;
         }
     }

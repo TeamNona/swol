@@ -5,6 +5,8 @@ import android.app.Application;
 import com.parse.Parse;
 import com.parse.ParseObject;
 
+import noaleetz.com.swol.models.Comments;
+import noaleetz.com.swol.models.Likes;
 import noaleetz.com.swol.models.Workout;
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
@@ -42,6 +44,9 @@ public class ParseApp extends Application {
                 .server("http://teamnona-swol.herokuapp.com/parse")
                 .build();
         ParseObject.registerSubclass(Workout.class);
+        ParseObject.registerSubclass(Comments.class);
+        ParseObject.registerSubclass(Likes.class);
+
 
         Parse.initialize(configuration);
 

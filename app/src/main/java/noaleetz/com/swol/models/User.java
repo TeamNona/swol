@@ -4,6 +4,11 @@ import com.parse.ParseClassName;
 import com.parse.ParseFile;
 import com.parse.ParseGeoPoint;
 import com.parse.ParseObject;
+import com.parse.ParseQuery;
+import com.parse.ParseUser;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 @ParseClassName("User")
 public class User extends ParseObject {
@@ -69,5 +74,17 @@ public class User extends ParseObject {
     public void setCurrentLocation(ParseGeoPoint currentLocation) { put(KEY_CURRENTLOCATION,currentLocation); }
 
     public ParseGeoPoint getCurrentLocation() {return getParseGeoPoint(KEY_CURRENTLOCATION);}
+
+    public int getFBID (ParseUser user) throws JSONException {
+        JSONObject test = user.getJSONObject("authData");
+        JSONObject test1 = test.getJSONObject("facebook");
+
+        String test2 = test1.getString("id");
+
+        return Integer.parseInt(test2);
+
+    }
+
+
 
 }

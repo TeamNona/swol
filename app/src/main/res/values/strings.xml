@@ -9,6 +9,8 @@
     <string-array name="my_facebook_permissions">
         <item>public_profile</item>
         <item>user_friends</item>
+        <item>email</item>
+        <item>photo</item>
     </string-array>
 
     <!--    Permissions : from https://github.com/googlemaps/android-samples/blob/master/ApiDemos/java/app/src/main/res/values/strings.xml -->

@@ -117,7 +117,6 @@ public class ParticipantAdapter extends RecyclerView.Adapter<ParticipantAdapter.
 
         @Override
         public void onClick(View view) {
-            // TODO- setup link to participants profile when clicked
         }
     }
 
