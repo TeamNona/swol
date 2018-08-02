@@ -2,9 +2,17 @@ package noaleetz.com.swol;
 
 
 import android.Manifest;
+import android.annotation.SuppressLint;
+import android.app.AlertDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.Icon;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
@@ -16,26 +24,37 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.SeekBar;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.maps.android.MarkerManager;
+import com.google.maps.android.clustering.Cluster;
+import com.google.maps.android.clustering.ClusterItem;
+import com.google.maps.android.clustering.ClusterManager;
+import com.google.maps.android.clustering.view.DefaultClusterRenderer;
+import com.google.maps.android.ui.IconGenerator;
 import com.parse.FindCallback;
 import com.parse.ParseException;
 import com.parse.ParseGeoPoint;
@@ -44,6 +63,7 @@ import com.parse.ParseUser;
 import org.parceler.Parcels;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import butterknife.BindView;
@@ -59,7 +79,13 @@ import static noaleetz.com.swol.MainActivity.REQUEST_LOCATION_PERMISSION;
  * A simple {@link Fragment} subclass.
  */
 
-public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleMap.OnMapLongClickListener, GoogleMap.OnInfoWindowClickListener, GoogleMap.OnMapClickListener {
+public class MapFragment extends Fragment implements OnMapReadyCallback,
+                                                     GoogleMap.OnMapLongClickListener,
+                                                     GoogleMap.OnInfoWindowClickListener,
+                                                     GoogleMap.OnMapClickListener,
+                                                     ClusterManager.OnClusterItemClickListener<Workout>,
+                                                     ClusterManager.OnClusterItemInfoWindowClickListener<Workout>,
+                                                     ClusterWindowAdapter.itemClickListener {
 
 
 
@@ -80,9 +106,14 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
     Location mLastKnownLocation;
     LatLngBounds workoutBounds;
     ParseGeoPoint currentGeoPoint;
-
-    @BindView(R.id.fabNext)
-    FloatingActionButton fabNext;
+    // cluster stuff
+    private ClusterManager<Workout> clusterManager;
+    private Cluster<Workout> clickedCluster;
+    private Workout clickedClusterItem;
+    private ClusterInfoWindowAdapter adapter;
+    float withinHour = BitmapDescriptorFactory.HUE_RED;
+    float withinToday = BitmapDescriptorFactory.HUE_YELLOW;
+    float withinForever = BitmapDescriptorFactory.HUE_GREEN;
 
     @BindView(R.id.fabNearby)
     FloatingActionButton fabNearby;
@@ -96,7 +127,10 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
     @BindView(R.id.fab10mi)
     FloatingActionButton fab10mi;
 
-    boolean showLast;
+    boolean init = true;
+
+    boolean showNew;
+    Workout newWorkout = null;
 
     Unbinder unbinder;
 
@@ -133,14 +167,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         mapFragment.getMapAsync(this);
 
         hideZoomButtons();
-
-        fabNext.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                viewNextWorkout();
-                hideZoomButtons();
-            }
-        });
 
         fabNearby.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -193,12 +219,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
 
         loadTopWorkouts();
 
-        map.setInfoWindowAdapter(new CustomWindowAdapter(getLayoutInflater()));
-
-        map.setOnInfoWindowClickListener(this);
-
-        map.setOnMapClickListener(this);
-
         // Make sure we have the permissions
         getLocationPermission();
 
@@ -222,23 +242,66 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
             map.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
 
                 @Override
-                public boolean onMarkerClick(final Marker mark) {
+                public boolean onMarkerClick(final Marker m) {
+                    m.showInfoWindow();
+                    final Handler handler = new Handler();
+                    handler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            m.showInfoWindow();
+                        }
+                    }, 200);
+                    return true;
+                }
+            });
 
+            // fire up the cluster manager
+            clusterManager = new ClusterManager<>(getContext(), map);
+            adapter = new ClusterInfoWindowAdapter();
+            clusterManager.getClusterMarkerCollection().setOnInfoWindowAdapter(adapter);
+            clusterManager.getMarkerCollection().setOnInfoWindowAdapter(new CustomInfoWindowAdapter(LayoutInflater.from(getContext())));
+            final WorkoutRenderer renderer = new WorkoutRenderer();
+            clusterManager.setRenderer(renderer);
+            map.setOnMapClickListener(this);
+            map.setOnCameraIdleListener(clusterManager);
+            map.setOnMarkerClickListener(clusterManager);
+            map.setOnInfoWindowClickListener(clusterManager);
+            map.setInfoWindowAdapter(clusterManager.getMarkerManager());
+            clusterManager.setOnClusterItemClickListener(new ClusterManager.OnClusterItemClickListener<Workout>() {
+                @Override
+                public boolean onClusterItemClick(Workout workout) {
+                    clickedClusterItem = workout;
+                    final Marker m = renderer.getMarker(workout);
 
-                    mark.showInfoWindow();
+                    // TODO: same as the onInfoWindowClick
+                    m.showInfoWindow();
 
                     final Handler handler = new Handler();
                     handler.postDelayed(new Runnable() {
                         @Override
                         public void run() {
-                            mark.showInfoWindow();
+                            m.showInfoWindow();
 
                         }
-                    }, 200);
+                    }, 400);
 
-                    return true;
+                    return false;
                 }
             });
+            clusterManager.setOnClusterClickListener(new ClusterManager.OnClusterClickListener<Workout>() {
+                @Override
+                public boolean onClusterClick(Cluster<Workout> cluster) {
+                    clickedCluster = cluster;
+                    return false;
+                }
+            });
+            clusterManager.setOnClusterItemInfoWindowClickListener(new ClusterManager.OnClusterItemInfoWindowClickListener<Workout>() {
+                @Override
+                public void onClusterItemInfoWindowClick(Workout workout) {
+                    ((MainActivity) getContext()).changeToDetailFragment(workout);
+                }
+            });
+
 
 
             Log.d("ArrayCheck(loadMap)", "markers " + "[" + workoutMarkers.size() + "]:" + workoutMarkers.toString() +
@@ -259,20 +322,24 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
             @Override
             public void done(List<Workout> objects, ParseException e) {
                 if (e == null) {
+                    LatLngBounds.Builder builder = new LatLngBounds.Builder();
                     map.clear();
-                    workoutMarkers.clear();
-                    workoutIDs.clear();
+                    clusterManager.clearItems();
                     Log.d(TAG, "Number of nearby workouts: " + Integer.toString(objects.size()));
                     Toast.makeText(getContext(), "Workouts Size: " + objects.size(), Toast.LENGTH_SHORT).show();
                     LatLngBounds bounds = LatLngBounds.builder().include(currLoc).build();
                     for (int i = 0; i < objects.size(); i++) {
                         Workout workout = objects.get(i);
-                        if (!workoutIDs.contains(workout.getID())) workoutMarkers.add(createMarker(map, workout));
-                        bounds = bounds.including(workout.getLatLng());
+//                        if (!workoutIDs.contains(workout.getID())) workoutMarkers.add(createMarker(map, workout));
+                        if (!workoutIDs.contains(workout.getID())) {
+                            clusterManager.addItem(workout);
+                            workoutIDs.add(workout.getObjectId());
+                        }
+                        builder.include(workout.getLatLng());
                         Log.i("CalculateBounds", "added workout " + i + " to the bounds: " + workout.getLocation().distanceInMilesTo(currentGeoPoint));
                     }
-                    workoutBounds = bounds;
-                    showNearbyWorkouts(range);
+                    clusterManager.cluster();
+                    showNearbyWorkouts(builder.build());
 
                     Log.d("ArrayCheck(calcBounds)", "markers [" + workoutMarkers.size() + "]" +
                             "\nids " + "[" + workoutIDs.size() + "]:"  + workoutIDs.toString());
@@ -283,14 +350,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
             }
         });
 
-    }
-
-    @Override
-    public void onInfoWindowClick(Marker marker) {
-        Workout assigned_workout = (Workout) Parcels.unwrap((Parcelable) marker.getTag());
-        ((MainActivity) getContext()).changeToDetailFragment(assigned_workout);
-
-        Toast.makeText(getContext(), "Go to detailed screen", Toast.LENGTH_SHORT).show();
     }
 
     // Fires when a long press happens on the map
@@ -307,25 +366,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         hideZoomButtons();
     }
 
-    private Marker createMarker(GoogleMap googleMap, Workout workout) {
-        map = googleMap;
-        Marker marker;
-
-        LatLng loc = workout.getLatLng();
-        MarkerOptions option = new MarkerOptions();
-        float withinHour = BitmapDescriptorFactory.HUE_RED;
-        float withinToday = BitmapDescriptorFactory.HUE_YELLOW;
-        float withinForever = BitmapDescriptorFactory.HUE_GREEN;
-        option.position(loc).icon(BitmapDescriptorFactory.defaultMarker(colorInterpolator(workout.getTime().getTime(), withinHour, withinToday, withinForever)));
-
-        marker = map.addMarker(option);
-        workoutIDs.add(workout.getObjectId());
-        marker.setTag(Parcels.wrap(workout));
-
-        return marker;
-
-    }
-
     public void loadTopWorkouts() {
         final Workout.Query postQuery = new Workout.Query();
         postQuery.getTop().withUser().orderByLastCreated();
@@ -340,19 +380,20 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
                     map.clear();
 
                     LatLng currLatLng = new LatLng(currentGeoPoint.getLatitude(), currentGeoPoint.getLongitude());
+
                     workoutBounds = new LatLngBounds(currLatLng, currLatLng);
                     Toast.makeText(getContext(), "Workouts Size: " + objects.size(), Toast.LENGTH_SHORT).show();
                     for (int i = 0; i < objects.size(); i++) {
                         Workout workout = objects.get(i);
-                        workoutMarkers.add(createMarker(map, workout));
+                        workoutIDs.add(workout.getObjectId());
+                        clusterManager.addItem(workout);
                         if (workout.isInRange(currentGeoPoint, 10)) {
                             workoutBounds = workoutBounds.including(workout.getLatLng());
                             Log.i("AddToBounds", "added workout " + i + " to the bounds: " + workout.getLocation().distanceInMilesTo(currentGeoPoint));
                         }
                     }
 
-                    if (showLast) viewWorkout(workoutMarkers.get(0));
-                    showLast = false;
+                    clusterManager.cluster();
                 } else {
                     e.printStackTrace();
                 }
@@ -449,8 +490,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
                                 ParseUser.getCurrentUser().put("currentLocation",currentGeoPoint);
                                 ParseUser.getCurrentUser().saveInBackground();
                                 // move the map to the current location
-                                map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(mLastKnownLocation.getLatitude(), mLastKnownLocation.getLongitude()), 15));
-
+                                if (init) map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(mLastKnownLocation.getLatitude(), mLastKnownLocation.getLongitude()), 15));
+                                init = false;
                             }
                             else{
 
@@ -469,14 +510,13 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
     @Override
     public void onDestroy() {
         super.onDestroy();
-        unbinder.unbind();
     }
 
+    @Deprecated
     void viewWorkout(Marker marker) {
         final Marker m = marker;
-        Workout workout = Parcels.unwrap((Parcelable) marker.getTag());
-        Log.i("MapView", "Showing workout [" + mod + "] @ " + workout.getLatLng().toString());
-        map.animateCamera(CameraUpdateFactory.newLatLngZoom(workout.getLatLng(), 17), new GoogleMap.CancelableCallback() {
+        Log.i("MapView", "Showing workout [" + mod + "] @ " + m.getPosition().toString());
+        map.animateCamera(CameraUpdateFactory.newLatLngZoom(m.getPosition(), 17), new GoogleMap.CancelableCallback() {
             @Override
             public void onFinish() {
                 // TODO: same as the onInfoWindowClick
@@ -530,11 +570,11 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         counter++;
     }
 
-    void showNearbyWorkouts(int range) {
+    void showNearbyWorkouts(LatLngBounds bounds) {
         getLocation();
         if (currentGeoPoint == null) return;
-        Log.i("MapView", "Showing workout bounds");
-        map.animateCamera(CameraUpdateFactory.newLatLngBounds(workoutBounds,convertDpToPixel(42)));
+        Log.i("MapView", "Showing workout bounds: " + bounds.northeast.toString() + " --> " + bounds.southwest.toString());
+        map.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds,convertDpToPixel(42)));
         Toast.makeText(getContext(), "Showing Nearby Workouts", Toast.LENGTH_SHORT).show();
     }
 
@@ -549,10 +589,12 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
     }
 
     public void addMarker() {
-        showLast = true;
+        showNew = true;
+
     }
 
     // TODO: animate this
+    @SuppressLint("RestrictedApi")
     void showZoomButtons() {
         fab1mi.setVisibility(View.VISIBLE);
         fab5mi.setVisibility(View.VISIBLE);
@@ -560,24 +602,191 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
     }
 
     // TODO: animate this
+    @SuppressLint("RestrictedApi")
     void hideZoomButtons() {
         fab1mi.setVisibility(View.GONE);
         fab5mi.setVisibility(View.GONE);
         fab10mi.setVisibility(View.GONE);
     }
 
-    float colorInterpolator(long time, float withinHour, float withinToday, float withinForever) {
+    float colorInterpolator(long time) {
         float timeUntil = ((float )(time - System.currentTimeMillis())) / 3600000;
         Log.d("ColorInterpolator", timeUntil + "");
         if (timeUntil <= 0) return BitmapDescriptorFactory.HUE_BLUE;
         if (timeUntil <= 1) return withinHour;
         if (timeUntil <= 24) return withinToday;
         return withinForever;
-
     }
 
     @Override public void onDestroyView() {
         super.onDestroyView();
         unbinder.unbind();
+    }
+
+    // INCOMING -- A LOT OF CLUSTER CODE //
+    private class WorkoutRenderer extends DefaultClusterRenderer<Workout> {
+
+        private final IconGenerator clusterIconGenerator;
+
+        public WorkoutRenderer() {
+            super(getContext(), map, clusterManager);
+            clusterIconGenerator = new IconGenerator(getContext());
+        }
+
+        @Override
+        protected void onBeforeClusterItemRendered(Workout workout, MarkerOptions markerOptions) {
+            final BitmapDescriptor markerDescriptor = BitmapDescriptorFactory.defaultMarker(colorInterpolator(workout.getTime().getTime()));
+
+            markerOptions.icon(markerDescriptor).snippet(workout.getName());
+
+        }
+
+        @Override
+        protected void onBeforeClusterRendered(Cluster<Workout> cluster, MarkerOptions markerOptions) {
+            super.onBeforeClusterRendered(cluster, markerOptions);
+
+            clusterIconGenerator.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.background_circle));
+            clusterIconGenerator.setTextAppearance(R.style.AppTheme);
+            final Bitmap icon = clusterIconGenerator.makeIcon(String.valueOf(cluster.getSize()));
+            markerOptions.icon(BitmapDescriptorFactory.fromBitmap(icon));
+        }
+
+        @Override
+        protected boolean shouldRenderAsCluster(Cluster cluster) {
+            // Always render clusters.
+            return cluster.getSize() > 1;
+        }
+
+
+    }
+
+//     alright now to implement the clickable methods for the clusters
+    @Override
+    public void onInfoWindowClick(Marker marker) {
+
+    }
+
+    @Override
+    public boolean onClusterItemClick(Workout workout) {
+        return false;
+    }
+
+    @Override
+    public void onClusterItemInfoWindowClick(Workout workout) {
+
+    }
+
+    // Cluster info window adapter
+    public class ClusterInfoWindowAdapter implements GoogleMap.InfoWindowAdapter, ClusterWindowAdapter.itemClickListener {
+
+        //TODO: the butterknives
+
+        private final View myContentsView;
+        private ClusterWindowAdapter adapter;
+        private RecyclerView rvNearby;
+        private List<Workout> workouts;
+        private AlertDialog alertDialog;
+        private Context context;
+
+        ClusterInfoWindowAdapter() {
+            myContentsView = getLayoutInflater().inflate(R.layout.cluster_info_window, null);
+            context = getContext();
+        }
+
+        @Override
+        public View getInfoContents(Marker marker) {
+            return null;
+        }
+
+        @Override
+        public View getInfoWindow(Marker marker) {
+            // TODO Auto-generated method stub
+
+            if (clickedCluster != null) showAlertDialogForCluster(clickedCluster);
+
+            return myContentsView;
+        }
+
+        public void showAlertDialogForCluster(Cluster<Workout> cluster) {
+            // inflate the xml
+            View messageView = LayoutInflater.from(getContext()).inflate(R.layout.cluster_info_window, null);
+            // create the alert dialog builder
+            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(context);
+            // set the xml to the alert dialog builder
+            alertDialogBuilder.setView(messageView);
+
+            // create the alertDialog
+            alertDialog = alertDialogBuilder.create();
+
+            workouts = new ArrayList<>();
+            rvNearby = messageView.findViewById(R.id.rvNearby);
+            adapter = new ClusterWindowAdapter(workouts);
+            LinearLayoutManager linearLayoutManager = new LinearLayoutManager(context);
+            rvNearby.setLayoutManager(linearLayoutManager);
+            rvNearby.setAdapter(adapter);
+
+            workouts.addAll(cluster.getItems());
+            adapter.notifyDataSetChanged();
+
+            // display the dialog
+            alertDialog.show();
+        }
+
+        @Override
+        public void onWorkoutSelected(Workout workout) {
+            alertDialog.dismiss();
+            ((MainActivity) context).changeToDetailFragment(workout);
+        }
+    }
+
+    public class CustomInfoWindowAdapter implements GoogleMap.InfoWindowAdapter {
+        private final View v;
+
+        public CustomInfoWindowAdapter(LayoutInflater i){
+            v = getLayoutInflater().inflate(R.layout.custom_info_window, null);
+        }
+
+        // This defines the contents within the info window based on the marker
+        @Override
+        public View getInfoContents(Marker marker) {
+            // Getting view from the layout file
+            // Populate fields
+
+            Workout assigned_workout = clickedClusterItem;
+
+            TextView tvInfoTitle = v.findViewById(R.id.tvInfoTitle);
+            tvInfoTitle.setText(assigned_workout.getName());
+
+            TextView tvCreatedBy = v.findViewById(R.id.tvInfoCreatedBy);
+
+            String user = null;
+            try {
+                user = assigned_workout.getUser().fetchIfNeeded().getUsername();
+                tvCreatedBy.setText("Created By: "+ user);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+
+
+            TextView tvInfoTimeUntil = v.findViewById(R.id.tvInfoTimeUntil);
+            tvInfoTimeUntil.setText(assigned_workout.getTimeUntil());
+
+            ImageView ivInfoImage = v.findViewById(R.id.ivInfoImage);
+            Glide.with(v).load(assigned_workout.getMedia().getUrl()).into(ivInfoImage);
+            // Return info window contents
+            return v;
+        }
+
+        // This changes the frame of the info window; returning null uses the default frame.
+        // This is just the border and arrow surrounding the contents specified above
+        @Override
+        public View getInfoWindow(Marker marker) {
+            return null;
+        }
+    }
+
+    @Override
+    public void onWorkoutSelected(Workout workout) {
+        adapter.onWorkoutSelected(workout);
     }
 }

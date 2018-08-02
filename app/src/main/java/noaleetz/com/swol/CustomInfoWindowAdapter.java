@@ -15,10 +15,10 @@ import org.parceler.Parcels;
 
 import noaleetz.com.swol.models.Workout;
 
-class CustomWindowAdapter implements GoogleMap.InfoWindowAdapter {
+class CustomInfoWindowAdapter implements GoogleMap.InfoWindowAdapter {
     LayoutInflater mInflater;
 
-    public CustomWindowAdapter(LayoutInflater i){
+    public CustomInfoWindowAdapter(LayoutInflater i){
         mInflater = i;
     }
 
