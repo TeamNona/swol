@@ -1,4 +1,4 @@
-package noaleetz.com.swol;
+package noaleetz.com.swol.ui.fragments;
 
 
 import android.Manifest;
@@ -9,10 +9,6 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
-import android.graphics.drawable.Icon;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
@@ -49,9 +45,7 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.maps.android.MarkerManager;
 import com.google.maps.android.clustering.Cluster;
-import com.google.maps.android.clustering.ClusterItem;
 import com.google.maps.android.clustering.ClusterManager;
 import com.google.maps.android.clustering.view.DefaultClusterRenderer;
 import com.google.maps.android.ui.IconGenerator;
@@ -63,16 +57,18 @@ import com.parse.ParseUser;
 import org.parceler.Parcels;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
+import noaleetz.com.swol.ui.adapters.ClusterWindowAdapter;
+import noaleetz.com.swol.ui.activities.MainActivity;
+import noaleetz.com.swol.R;
 import noaleetz.com.swol.models.Workout;
 
 import static android.app.Activity.RESULT_OK;
-import static noaleetz.com.swol.MainActivity.REQUEST_LOCATION_PERMISSION;
+import static noaleetz.com.swol.ui.activities.MainActivity.REQUEST_LOCATION_PERMISSION;
 
 
 /**
@@ -85,7 +81,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
                                                      GoogleMap.OnMapClickListener,
                                                      ClusterManager.OnClusterItemClickListener<Workout>,
                                                      ClusterManager.OnClusterItemInfoWindowClickListener<Workout>,
-                                                     ClusterWindowAdapter.itemClickListener {
+        ClusterWindowAdapter.itemClickListener {
 
 
 

@@ -1,20 +1,15 @@
-package noaleetz.com.swol;
+package noaleetz.com.swol.ui.activities;
 
 
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
-import android.net.Uri;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
@@ -35,49 +30,30 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
-import com.facebook.AccessToken;
-import com.facebook.GraphRequest;
-import com.facebook.GraphResponse;
 import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.parse.LogInCallback;
-import com.parse.Parse;
 import com.parse.ParseException;
 import com.parse.ParseFile;
 import com.parse.ParseGeoPoint;
 import com.parse.ParseUser;
-import com.parse.SaveCallback;
-import com.parse.facebook.ParseFacebookUtils;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URLConnection;
-import java.util.Arrays;
-import java.util.Collection;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import noaleetz.com.swol.R;
 import noaleetz.com.swol.models.Workout;
+import noaleetz.com.swol.ui.adapters.ClusterWindowAdapter;
+import noaleetz.com.swol.ui.fragments.AddFragment;
+import noaleetz.com.swol.ui.fragments.DetailFragment;
+import noaleetz.com.swol.ui.fragments.FeedFragment;
+import noaleetz.com.swol.ui.fragments.MapFragment;
+import noaleetz.com.swol.ui.fragments.ProfileFragment;
 
 public class MainActivity extends AppCompatActivity implements AddFragment.NewMapItemListener, ClusterWindowAdapter.itemClickListener {
 

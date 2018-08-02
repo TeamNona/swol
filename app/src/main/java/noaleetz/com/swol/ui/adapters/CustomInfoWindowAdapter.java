@@ -1,4 +1,4 @@
-package noaleetz.com.swol;
+package noaleetz.com.swol.ui.adapters;
 
 import android.os.Parcelable;
 import android.view.LayoutInflater;
@@ -13,6 +13,7 @@ import com.parse.ParseException;
 
 import org.parceler.Parcels;
 
+import noaleetz.com.swol.R;
 import noaleetz.com.swol.models.Workout;
 
 class CustomInfoWindowAdapter implements GoogleMap.InfoWindowAdapter {

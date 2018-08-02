@@ -1,4 +1,4 @@
-package noaleetz.com.swol;
+package noaleetz.com.swol.ui.adapters;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
@@ -15,13 +15,14 @@ import com.parse.ParseException;
 import com.parse.ParseGeoPoint;
 import com.parse.ParseUser;
 
-import java.io.File;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import jp.wasabeef.glide.transformations.RoundedCornersTransformation;
+import noaleetz.com.swol.R;
 import noaleetz.com.swol.models.Workout;
+import noaleetz.com.swol.ui.activities.MainActivity;
 
 public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
     //Creating a global variable to store the array of string containing data to be displayed

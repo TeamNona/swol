@@ -1,4 +1,4 @@
-package noaleetz.com.swol;
+package noaleetz.com.swol.ui.fragments;
 
 
 import android.app.AlertDialog;
@@ -15,7 +15,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -26,10 +25,7 @@ import com.bumptech.glide.request.RequestOptions;
 import com.parse.CountCallback;
 import com.parse.FindCallback;
 import com.parse.GetCallback;
-import com.parse.Parse;
-import com.parse.ParseClassName;
 import com.parse.ParseException;
-import com.parse.ParseFile;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
@@ -37,20 +33,18 @@ import com.parse.SaveCallback;
 
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
-import org.w3c.dom.Comment;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import bolts.Task;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
 import jp.wasabeef.glide.transformations.RoundedCornersTransformation;
+import noaleetz.com.swol.ui.adapters.CommentAdapter;
+import noaleetz.com.swol.ui.adapters.ParticipantAdapter;
+import noaleetz.com.swol.R;
 import noaleetz.com.swol.models.Comments;
-import noaleetz.com.swol.models.User;
 import noaleetz.com.swol.models.Workout;
 
 import static com.parse.Parse.getApplicationContext;

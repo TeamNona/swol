@@ -1,4 +1,4 @@
-package noaleetz.com.swol;
+package noaleetz.com.swol.ui;
 
 import android.app.Application;
 

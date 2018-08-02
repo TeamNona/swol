@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package noaleetz.com.swol;
+package noaleetz.com.swol.utils;
 
 import android.Manifest;
 import android.app.AlertDialog;

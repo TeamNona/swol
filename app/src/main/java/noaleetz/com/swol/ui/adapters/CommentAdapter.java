@@ -1,4 +1,4 @@
-package noaleetz.com.swol;
+package noaleetz.com.swol.ui.adapters;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
@@ -12,13 +12,13 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.parse.ParseException;
-import com.parse.ParseObject;
-import com.parse.ParseUser;
 
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import noaleetz.com.swol.ui.activities.MainActivity;
+import noaleetz.com.swol.R;
 import noaleetz.com.swol.models.Comments;
 
 public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.ViewHolder> {

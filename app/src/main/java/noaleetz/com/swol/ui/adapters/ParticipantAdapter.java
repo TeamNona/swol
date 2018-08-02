@@ -1,4 +1,4 @@
-package noaleetz.com.swol;
+package noaleetz.com.swol.ui.adapters;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
@@ -12,22 +12,16 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
-import com.parse.Parse;
 import com.parse.ParseException;
 import com.parse.ParseUser;
 
-import org.json.JSONArray;
-
-import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import jp.wasabeef.glide.transformations.RoundedCornersTransformation;
-import noaleetz.com.swol.models.User;
-import noaleetz.com.swol.models.Workout;
+import noaleetz.com.swol.ui.activities.MainActivity;
+import noaleetz.com.swol.R;
 
 public class ParticipantAdapter extends RecyclerView.Adapter<ParticipantAdapter.ViewHolder> {
 

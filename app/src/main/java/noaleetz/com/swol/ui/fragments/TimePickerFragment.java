@@ -1,4 +1,4 @@
-package noaleetz.com.swol;
+package noaleetz.com.swol.ui.fragments;
 
 import android.app.DatePickerDialog;
 import android.app.Dialog;
