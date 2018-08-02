@@ -12,6 +12,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.Icon;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
@@ -270,9 +271,13 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
             clusterManager = new ClusterManager<>(getContext(), map);
             clusterManager.setRenderer(new WorkoutRenderer());
             clusterManager.getClusterMarkerCollection().setOnInfoWindowAdapter(adapter);
+            clusterManager.getMarkerCollection().setOnInfoWindowAdapter(new CustomInfoWindowAdapter(LayoutInflater.from(getContext())));
+            map.setOnMapClickListener(this);
             map.setOnCameraIdleListener(clusterManager);
             map.setOnMarkerClickListener(clusterManager);
-//            map.setOnInfoWindowClickListener(clusterManager);
+            map.setOnInfoWindowClickListener(clusterManager);
+            map.setInfoWindowAdapter(clusterManager.getMarkerManager());
+
             clusterManager.setOnClusterClickListener(new ClusterManager.OnClusterClickListener<Workout>() {
                 @Override
                 public boolean onClusterClick(Cluster<Workout> cluster) {
@@ -287,12 +292,13 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
                     return false;
                 }
             });
-            clusterManager.setOnClusterItemInfoWindowClickListener(this);
-            map.setInfoWindowAdapter(clusterManager.getMarkerManager());
+            clusterManager.setOnClusterItemInfoWindowClickListener(new ClusterManager.OnClusterItemInfoWindowClickListener<Workout>() {
+                @Override
+                public void onClusterItemInfoWindowClick(Workout workout) {
+                    ((MainActivity) getContext()).changeToDetailFragment(workout);
+                }
+            });
 
-            map.setOnInfoWindowClickListener(this);
-
-            map.setOnMapClickListener(this);
 
 
             Log.d("ArrayCheck(loadMap)", "markers " + "[" + workoutMarkers.size() + "]:" + workoutMarkers.toString() +
@@ -631,8 +637,11 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
     // INCOMING -- A LOT OF CLUSTER CODE //
     private class WorkoutRenderer extends DefaultClusterRenderer<Workout> {
 
+        private final IconGenerator clusterIconGenerator;
+
         public WorkoutRenderer() {
             super(getContext(), map, clusterManager);
+            clusterIconGenerator = new IconGenerator(getContext());
         }
 
         @Override
@@ -641,6 +650,16 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
 
             markerOptions.icon(markerDescriptor).snippet(workout.getName());
 
+        }
+
+        @Override
+        protected void onBeforeClusterRendered(Cluster<Workout> cluster, MarkerOptions markerOptions) {
+            super.onBeforeClusterRendered(cluster, markerOptions);
+
+            clusterIconGenerator.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.background_circle));
+            clusterIconGenerator.setTextAppearance(R.style.AppTheme);
+            final Bitmap icon = clusterIconGenerator.makeIcon(String.valueOf(cluster.getSize()));
+            markerOptions.icon(BitmapDescriptorFactory.fromBitmap(icon));
         }
 
         @Override
@@ -732,6 +751,52 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
         public void onWorkoutSelected(Workout workout) {
             alertDialog.dismiss();
             ((MainActivity) context).changeToDetailFragment(workout);
+        }
+    }
+
+    public class CustomInfoWindowAdapter implements GoogleMap.InfoWindowAdapter {
+        private final View v;
+
+        public CustomInfoWindowAdapter(LayoutInflater i){
+            v = getLayoutInflater().inflate(R.layout.custom_info_window, null);
+        }
+
+        // This defines the contents within the info window based on the marker
+        @Override
+        public View getInfoContents(Marker marker) {
+            // Getting view from the layout file
+            // Populate fields
+
+            Workout assigned_workout = clickedClusterItem;
+
+            TextView tvInfoTitle = v.findViewById(R.id.tvInfoTitle);
+            tvInfoTitle.setText(assigned_workout.getName());
+
+            TextView tvCreatedBy = v.findViewById(R.id.tvInfoCreatedBy);
+
+            String user = null;
+            try {
+                user = assigned_workout.getUser().fetchIfNeeded().getUsername();
+                tvCreatedBy.setText("Created By: "+ user);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+
+
+            TextView tvInfoTimeUntil = v.findViewById(R.id.tvInfoTimeUntil);
+            tvInfoTimeUntil.setText(assigned_workout.getTimeUntil());
+
+            ImageView ivInfoImage = v.findViewById(R.id.ivInfoImage);
+            Glide.with(v).load(assigned_workout.getMedia().getUrl()).into(ivInfoImage);
+            // Return info window contents
+            return v;
+        }
+
+        // This changes the frame of the info window; returning null uses the default frame.
+        // This is just the border and arrow surrounding the contents specified above
+        @Override
+        public View getInfoWindow(Marker marker) {
+            return null;
         }
     }
 
