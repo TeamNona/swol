@@ -1,4 +1,4 @@
-package noaleetz.com.swol;
+package noaleetz.com.swol.ui.fragments;
 
 
 import android.Manifest;
@@ -9,10 +9,6 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
-import android.graphics.drawable.Icon;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
@@ -49,9 +45,7 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.maps.android.MarkerManager;
 import com.google.maps.android.clustering.Cluster;
-import com.google.maps.android.clustering.ClusterItem;
 import com.google.maps.android.clustering.ClusterManager;
 import com.google.maps.android.clustering.view.DefaultClusterRenderer;
 import com.google.maps.android.ui.IconGenerator;
@@ -63,16 +57,18 @@ import com.parse.ParseUser;
 import org.parceler.Parcels;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
+import noaleetz.com.swol.ui.adapters.ClusterWindowAdapter;
+import noaleetz.com.swol.ui.activities.MainActivity;
+import noaleetz.com.swol.R;
 import noaleetz.com.swol.models.Workout;
 
 import static android.app.Activity.RESULT_OK;
-import static noaleetz.com.swol.MainActivity.REQUEST_LOCATION_PERMISSION;
+import static noaleetz.com.swol.ui.activities.MainActivity.REQUEST_LOCATION_PERMISSION;
 
 
 /**
@@ -80,13 +76,12 @@ import static noaleetz.com.swol.MainActivity.REQUEST_LOCATION_PERMISSION;
  */
 
 public class MapFragment extends Fragment implements OnMapReadyCallback,
-                                                     GoogleMap.OnMapLongClickListener,
-                                                     GoogleMap.OnInfoWindowClickListener,
-                                                     GoogleMap.OnMapClickListener,
-                                                     ClusterManager.OnClusterItemClickListener<Workout>,
-                                                     ClusterManager.OnClusterItemInfoWindowClickListener<Workout>,
-                                                     ClusterWindowAdapter.itemClickListener {
-
+        GoogleMap.OnMapLongClickListener,
+        GoogleMap.OnInfoWindowClickListener,
+        GoogleMap.OnMapClickListener,
+        ClusterManager.OnClusterItemClickListener<Workout>,
+        ClusterManager.OnClusterItemInfoWindowClickListener<Workout>,
+        ClusterWindowAdapter.itemClickListener {
 
 
     ArrayList<Marker> workoutMarkers;
@@ -201,9 +196,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
         });
 
 
-
         Log.d("ArrayCheck(onViewCreat)", "markers " + "[" + workoutMarkers.size() + "]:" + workoutMarkers.toString() +
-                "/n ids " + "[" + workoutIDs.size() + "]:"  + workoutIDs.toString());
+                "/n ids " + "[" + workoutIDs.size() + "]:" + workoutIDs.toString());
 
 
     }
@@ -303,9 +297,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
             });
 
 
-
             Log.d("ArrayCheck(loadMap)", "markers " + "[" + workoutMarkers.size() + "]:" + workoutMarkers.toString() +
-                    "/n ids " + "[" + workoutIDs.size() + "]:"  + workoutIDs.toString());
+                    "/n ids " + "[" + workoutIDs.size() + "]:" + workoutIDs.toString());
 
         }
 
@@ -342,7 +335,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
                     showNearbyWorkouts(builder.build());
 
                     Log.d("ArrayCheck(calcBounds)", "markers [" + workoutMarkers.size() + "]" +
-                            "\nids " + "[" + workoutIDs.size() + "]:"  + workoutIDs.toString());
+                            "\nids " + "[" + workoutIDs.size() + "]:" + workoutIDs.toString());
 
                 } else {
                     e.printStackTrace();
@@ -374,7 +367,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
             @Override
             public void done(List<Workout> objects, ParseException e) {
                 if (e == null) {
-                    Log.d(TAG, "Number of workouts: "+ Integer.toString(objects.size()));
+                    Log.d(TAG, "Number of workouts: " + Integer.toString(objects.size()));
                     workoutMarkers.clear();
                     workoutIDs.clear();
                     map.clear();
@@ -403,9 +396,9 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
     }
 
     // this function is to convert from DP to pixels for the padding on the map bounds
-    public static int convertDpToPixel(float dp){
+    public static int convertDpToPixel(float dp) {
         DisplayMetrics metrics = Resources.getSystem().getDisplayMetrics();
-        float px = dp * ((float)metrics.densityDpi / DisplayMetrics.DENSITY_DEFAULT);
+        float px = dp * ((float) metrics.densityDpi / DisplayMetrics.DENSITY_DEFAULT);
         return (int) px;
     }
 
@@ -424,7 +417,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
                 mLastKnownLocation = null;
                 getLocationPermission();
             }
-        } catch (SecurityException e)  {
+        } catch (SecurityException e) {
             Log.e("Exception: %s", e.getMessage());
         }
     }
@@ -486,23 +479,22 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
                                 // Logic to handle location object
                                 mLastKnownLocation = location;
                                 currentGeoPoint = new ParseGeoPoint(mLastKnownLocation.getLatitude(), mLastKnownLocation.getLongitude());
-                                Log.d(TAG,currentGeoPoint.toString());
-                                ParseUser.getCurrentUser().put("currentLocation",currentGeoPoint);
+                                Log.d(TAG, currentGeoPoint.toString());
+                                ParseUser.getCurrentUser().put("currentLocation", currentGeoPoint);
                                 ParseUser.getCurrentUser().saveInBackground();
                                 // move the map to the current location
-                                if (init) map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(mLastKnownLocation.getLatitude(), mLastKnownLocation.getLongitude()), 15));
+                                if (init)
+                                    map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(mLastKnownLocation.getLatitude(), mLastKnownLocation.getLongitude()), 15));
                                 init = false;
-                            }
-                            else{
+                            } else {
 
                                 // TODO- handle null location
 
-                                Log.d(TAG,"location is found to be null");
+                                Log.d(TAG, "location is found to be null");
                             }
                         }
                     });
         }
-
 
 
     }
@@ -542,31 +534,31 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
 
     void viewNextWorkout() {
         mod = counter % workoutMarkers.size();
-            final Marker marker = workoutMarkers.get(mod);
-            Workout workout = Parcels.unwrap((Parcelable) marker.getTag());
-            Log.i("MapView", "Showing workout [" + mod + "] @ " + workout.getLatLng().toString());
-            map.animateCamera(CameraUpdateFactory.newLatLngZoom(workout.getLatLng(), 17), new GoogleMap.CancelableCallback() {
-                @Override
-                public void onFinish() {
-                    // TODO: same as the onInfoWindowClick
-                    marker.showInfoWindow();
+        final Marker marker = workoutMarkers.get(mod);
+        Workout workout = Parcels.unwrap((Parcelable) marker.getTag());
+        Log.i("MapView", "Showing workout [" + mod + "] @ " + workout.getLatLng().toString());
+        map.animateCamera(CameraUpdateFactory.newLatLngZoom(workout.getLatLng(), 17), new GoogleMap.CancelableCallback() {
+            @Override
+            public void onFinish() {
+                // TODO: same as the onInfoWindowClick
+                marker.showInfoWindow();
 
-                    final Handler handler = new Handler();
-                    handler.postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            marker.showInfoWindow();
+                final Handler handler = new Handler();
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        marker.showInfoWindow();
 
-                        }
-                    }, 200);
+                    }
+                }, 200);
 
-                }
+            }
 
-                @Override
-                public void onCancel() {
+            @Override
+            public void onCancel() {
 
-                }
-            });
+            }
+        });
         counter++;
     }
 
@@ -574,7 +566,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
         getLocation();
         if (currentGeoPoint == null) return;
         Log.i("MapView", "Showing workout bounds: " + bounds.northeast.toString() + " --> " + bounds.southwest.toString());
-        map.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds,convertDpToPixel(42)));
+        map.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, convertDpToPixel(42)));
         Toast.makeText(getContext(), "Showing Nearby Workouts", Toast.LENGTH_SHORT).show();
     }
 
@@ -610,7 +602,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
     }
 
     float colorInterpolator(long time) {
-        float timeUntil = ((float )(time - System.currentTimeMillis())) / 3600000;
+        float timeUntil = ((float) (time - System.currentTimeMillis())) / 3600000;
         Log.d("ColorInterpolator", timeUntil + "");
         if (timeUntil <= 0) return BitmapDescriptorFactory.HUE_BLUE;
         if (timeUntil <= 1) return withinHour;
@@ -618,7 +610,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
         return withinForever;
     }
 
-    @Override public void onDestroyView() {
+    @Override
+    public void onDestroyView() {
         super.onDestroyView();
         unbinder.unbind();
     }
@@ -660,7 +653,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
 
     }
 
-//     alright now to implement the clickable methods for the clusters
+    //     alright now to implement the clickable methods for the clusters
     @Override
     public void onInfoWindowClick(Marker marker) {
 
@@ -742,7 +735,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
     public class CustomInfoWindowAdapter implements GoogleMap.InfoWindowAdapter {
         private final View v;
 
-        public CustomInfoWindowAdapter(LayoutInflater i){
+        public CustomInfoWindowAdapter(LayoutInflater i) {
             v = getLayoutInflater().inflate(R.layout.custom_info_window, null);
         }
 
@@ -762,7 +755,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
             String user = null;
             try {
                 user = assigned_workout.getUser().fetchIfNeeded().getUsername();
-                tvCreatedBy.setText("Created By: "+ user);
+                tvCreatedBy.setText("Created By: " + user);
             } catch (ParseException e) {
                 e.printStackTrace();
             }

@@ -87,7 +87,7 @@ public class Workout extends ParseObject implements ClusterItem {
         return getParseUser(KEY_USER);
     }
 
-    public void setUser (ParseUser user) {
+    public void setUser(ParseUser user) {
         put(KEY_USER, user);
     }
 
@@ -130,7 +130,10 @@ public class Workout extends ParseObject implements ClusterItem {
 
     // helper methods for other functions
 
-    public LatLng getLatLng() { final ParseGeoPoint loc = getLocation(); return new LatLng(loc.getLatitude(), loc.getLongitude());}
+    public LatLng getLatLng() {
+        final ParseGeoPoint loc = getLocation();
+        return new LatLng(loc.getLatitude(), loc.getLongitude());
+    }
 
     public String getTimeUntil() {
         String relativeDate;

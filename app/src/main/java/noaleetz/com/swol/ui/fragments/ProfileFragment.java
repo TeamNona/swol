@@ -1,13 +1,10 @@
-package noaleetz.com.swol;
+package noaleetz.com.swol.ui.fragments;
 
 
-import android.media.Image;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
-import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -25,7 +22,6 @@ import com.parse.ParseException;
 import com.parse.ParseUser;
 
 import org.json.JSONObject;
-import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +30,9 @@ import java.util.Random;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
+import noaleetz.com.swol.ui.activities.MainActivity;
+import noaleetz.com.swol.ui.adapters.ProfileAdapter;
+import noaleetz.com.swol.R;
 import noaleetz.com.swol.models.Workout;
 
 
@@ -105,7 +104,7 @@ public class ProfileFragment extends Fragment {
 
         if (!MainActivity.isFacebookUser(user)) {
 
-                tvProfileUsername.setVisibility(View.VISIBLE);
+            tvProfileUsername.setVisibility(View.VISIBLE);
 
             tvProfileUsername.setText("@" + user.getUsername());
             try {
@@ -137,7 +136,7 @@ public class ProfileFragment extends Fragment {
         tvMilesRun.setText(milesRun);
 
         //TODO: extract the weight, for now, just get a random number
-        String weight = "" + new Random().nextInt(29862)*5;
+        String weight = "" + new Random().nextInt(29862) * 5;
         tvWeightLifted.setText(weight);
 
         //TODO: extract the altitude run, for now, just get a random number

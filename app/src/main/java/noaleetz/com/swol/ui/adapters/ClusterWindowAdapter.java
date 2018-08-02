@@ -1,10 +1,8 @@
-package noaleetz.com.swol;
+package noaleetz.com.swol.ui.adapters;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,19 +12,15 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.model.Marker;
-import com.google.maps.android.clustering.Cluster;
 import com.parse.ParseException;
-import com.parse.ParseGeoPoint;
 import com.parse.ParseUser;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import jp.wasabeef.glide.transformations.RoundedCornersTransformation;
+import noaleetz.com.swol.R;
 import noaleetz.com.swol.models.Workout;
 
 public class ClusterWindowAdapter extends RecyclerView.Adapter<ClusterWindowAdapter.ViewHolder> {
@@ -59,7 +53,6 @@ public class ClusterWindowAdapter extends RecyclerView.Adapter<ClusterWindowAdap
         }
 
 
-
         LayoutInflater inflater = LayoutInflater.from(context);
 
         postView = inflater.inflate(R.layout.custom_info_window, parent, false);
@@ -80,8 +73,6 @@ public class ClusterWindowAdapter extends RecyclerView.Adapter<ClusterWindowAdap
 
         final RoundedCornersTransformation roundedCornersTransformation = new RoundedCornersTransformation(15, 15);
         final RequestOptions requestOptions = RequestOptions.bitmapTransform(roundedCornersTransformation);
-
-
 
 
         try {

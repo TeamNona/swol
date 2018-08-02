@@ -1,20 +1,15 @@
-package noaleetz.com.swol;
+package noaleetz.com.swol.ui.activities;
 
 
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
-import android.net.Uri;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
@@ -35,49 +30,30 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
-import com.facebook.AccessToken;
-import com.facebook.GraphRequest;
-import com.facebook.GraphResponse;
 import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.parse.LogInCallback;
-import com.parse.Parse;
 import com.parse.ParseException;
 import com.parse.ParseFile;
 import com.parse.ParseGeoPoint;
 import com.parse.ParseUser;
-import com.parse.SaveCallback;
-import com.parse.facebook.ParseFacebookUtils;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URLConnection;
-import java.util.Arrays;
-import java.util.Collection;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import noaleetz.com.swol.R;
 import noaleetz.com.swol.models.Workout;
+import noaleetz.com.swol.ui.adapters.ClusterWindowAdapter;
+import noaleetz.com.swol.ui.fragments.AddFragment;
+import noaleetz.com.swol.ui.fragments.DetailFragment;
+import noaleetz.com.swol.ui.fragments.FeedFragment;
+import noaleetz.com.swol.ui.fragments.MapFragment;
+import noaleetz.com.swol.ui.fragments.ProfileFragment;
 
 public class MainActivity extends AppCompatActivity implements AddFragment.NewMapItemListener, ClusterWindowAdapter.itemClickListener {
 
@@ -141,7 +117,6 @@ public class MainActivity extends AppCompatActivity implements AddFragment.NewMa
         mDrawer.addDrawerListener(drawerToggle);
 
 
-
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
         getLocation();
@@ -179,7 +154,7 @@ public class MainActivity extends AppCompatActivity implements AddFragment.NewMa
                             .error(R.drawable.ic_person))
                     .into(ivAvatar);
 
-           // save profile image onto parse
+            // save profile image onto parse
             if (ParseUser.getCurrentUser().get("profilePicture") == null) {
                 Drawable drawable = ivAvatar.getDrawable();
                 Bitmap bitmap = convertToBitmap(drawable, 500, 500);
@@ -234,10 +209,10 @@ public class MainActivity extends AppCompatActivity implements AddFragment.NewMa
             } else {
                 try {
                     Glide.with(hView).load(ParseUser.getCurrentUser().fetchIfNeeded().getParseFile("profilePicture").getFile())
-                        .apply(RequestOptions.circleCropTransform()
-                                .placeholder(R.drawable.ic_person)
-                                .error(R.drawable.ic_person))
-                        .into(ivAvatar);
+                            .apply(RequestOptions.circleCropTransform()
+                                    .placeholder(R.drawable.ic_person)
+                                    .error(R.drawable.ic_person))
+                            .into(ivAvatar);
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
@@ -286,7 +261,7 @@ public class MainActivity extends AppCompatActivity implements AddFragment.NewMa
                                 Log.d(TAG, currentGeoPoint.toString());
                                 ParseUser.getCurrentUser().put("currentLocation", currentGeoPoint);
                                 ParseUser.getCurrentUser().saveInBackground();
-                                Log.d(TAG,"geopoint posted to parse)");
+                                Log.d(TAG, "geopoint posted to parse)");
 
 
                             } else {
@@ -294,7 +269,7 @@ public class MainActivity extends AppCompatActivity implements AddFragment.NewMa
 
                                 // TODO- handle null location
 
-                                Log.d(TAG,"location is found to be null");
+                                Log.d(TAG, "location is found to be null");
                                 Toast.makeText(getApplication().getBaseContext(), "We weren't able to identify your location",
                                         Toast.LENGTH_LONG).show();
 
@@ -426,10 +401,10 @@ public class MainActivity extends AppCompatActivity implements AddFragment.NewMa
     public void changeToDetailFragment(Workout workout) {
         DetailFragment detailFragment = new DetailFragment();
         Bundle bundle = new Bundle();
-        bundle.putParcelable("workout",workout);
+        bundle.putParcelable("workout", workout);
         detailFragment.setArguments(bundle);
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.flContent,detailFragment).addToBackStack(null);
+        transaction.replace(R.id.flContent, detailFragment).addToBackStack(null);
         transaction.commit();
     }
 
@@ -452,8 +427,7 @@ public class MainActivity extends AppCompatActivity implements AddFragment.NewMa
     }
 
 
-
-    public String getFBID () {
+    public String getFBID() {
         JSONObject authData = ParseUser.getCurrentUser().getJSONObject("authData");
         JSONObject facebook = null;
         try {
@@ -473,11 +447,11 @@ public class MainActivity extends AppCompatActivity implements AddFragment.NewMa
         return fbID;
     }
 
-    public ParseFile conversionBitmapParseFile(Bitmap imageBitmap){
-        ByteArrayOutputStream byteArrayOutputStream=new ByteArrayOutputStream();
-        imageBitmap.compress(Bitmap.CompressFormat.PNG,100,byteArrayOutputStream);
+    public ParseFile conversionBitmapParseFile(Bitmap imageBitmap) {
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        imageBitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
         byte[] imageByte = byteArrayOutputStream.toByteArray();
-        ParseFile parseFile = new ParseFile("image_file.png",imageByte);
+        ParseFile parseFile = new ParseFile("image_file.png", imageByte);
         return parseFile;
     }
 
@@ -489,9 +463,6 @@ public class MainActivity extends AppCompatActivity implements AddFragment.NewMa
 
         return mutableBitmap;
     }
-
-
-
 
 
 }

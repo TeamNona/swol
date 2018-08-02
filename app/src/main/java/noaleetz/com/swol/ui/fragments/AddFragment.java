@@ -1,40 +1,29 @@
-package noaleetz.com.swol;
+package noaleetz.com.swol.ui.fragments;
 
 
-import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.app.DatePickerDialog;
-import android.app.Dialog;
 import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.media.ExifInterface;
-import android.media.Image;
-import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.Parcelable;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.FileProvider;
-import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -48,20 +37,12 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
-import android.widget.VideoView;
 
-import com.bumptech.glide.Glide;
-import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.Status;
-import com.google.android.gms.location.places.GeoDataClient;
 import com.google.android.gms.location.places.Place;
-import com.google.android.gms.location.places.PlaceDetectionClient;
-import com.google.android.gms.location.places.Places;
-import com.google.android.gms.location.places.ui.PlaceAutocompleteFragment;
 import com.google.android.gms.location.places.ui.PlaceSelectionListener;
 import com.google.android.gms.location.places.ui.SupportPlaceAutocompleteFragment;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
 import com.parse.ParseException;
 import com.parse.ParseFile;
 import com.parse.ParseGeoPoint;
@@ -69,25 +50,17 @@ import com.parse.ParseUser;
 import com.parse.SaveCallback;
 
 import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
-import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
-import noaleetz.com.swol.models.User;
+import noaleetz.com.swol.R;
 import noaleetz.com.swol.models.Workout;
 
 import static android.support.constraint.Constraints.TAG;
@@ -98,7 +71,7 @@ import static android.view.View.VISIBLE;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class AddFragment extends Fragment{
+public class AddFragment extends Fragment {
 
     // Use butterknife to bind
     @BindView(R.id.btnPost)
@@ -133,8 +106,6 @@ public class AddFragment extends Fragment{
     ProgressBar pbPost;
 
 
-
-
     // declare other variables
     Date Date;
     ParseGeoPoint postLocation;
@@ -145,7 +116,7 @@ public class AddFragment extends Fragment{
     int postHour = 23;
     int postMinute = 59;
     FloatingActionButton fab;
-    
+
     // keep track of who is logged on
     private ParseUser currentUser = ParseUser.getCurrentUser();
 
@@ -169,8 +140,6 @@ public class AddFragment extends Fragment{
     // declare variables for spinners
     String workoutCategoryPrompt = "Choose a Workout Category";
     String tagsPrompt = "Choose up to 5 tags";
-
-
 
 
     public AddFragment() {
@@ -226,7 +195,7 @@ public class AddFragment extends Fragment{
         workoutCategories = getResources().getStringArray(R.array.workout_categories);
 
         ArrayAdapter<CharSequence> categoryAdapter = new ArrayAdapter<CharSequence>(getActivity(),
-                android.R.layout.simple_spinner_dropdown_item, workoutCategories ) {
+                android.R.layout.simple_spinner_dropdown_item, workoutCategories) {
             // Disable click item
             @Override
             public boolean isEnabled(int position) {
@@ -255,12 +224,11 @@ public class AddFragment extends Fragment{
         };
 
 
-
 //        // Create an ArrayAdapter using the string array and a default spinner layout
 //        ArrayAdapter<CharSequence> categoryAdapter = ArrayAdapter.createFromResource(getActivity(),
 //                R.array.workout_categories, android.R.layout.simple_spinner_item) ;
         // Specify the layout to use when the list of choices appears
-        categoryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item) ;
+        categoryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         // Apply the adapter to the spinner
         workoutCategory.setAdapter(categoryAdapter);
 
@@ -271,8 +239,6 @@ public class AddFragment extends Fragment{
                 capture.setVisibility(VISIBLE);
             }
         });
-
-
 
 
         // set on click listener for user to add time
@@ -297,8 +263,8 @@ public class AddFragment extends Fragment{
         SupportPlaceAutocompleteFragment autocompleteFragment = (SupportPlaceAutocompleteFragment)
                 getChildFragmentManager().findFragmentById(R.id.place_autocomplete_fragment);
 
-        ((EditText)autocompleteFragment.getView().findViewById(R.id.place_autocomplete_search_input)).setHint("Choose Location");
-        ((EditText)autocompleteFragment.getView().findViewById(R.id.place_autocomplete_search_input)).setTextSize(18.0f);
+        ((EditText) autocompleteFragment.getView().findViewById(R.id.place_autocomplete_search_input)).setHint("Choose Location");
+        ((EditText) autocompleteFragment.getView().findViewById(R.id.place_autocomplete_search_input)).setTextSize(18.0f);
 
         autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
             @Override
@@ -323,7 +289,7 @@ public class AddFragment extends Fragment{
         tagCategories = getResources().getStringArray(R.array.tags);
 
         ArrayAdapter<CharSequence> tagsAdapter = new ArrayAdapter<CharSequence>(getActivity(),
-                android.R.layout.simple_spinner_dropdown_item, tagCategories ) {
+                android.R.layout.simple_spinner_dropdown_item, tagCategories) {
             // Disable click item
             @Override
             public boolean isEnabled(int position) {
@@ -357,7 +323,7 @@ public class AddFragment extends Fragment{
         spTags.setAdapter(tagsAdapter);
 
 
-                // allow user to upload and post a photo for the workout
+        // allow user to upload and post a photo for the workout
         upload.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -455,7 +421,6 @@ public class AddFragment extends Fragment{
                 } else {
                     tags.put(spTags.getSelectedItem());
                 }
-
 
 
                 // populate participants
@@ -672,7 +637,7 @@ public class AddFragment extends Fragment{
         File mediaStorageDir = new File(getContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES), APP_TAG);
 
         // Create the storage directory if it does not exist
-        if (!mediaStorageDir.exists() && !mediaStorageDir.mkdirs()){
+        if (!mediaStorageDir.exists() && !mediaStorageDir.mkdirs()) {
             Log.d(APP_TAG, "failed to create directory");
         }
 
@@ -690,7 +655,7 @@ public class AddFragment extends Fragment{
         File mediaStorageDir = new File(getContext().getExternalFilesDir(Environment.DIRECTORY_DCIM), APP_TAG);
 
         // Create the storage directory if it does not exist
-        if (!mediaStorageDir.exists() && !mediaStorageDir.mkdirs()){
+        if (!mediaStorageDir.exists() && !mediaStorageDir.mkdirs()) {
             Log.d(APP_TAG, "failed to create directory");
         }
 
@@ -701,11 +666,11 @@ public class AddFragment extends Fragment{
     }
 
 
-    public ParseFile conversionBitmapParseFile(Bitmap imageBitmap){
-        ByteArrayOutputStream byteArrayOutputStream=new ByteArrayOutputStream();
-        imageBitmap.compress(Bitmap.CompressFormat.PNG,100,byteArrayOutputStream);
+    public ParseFile conversionBitmapParseFile(Bitmap imageBitmap) {
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        imageBitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
         byte[] imageByte = byteArrayOutputStream.toByteArray();
-        ParseFile parseFile = new ParseFile("image_file.png",imageByte);
+        ParseFile parseFile = new ParseFile("image_file.png", imageByte);
         return parseFile;
     }
 
@@ -750,7 +715,8 @@ public class AddFragment extends Fragment{
 
     // When binding a fragment in onCreateView, set the views to null in onDestroyView.
     // ButterKnife returns an Unbinder on the initial binding that has an unbind method to do this automatically.
-    @Override public void onDestroyView() {
+    @Override
+    public void onDestroyView() {
         super.onDestroyView();
         unbinder.unbind();
     }

@@ -1,4 +1,4 @@
-package noaleetz.com.swol;
+package noaleetz.com.swol.ui.adapters;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
@@ -20,9 +20,11 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import jp.wasabeef.glide.transformations.RoundedCornersTransformation;
+import noaleetz.com.swol.R;
 import noaleetz.com.swol.models.Workout;
+import noaleetz.com.swol.ui.activities.MainActivity;
 
-public class ProfileAdapter extends RecyclerView.Adapter<ProfileAdapter.ViewHolder> {
+public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
     //Creating a global variable to store the array of string containing data to be displayed
     //Send dummy list that need to be displayed from MainActivity to MyListAdapter via constructor
 
@@ -37,11 +39,11 @@ public class ProfileAdapter extends RecyclerView.Adapter<ProfileAdapter.ViewHold
     }
 
 
-    public ProfileAdapter(List<Workout> posts) {
+    public FeedAdapter(List<Workout> posts) {
         mposts = posts;
     }
 
-    public ProfileAdapter(AdapterCallback callback) {
+    public FeedAdapter(AdapterCallback callback) {
         this.mAdapterCallback = callback;
     }
 
@@ -55,7 +57,7 @@ public class ProfileAdapter extends RecyclerView.Adapter<ProfileAdapter.ViewHold
 
         LayoutInflater inflater = LayoutInflater.from(mcontext);
 
-        View postView = inflater.inflate(R.layout.profile_workout_item, parent, false);
+        View postView = inflater.inflate(R.layout.workout_item, parent, false);
 
         return new ViewHolder(postView);
 
@@ -74,6 +76,7 @@ public class ProfileAdapter extends RecyclerView.Adapter<ProfileAdapter.ViewHold
         final RoundedCornersTransformation roundedCornersTransformation = new RoundedCornersTransformation(15, 15);
         final RequestOptions requestOptions = RequestOptions.bitmapTransform(roundedCornersTransformation);
 
+
         try {
             Glide.with(mcontext)
                     .load(post.getMedia().getFile())
@@ -85,14 +88,17 @@ public class ProfileAdapter extends RecyclerView.Adapter<ProfileAdapter.ViewHold
         holder.tvWorkoutTitle.setText(post.getName());
 
         // TODO- set icons and text in layout
-        String distText = Double.parseDouble(distanceFrom(post.getLocation())) == 1 ? " mile from you" : " miles from you";
-        holder.tvLocation.setText(distanceFrom(post.getLocation()) + distText);
-        holder.tvTime.setText(post.getTimeUntil());
+
+        holder.tvLocation.setText(distanceFrom(post.getLocation()) + " mile(s) from you");
+
+        holder.tvDescription.setText(post.getDescription());
+//        holder.tvParticipants.setText(post.getParticipants());
         try {
-            holder.tvCreatedBy.setText(post.getUser().fetchIfNeeded().getUsername());
+            holder.tvCreatedBy.setText("Created By " + post.getUser().fetchIfNeeded().getUsername());
         } catch (ParseException e) {
             e.printStackTrace();
         }
+        holder.tvTime.setText(post.getTimeUntil());
 
         // call interface
         holder.itemView.setOnClickListener(new View.OnClickListener() {
@@ -128,16 +134,22 @@ public class ProfileAdapter extends RecyclerView.Adapter<ProfileAdapter.ViewHold
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         // define and reference all the Views defined in our workout_item.xml file
+        @BindView(R.id.ivDetail)
+        ImageView ivDetail;
         @BindView(R.id.ivWorkoutImage)
         ImageView ivWorkoutImage;
         @BindView(R.id.tvWorkoutTitle)
         TextView tvWorkoutTitle;
+        @BindView(R.id.tvDescription)
+        TextView tvDescription;
         @BindView(R.id.tvLocation)
         TextView tvLocation;
         @BindView(R.id.tvTime)
         TextView tvTime;
         @BindView(R.id.tvCreatedBy)
         TextView tvCreatedBy;
+        @BindView(R.id.tvParticipants)
+        TextView tvParticipants;
 
 
         public ViewHolder(View itemView) {
@@ -154,6 +166,10 @@ public class ProfileAdapter extends RecyclerView.Adapter<ProfileAdapter.ViewHold
         @Override
         public void onClick(View view) {
 
+
+//            final Intent i = new Intent(mcontext,DetailActivity.class);
+//            i.putExtra("post", Parcels.wrap(postObj));
+//            mcontext.startActivity(i);
         }
 
 
