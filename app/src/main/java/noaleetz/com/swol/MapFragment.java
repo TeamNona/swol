@@ -115,9 +115,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
     float withinToday = BitmapDescriptorFactory.HUE_YELLOW;
     float withinForever = BitmapDescriptorFactory.HUE_GREEN;
 
-    @BindView(R.id.fabNext)
-    FloatingActionButton fabNext;
-
     @BindView(R.id.fabNearby)
     FloatingActionButton fabNearby;
 
@@ -170,14 +167,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
         mapFragment.getMapAsync(this);
 
         hideZoomButtons();
-
-        fabNext.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                viewNextWorkout();
-                hideZoomButtons();
-            }
-        });
 
         fabNearby.setOnClickListener(new View.OnClickListener() {
             @Override
