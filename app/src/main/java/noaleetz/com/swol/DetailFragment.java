@@ -141,8 +141,12 @@ public class DetailFragment extends Fragment {
 
         tvWorkoutTitle.setText(workout.getName());
         tvBeginsIn.setText(workout.getTimeUntil());
-        tvFullName.setText(workout.getUser().getString("name"));
-        tvUsername.setText(workout.getUser().getUsername());
+        try {
+            tvFullName.setText(workout.getUser().fetchIfNeeded().getString("name"));
+            tvUsername.setText(workout.getUser().fetchIfNeeded().getUsername());
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
         tvDescription.setText(workout.getDescription());
 
         participant_list = new JSONArray();
