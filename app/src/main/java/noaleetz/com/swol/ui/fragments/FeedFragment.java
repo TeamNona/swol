@@ -46,7 +46,6 @@ public class FeedFragment extends Fragment {
     private Unbinder unbinder;
 
 
-
     public FeedFragment() {
         // Required empty public constructor
     }

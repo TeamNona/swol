@@ -53,7 +53,6 @@ public class ClusterWindowAdapter extends RecyclerView.Adapter<ClusterWindowAdap
         }
 
 
-
         LayoutInflater inflater = LayoutInflater.from(context);
 
         postView = inflater.inflate(R.layout.custom_info_window, parent, false);
@@ -74,8 +73,6 @@ public class ClusterWindowAdapter extends RecyclerView.Adapter<ClusterWindowAdap
 
         final RoundedCornersTransformation roundedCornersTransformation = new RoundedCornersTransformation(15, 15);
         final RequestOptions requestOptions = RequestOptions.bitmapTransform(roundedCornersTransformation);
-
-
 
 
         try {

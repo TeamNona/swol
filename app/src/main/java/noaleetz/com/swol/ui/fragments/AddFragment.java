@@ -71,7 +71,7 @@ import static android.view.View.VISIBLE;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class AddFragment extends Fragment{
+public class AddFragment extends Fragment {
 
     // Use butterknife to bind
     @BindView(R.id.btnPost)
@@ -106,8 +106,6 @@ public class AddFragment extends Fragment{
     ProgressBar pbPost;
 
 
-
-
     // declare other variables
     Date Date;
     ParseGeoPoint postLocation;
@@ -118,7 +116,7 @@ public class AddFragment extends Fragment{
     int postHour = 23;
     int postMinute = 59;
     FloatingActionButton fab;
-    
+
     // keep track of who is logged on
     private ParseUser currentUser = ParseUser.getCurrentUser();
 
@@ -142,8 +140,6 @@ public class AddFragment extends Fragment{
     // declare variables for spinners
     String workoutCategoryPrompt = "Choose a Workout Category";
     String tagsPrompt = "Choose up to 5 tags";
-
-
 
 
     public AddFragment() {
@@ -199,7 +195,7 @@ public class AddFragment extends Fragment{
         workoutCategories = getResources().getStringArray(R.array.workout_categories);
 
         ArrayAdapter<CharSequence> categoryAdapter = new ArrayAdapter<CharSequence>(getActivity(),
-                android.R.layout.simple_spinner_dropdown_item, workoutCategories ) {
+                android.R.layout.simple_spinner_dropdown_item, workoutCategories) {
             // Disable click item
             @Override
             public boolean isEnabled(int position) {
@@ -228,12 +224,11 @@ public class AddFragment extends Fragment{
         };
 
 
-
 //        // Create an ArrayAdapter using the string array and a default spinner layout
 //        ArrayAdapter<CharSequence> categoryAdapter = ArrayAdapter.createFromResource(getActivity(),
 //                R.array.workout_categories, android.R.layout.simple_spinner_item) ;
         // Specify the layout to use when the list of choices appears
-        categoryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item) ;
+        categoryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         // Apply the adapter to the spinner
         workoutCategory.setAdapter(categoryAdapter);
 
@@ -244,8 +239,6 @@ public class AddFragment extends Fragment{
                 capture.setVisibility(VISIBLE);
             }
         });
-
-
 
 
         // set on click listener for user to add time
@@ -270,8 +263,8 @@ public class AddFragment extends Fragment{
         SupportPlaceAutocompleteFragment autocompleteFragment = (SupportPlaceAutocompleteFragment)
                 getChildFragmentManager().findFragmentById(R.id.place_autocomplete_fragment);
 
-        ((EditText)autocompleteFragment.getView().findViewById(R.id.place_autocomplete_search_input)).setHint("Choose Location");
-        ((EditText)autocompleteFragment.getView().findViewById(R.id.place_autocomplete_search_input)).setTextSize(18.0f);
+        ((EditText) autocompleteFragment.getView().findViewById(R.id.place_autocomplete_search_input)).setHint("Choose Location");
+        ((EditText) autocompleteFragment.getView().findViewById(R.id.place_autocomplete_search_input)).setTextSize(18.0f);
 
         autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
             @Override
@@ -296,7 +289,7 @@ public class AddFragment extends Fragment{
         tagCategories = getResources().getStringArray(R.array.tags);
 
         ArrayAdapter<CharSequence> tagsAdapter = new ArrayAdapter<CharSequence>(getActivity(),
-                android.R.layout.simple_spinner_dropdown_item, tagCategories ) {
+                android.R.layout.simple_spinner_dropdown_item, tagCategories) {
             // Disable click item
             @Override
             public boolean isEnabled(int position) {
@@ -330,7 +323,7 @@ public class AddFragment extends Fragment{
         spTags.setAdapter(tagsAdapter);
 
 
-                // allow user to upload and post a photo for the workout
+        // allow user to upload and post a photo for the workout
         upload.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -428,7 +421,6 @@ public class AddFragment extends Fragment{
                 } else {
                     tags.put(spTags.getSelectedItem());
                 }
-
 
 
                 // populate participants
@@ -645,7 +637,7 @@ public class AddFragment extends Fragment{
         File mediaStorageDir = new File(getContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES), APP_TAG);
 
         // Create the storage directory if it does not exist
-        if (!mediaStorageDir.exists() && !mediaStorageDir.mkdirs()){
+        if (!mediaStorageDir.exists() && !mediaStorageDir.mkdirs()) {
             Log.d(APP_TAG, "failed to create directory");
         }
 
@@ -663,7 +655,7 @@ public class AddFragment extends Fragment{
         File mediaStorageDir = new File(getContext().getExternalFilesDir(Environment.DIRECTORY_DCIM), APP_TAG);
 
         // Create the storage directory if it does not exist
-        if (!mediaStorageDir.exists() && !mediaStorageDir.mkdirs()){
+        if (!mediaStorageDir.exists() && !mediaStorageDir.mkdirs()) {
             Log.d(APP_TAG, "failed to create directory");
         }
 
@@ -674,11 +666,11 @@ public class AddFragment extends Fragment{
     }
 
 
-    public ParseFile conversionBitmapParseFile(Bitmap imageBitmap){
-        ByteArrayOutputStream byteArrayOutputStream=new ByteArrayOutputStream();
-        imageBitmap.compress(Bitmap.CompressFormat.PNG,100,byteArrayOutputStream);
+    public ParseFile conversionBitmapParseFile(Bitmap imageBitmap) {
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        imageBitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
         byte[] imageByte = byteArrayOutputStream.toByteArray();
-        ParseFile parseFile = new ParseFile("image_file.png",imageByte);
+        ParseFile parseFile = new ParseFile("image_file.png", imageByte);
         return parseFile;
     }
 
@@ -723,7 +715,8 @@ public class AddFragment extends Fragment{
 
     // When binding a fragment in onCreateView, set the views to null in onDestroyView.
     // ButterKnife returns an Unbinder on the initial binding that has an unbind method to do this automatically.
-    @Override public void onDestroyView() {
+    @Override
+    public void onDestroyView() {
         super.onDestroyView();
         unbinder.unbind();
     }

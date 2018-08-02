@@ -104,7 +104,7 @@ public class ProfileFragment extends Fragment {
 
         if (!MainActivity.isFacebookUser(user)) {
 
-                tvProfileUsername.setVisibility(View.VISIBLE);
+            tvProfileUsername.setVisibility(View.VISIBLE);
 
             tvProfileUsername.setText("@" + user.getUsername());
             try {
@@ -136,7 +136,7 @@ public class ProfileFragment extends Fragment {
         tvMilesRun.setText(milesRun);
 
         //TODO: extract the weight, for now, just get a random number
-        String weight = "" + new Random().nextInt(29862)*5;
+        String weight = "" + new Random().nextInt(29862) * 5;
         tvWeightLifted.setText(weight);
 
         //TODO: extract the altitude run, for now, just get a random number

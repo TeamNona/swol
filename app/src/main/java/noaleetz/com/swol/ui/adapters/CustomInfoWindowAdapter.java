@@ -19,7 +19,7 @@ import noaleetz.com.swol.models.Workout;
 class CustomInfoWindowAdapter implements GoogleMap.InfoWindowAdapter {
     LayoutInflater mInflater;
 
-    public CustomInfoWindowAdapter(LayoutInflater i){
+    public CustomInfoWindowAdapter(LayoutInflater i) {
         mInflater = i;
     }
 
@@ -28,8 +28,6 @@ class CustomInfoWindowAdapter implements GoogleMap.InfoWindowAdapter {
     public View getInfoContents(Marker marker) {
 
 //        Workout assigned_workout;
-
-
 
 
         // Getting view from the layout file
@@ -46,7 +44,7 @@ class CustomInfoWindowAdapter implements GoogleMap.InfoWindowAdapter {
         String user = null;
         try {
             user = assigned_workout.getUser().fetchIfNeeded().getUsername();
-            tvCreatedBy.setText("Created By: "+ user);
+            tvCreatedBy.setText("Created By: " + user);
         } catch (ParseException e) {
             e.printStackTrace();
         }

@@ -77,8 +77,6 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
         final RequestOptions requestOptions = RequestOptions.bitmapTransform(roundedCornersTransformation);
 
 
-
-
         try {
             Glide.with(mcontext)
                     .load(post.getMedia().getFile())
@@ -169,9 +167,6 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
         public void onClick(View view) {
 
 
-
-
-
 //            final Intent i = new Intent(mcontext,DetailActivity.class);
 //            i.putExtra("post", Parcels.wrap(postObj));
 //            mcontext.startActivity(i);
@@ -191,7 +186,6 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
         mposts.addAll(list);
         notifyDataSetChanged();
     }
-
 
 
 }

@@ -117,7 +117,6 @@ public class MainActivity extends AppCompatActivity implements AddFragment.NewMa
         mDrawer.addDrawerListener(drawerToggle);
 
 
-
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
         getLocation();
@@ -155,7 +154,7 @@ public class MainActivity extends AppCompatActivity implements AddFragment.NewMa
                             .error(R.drawable.ic_person))
                     .into(ivAvatar);
 
-           // save profile image onto parse
+            // save profile image onto parse
             if (ParseUser.getCurrentUser().get("profilePicture") == null) {
                 Drawable drawable = ivAvatar.getDrawable();
                 Bitmap bitmap = convertToBitmap(drawable, 500, 500);
@@ -210,10 +209,10 @@ public class MainActivity extends AppCompatActivity implements AddFragment.NewMa
             } else {
                 try {
                     Glide.with(hView).load(ParseUser.getCurrentUser().fetchIfNeeded().getParseFile("profilePicture").getFile())
-                        .apply(RequestOptions.circleCropTransform()
-                                .placeholder(R.drawable.ic_person)
-                                .error(R.drawable.ic_person))
-                        .into(ivAvatar);
+                            .apply(RequestOptions.circleCropTransform()
+                                    .placeholder(R.drawable.ic_person)
+                                    .error(R.drawable.ic_person))
+                            .into(ivAvatar);
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
@@ -262,7 +261,7 @@ public class MainActivity extends AppCompatActivity implements AddFragment.NewMa
                                 Log.d(TAG, currentGeoPoint.toString());
                                 ParseUser.getCurrentUser().put("currentLocation", currentGeoPoint);
                                 ParseUser.getCurrentUser().saveInBackground();
-                                Log.d(TAG,"geopoint posted to parse)");
+                                Log.d(TAG, "geopoint posted to parse)");
 
 
                             } else {
@@ -270,7 +269,7 @@ public class MainActivity extends AppCompatActivity implements AddFragment.NewMa
 
                                 // TODO- handle null location
 
-                                Log.d(TAG,"location is found to be null");
+                                Log.d(TAG, "location is found to be null");
                                 Toast.makeText(getApplication().getBaseContext(), "We weren't able to identify your location",
                                         Toast.LENGTH_LONG).show();
 
@@ -402,10 +401,10 @@ public class MainActivity extends AppCompatActivity implements AddFragment.NewMa
     public void changeToDetailFragment(Workout workout) {
         DetailFragment detailFragment = new DetailFragment();
         Bundle bundle = new Bundle();
-        bundle.putParcelable("workout",workout);
+        bundle.putParcelable("workout", workout);
         detailFragment.setArguments(bundle);
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.flContent,detailFragment).addToBackStack(null);
+        transaction.replace(R.id.flContent, detailFragment).addToBackStack(null);
         transaction.commit();
     }
 
@@ -428,8 +427,7 @@ public class MainActivity extends AppCompatActivity implements AddFragment.NewMa
     }
 
 
-
-    public String getFBID () {
+    public String getFBID() {
         JSONObject authData = ParseUser.getCurrentUser().getJSONObject("authData");
         JSONObject facebook = null;
         try {
@@ -449,11 +447,11 @@ public class MainActivity extends AppCompatActivity implements AddFragment.NewMa
         return fbID;
     }
 
-    public ParseFile conversionBitmapParseFile(Bitmap imageBitmap){
-        ByteArrayOutputStream byteArrayOutputStream=new ByteArrayOutputStream();
-        imageBitmap.compress(Bitmap.CompressFormat.PNG,100,byteArrayOutputStream);
+    public ParseFile conversionBitmapParseFile(Bitmap imageBitmap) {
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        imageBitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
         byte[] imageByte = byteArrayOutputStream.toByteArray();
-        ParseFile parseFile = new ParseFile("image_file.png",imageByte);
+        ParseFile parseFile = new ParseFile("image_file.png", imageByte);
         return parseFile;
     }
 
@@ -465,9 +463,6 @@ public class MainActivity extends AppCompatActivity implements AddFragment.NewMa
 
         return mutableBitmap;
     }
-
-
-
 
 
 }

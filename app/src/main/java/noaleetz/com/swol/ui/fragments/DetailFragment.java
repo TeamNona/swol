@@ -58,7 +58,6 @@ public class DetailFragment extends Fragment {
     FloatingActionButton fab;
 
 
-
     private static final String TAG = "TAGDetailFragment";
     @BindView(R.id.btBack)
     ImageView btBack;
@@ -120,7 +119,6 @@ public class DetailFragment extends Fragment {
     public JSONArray comment_list;
 
 
-
     public DetailFragment() {
         // Required empty public constructor
     }
@@ -146,7 +144,6 @@ public class DetailFragment extends Fragment {
 
         fab = (FloatingActionButton) getActivity().findViewById(R.id.fab);
         fab.hide();
-
 
 
         final RoundedCornersTransformation roundedCornersTransformation = new RoundedCornersTransformation(30, 30);
@@ -229,7 +226,6 @@ public class DetailFragment extends Fragment {
         getLikesCount(workout);
 
 
-
         // set up and populate data for  participant adapter
 
         participants = new ArrayList<>();
@@ -253,14 +249,12 @@ public class DetailFragment extends Fragment {
         rvComments.setAdapter(commentAdapter);
 
 
-
         btAddComment.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 addComment();
             }
         });
-
 
 
         btBack.setOnClickListener(new View.OnClickListener() {
@@ -285,7 +279,7 @@ public class DetailFragment extends Fragment {
                 String UserIdToAdd = ParseUser.getCurrentUser().getObjectId().toString();
 
                 // check if user has already joined
-                if(didUserJoin(participant_list,UserIdToAdd)){
+                if (didUserJoin(participant_list, UserIdToAdd)) {
                     Log.d(TAG, "is user there?" + String.valueOf(participant_list.equals(UserIdToAdd)));
 
 
@@ -311,8 +305,7 @@ public class DetailFragment extends Fragment {
                     // Showing Alert Message
                     alertDialog.show();
 
-                }
-                else {
+                } else {
                     participant_list.put(UserIdToAdd);
 
                     Log.d(TAG, participant_list.toString());
@@ -336,8 +329,6 @@ public class DetailFragment extends Fragment {
                     });
 
 
-
-
                 }
 
 
@@ -346,12 +337,12 @@ public class DetailFragment extends Fragment {
     }
 
     public boolean didUserJoin(JSONArray participantListToCheck, String userIdToCheck) {
-        for(int i=0;i<participantListToCheck.length();i++){
+        for (int i = 0; i < participantListToCheck.length(); i++) {
             try {
 //                if(participantListToCheck.get(i).equals(userIdToCheck)){
 //                if(userIdToCheck.equals(participantListToCheck.get(i))){
 
-                if(userIdToCheck.equals(participantListToCheck.getString(i))){
+                if (userIdToCheck.equals(participantListToCheck.getString(i))) {
 
                     Log.d(TAG, "participantListToCheck.getString(i):" + participantListToCheck.getString(i));
                     Log.d(TAG, "user ID found in participantListToCheck");
@@ -365,21 +356,20 @@ public class DetailFragment extends Fragment {
         return false;
     }
 
-    public void getLikesCount(Workout workout_event){
+    public void getLikesCount(Workout workout_event) {
         String workoutId = workout_event.getObjectId();
 
         ParseQuery<ParseObject> query = ParseQuery.getQuery("Likes");
 
-        query.whereEqualTo("likedPost",workout_event).countInBackground(new CountCallback() {
+        query.whereEqualTo("likedPost", workout_event).countInBackground(new CountCallback() {
             @Override
             public void done(int count, ParseException e) {
-                if (e == null){
+                if (e == null) {
                     // no error
                     Log.d(TAG, "like count:" + String.valueOf(count));
                     tvLikesCt.setText(String.valueOf(count));
 
-                }
-                else{
+                } else {
                     // something went wrong
                     Log.d(TAG, "unable to find like count");
                     tvLikesCt.setText(String.valueOf(0));
@@ -390,7 +380,7 @@ public class DetailFragment extends Fragment {
 
     // get comment data
 
-    public void loadComments(Workout workout_event){
+    public void loadComments(Workout workout_event) {
 
 
         final JSONArray comment_ids = new JSONArray();
@@ -398,10 +388,10 @@ public class DetailFragment extends Fragment {
 //         get list of comment object ids
         Comments.Query commentQuery = new Comments.Query();
 
-        commentQuery.getTop().whereEqualTo("PostedTo",workout_event).findInBackground(new FindCallback<Comments>() {
+        commentQuery.getTop().whereEqualTo("PostedTo", workout_event).findInBackground(new FindCallback<Comments>() {
             @Override
             public void done(List<Comments> objects, ParseException e) {
-                for(int i =0;i< objects.size();i++) {
+                for (int i = 0; i < objects.size(); i++) {
                     Comments comments1 = objects.get(i);
                     String commentId = comments1.getObjectId();
                     Log.d(TAG, "comment ID to add to JSONArray" + commentId);
@@ -412,12 +402,12 @@ public class DetailFragment extends Fragment {
                 Log.d(TAG, "full JSON Array of comment IDs" + comment_ids);
 //                comments.clear();
 
-                for (int i=0;i<comment_ids.length();i++){
+                for (int i = 0; i < comment_ids.length(); i++) {
 
                     try {
                         Comments.Query getCommentQuery = new Comments.Query();
 
-                        getCommentQuery.getTop().whereEqualTo("objectId",comment_ids.get(i));
+                        getCommentQuery.getTop().whereEqualTo("objectId", comment_ids.get(i));
 
                         getCommentQuery.findInBackground(new FindCallback<Comments>() {
                             public void done(List<Comments> object, ParseException e) {
@@ -445,7 +435,6 @@ public class DetailFragment extends Fragment {
         });
 
 
-
 //        for(int i=0; i<)
     }
 
@@ -470,8 +459,6 @@ public class DetailFragment extends Fragment {
 //        commentAdapter.notifyItemChanged(0);
 
 
-
-
     }
 
     // get participant data and add it to list to assemble adapter
@@ -490,7 +477,7 @@ public class DetailFragment extends Fragment {
             try {
 
                 ParseQuery<ParseUser> query = ParseQuery.getQuery("_User");
-                query.whereEqualTo("objectId",user_ids.get(i));
+                query.whereEqualTo("objectId", user_ids.get(i));
 
 
                 query.findInBackground(new FindCallback<ParseUser>() {
@@ -513,7 +500,6 @@ public class DetailFragment extends Fragment {
                 });
 
 
-
 //                participant_list.add((ParseUser) user_ids.get(i));
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -524,10 +510,6 @@ public class DetailFragment extends Fragment {
 //        participants.clear();
 //        participants.addAll(participant_list);
     }
-
-
-
-
 
 
     @Override
