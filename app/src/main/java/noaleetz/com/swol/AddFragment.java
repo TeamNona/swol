@@ -458,9 +458,9 @@ public class AddFragment extends Fragment{
 
 
                 createNewWorkout(category, name, description, date, location, media, participants, tags);
-                FragmentManager fm = getActivity().getSupportFragmentManager();
-                fab.show();
-                fm.popBackStackImmediate();
+//                FragmentManager fm = getActivity().getSupportFragmentManager();
+//                fab.show();
+//                fm.popBackStackImmediate();
 
             }
         });
@@ -499,6 +499,7 @@ public class AddFragment extends Fragment{
                         fm.popBackStackImmediate();
                         listener.updateMap();
                     } else fm.popBackStackImmediate();
+                    fab.show();;
 
                 } else {
                     e.printStackTrace();

@@ -11,11 +11,15 @@ import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
 
+import org.joda.time.DateTime;
+import org.joda.time.Hours;
 import org.json.JSONArray;
 import org.parceler.Parcel;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
 @ParseClassName("exerciseEvent")
 public class Workout extends ParseObject implements Comparable<Workout>{
@@ -143,6 +147,15 @@ public class Workout extends ParseObject implements Comparable<Workout>{
         return relativeDate;
     }
 
+    public long getHoursUntil(){
+        long current = System.currentTimeMillis();
+        long workout = getTime().getTime();
+        long diffInMillisec = workout - current;
+        long diffInHours = TimeUnit.MILLISECONDS.toHours(diffInMillisec);
+
+        return diffInHours;
+    }
+
     @Override
     public int compareTo(@NonNull Workout workoutToCompare) {
         double otherWorkoutDistance = workoutToCompare.getDistance(ParseUser.getCurrentUser().getParseGeoPoint("currentLocation"));
@@ -151,6 +164,15 @@ public class Workout extends ParseObject implements Comparable<Workout>{
 
         return difference;
     }
+    @Override
+    public int compareToTime(@NonNull Workout workoutToCompare) {
+        double otherWorkoutTime = workoutToCompare.getHoursUntil();
+        double currentWorkoutTime = this.getHoursUntil();
+        int difference = (int) (currentWorkoutTime - otherWorkoutTime);
+
+        return difference;
+    }
+
 
     public static class Query extends ParseQuery<Workout> {
         public Query() {

@@ -180,7 +180,7 @@ public class MainActivity extends AppCompatActivity implements AddFragment.NewMa
     }
 
 
-    private void getLocation() {
+    public void getLocation() {
         // If user has not yet given permission - ask for permission - dialog box asking for permission pops up
         // Upon return, onRequestPermissionsResult is called
         // getLocation is called AGAIN and this time will skip to the else
