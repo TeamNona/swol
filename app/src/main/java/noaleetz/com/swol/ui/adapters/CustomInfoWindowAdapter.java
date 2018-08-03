@@ -1,4 +1,4 @@
-package noaleetz.com.swol;
+package noaleetz.com.swol.ui.adapters;
 
 import android.os.Parcelable;
 import android.view.LayoutInflater;
@@ -13,12 +13,13 @@ import com.parse.ParseException;
 
 import org.parceler.Parcels;
 
+import noaleetz.com.swol.R;
 import noaleetz.com.swol.models.Workout;
 
-class CustomWindowAdapter implements GoogleMap.InfoWindowAdapter {
+class CustomInfoWindowAdapter implements GoogleMap.InfoWindowAdapter {
     LayoutInflater mInflater;
 
-    public CustomWindowAdapter(LayoutInflater i){
+    public CustomInfoWindowAdapter(LayoutInflater i) {
         mInflater = i;
     }
 
@@ -27,8 +28,6 @@ class CustomWindowAdapter implements GoogleMap.InfoWindowAdapter {
     public View getInfoContents(Marker marker) {
 
 //        Workout assigned_workout;
-
-
 
 
         // Getting view from the layout file
@@ -45,7 +44,7 @@ class CustomWindowAdapter implements GoogleMap.InfoWindowAdapter {
         String user = null;
         try {
             user = assigned_workout.getUser().fetchIfNeeded().getUsername();
-            tvCreatedBy.setText("Created By: "+ user);
+            tvCreatedBy.setText("Created By: " + user);
         } catch (ParseException e) {
             e.printStackTrace();
         }

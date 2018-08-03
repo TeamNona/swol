@@ -1,4 +1,4 @@
-package noaleetz.com.swol;
+package noaleetz.com.swol.ui.adapters;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
@@ -12,13 +12,13 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.parse.ParseException;
-import com.parse.ParseObject;
-import com.parse.ParseUser;
 
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import noaleetz.com.swol.ui.activities.MainActivity;
+import noaleetz.com.swol.R;
 import noaleetz.com.swol.models.Comments;
 
 public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.ViewHolder> {
@@ -30,7 +30,7 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.ViewHold
     String url;
 
 
-    public CommentAdapter(List<Comments> comments){
+    public CommentAdapter(List<Comments> comments) {
         mcomments = comments;
 
     }
@@ -44,7 +44,7 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.ViewHold
         // Referencing the layout created for individual list item to get attached to RecyclerView
         mcontext = parent.getContext();
         LayoutInflater inflater = LayoutInflater.from(mcontext);
-        View commentView = inflater.inflate(R.layout.item_comment,parent,false);
+        View commentView = inflater.inflate(R.layout.item_comment, parent, false);
         return new ViewHolder(commentView);
     }
 
@@ -62,12 +62,11 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.ViewHold
         }
         holder.tvComment.setText(comment.get("description").toString());
 
-        if(comment.getTimeUntil() == "In 0 seconds") {
+        if (comment.getTimeUntil() == "In 0 seconds") {
             holder.tvCreatedTimeC.setText("0 seconds ago");
 
 
-        }
-        else{
+        } else {
             holder.tvCreatedTimeC.setText(comment.getTimeUntil());
 
 
@@ -106,7 +105,6 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.ViewHold
         });
 
 
-
     }
 
     @Override
@@ -127,11 +125,11 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.ViewHold
         @BindView(R.id.tvCreatedTimeC)
         TextView tvCreatedTimeC;
 
-        public ViewHolder (View itemView) {
+        public ViewHolder(View itemView) {
             super(itemView);
 
             itemView.setOnClickListener(this);
-            ButterKnife.bind(this,itemView);
+            ButterKnife.bind(this, itemView);
 
         }
 

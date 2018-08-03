@@ -3,6 +3,7 @@ package noaleetz.com.swol.models;
 import android.text.format.DateUtils;
 
 import com.google.android.gms.maps.model.LatLng;
+import com.google.maps.android.clustering.ClusterItem;
 import com.parse.ParseClassName;
 import com.parse.ParseFile;
 import com.parse.ParseGeoPoint;
@@ -16,8 +17,8 @@ import org.parceler.Parcel;
 import java.util.Date;
 
 @ParseClassName("exerciseEvent")
-public class Workout extends ParseObject{
-
+public class Workout extends ParseObject implements ClusterItem {
+    // the reason it is implementing cluster item is that now it can be used as a marker for clusters
     // declare database fields
 
     private static final String KEY_NAME = "eventName";
@@ -86,7 +87,7 @@ public class Workout extends ParseObject{
         return getParseUser(KEY_USER);
     }
 
-    public void setUser (ParseUser user) {
+    public void setUser(ParseUser user) {
         put(KEY_USER, user);
     }
 
@@ -129,7 +130,10 @@ public class Workout extends ParseObject{
 
     // helper methods for other functions
 
-    public LatLng getLatLng() { final ParseGeoPoint loc = getLocation(); return new LatLng(loc.getLatitude(), loc.getLongitude());}
+    public LatLng getLatLng() {
+        final ParseGeoPoint loc = getLocation();
+        return new LatLng(loc.getLatitude(), loc.getLongitude());
+    }
 
     public String getTimeUntil() {
         String relativeDate;
@@ -180,4 +184,21 @@ public class Workout extends ParseObject{
         }
     }
 
+    // cluster item stuff
+
+
+    @Override
+    public LatLng getPosition() {
+        return getLatLng();
+    }
+
+    @Override
+    public String getTitle() {
+        return getName();
+    }
+
+    @Override
+    public String getSnippet() {
+        return getDescription();
+    }
 }

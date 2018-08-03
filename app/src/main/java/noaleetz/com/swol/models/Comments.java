@@ -15,7 +15,7 @@ import java.util.Date;
 import static java.util.Calendar.*;
 
 @ParseClassName("Comments")
-public class Comments extends ParseObject{
+public class Comments extends ParseObject {
 
     // declare database fields
 
@@ -35,15 +35,15 @@ public class Comments extends ParseObject{
         put(KEY_DESCRIPTION, comment);
     }
 
-    public ParseUser getPostedBy () {
+    public ParseUser getPostedBy() {
         return getParseUser(KEY_USER);
     }
 
-    public void setPostedBy (ParseUser user) {
+    public void setPostedBy(ParseUser user) {
         put(KEY_USER, user);
     }
 
-    public ParseObject getPostedTo () {
+    public ParseObject getPostedTo() {
         return getParseObject(KEY_POST);
     }
 
@@ -59,11 +59,12 @@ public class Comments extends ParseObject{
     public String getTimeUntil() {
         String relativeDate;
 
-            long dateMillis = getCreatedAt().getTime();
-            relativeDate = DateUtils.getRelativeTimeSpanString(dateMillis, System.currentTimeMillis(), DateUtils.SECOND_IN_MILLIS).toString();
-            return relativeDate;
+        long dateMillis = getCreatedAt().getTime();
+        relativeDate = DateUtils.getRelativeTimeSpanString(dateMillis, System.currentTimeMillis(), DateUtils.SECOND_IN_MILLIS).toString();
+        return relativeDate;
 
     }
+
     // define the queries
     public static class Query extends ParseQuery<Comments> {
 
@@ -72,12 +73,12 @@ public class Comments extends ParseObject{
         }
 
 
-        public Query getPostComments (ParseObject post) {
+        public Query getPostComments(ParseObject post) {
             whereEqualTo(KEY_POST, post.getObjectId());
             return this;
         }
 
-        public Query getTop () {
+        public Query getTop() {
             setLimit(10);
             orderByDescending("createdAt");
             return this;

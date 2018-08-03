@@ -1,7 +1,6 @@
-package noaleetz.com.swol;
+package noaleetz.com.swol.ui.fragments;
 
 
-import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -13,7 +12,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 
 import com.parse.FindCallback;
 import com.parse.ParseException;
@@ -24,6 +22,8 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
+import noaleetz.com.swol.ui.adapters.FeedAdapter;
+import noaleetz.com.swol.R;
 import noaleetz.com.swol.models.Workout;
 
 
@@ -44,7 +44,6 @@ public class FeedFragment extends Fragment {
     private FeedAdapter adapter;
     private List<Workout> posts;
     private Unbinder unbinder;
-
 
 
     public FeedFragment() {

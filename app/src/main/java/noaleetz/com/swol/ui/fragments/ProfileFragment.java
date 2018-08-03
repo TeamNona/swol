@@ -1,4 +1,4 @@
-package noaleetz.com.swol;
+package noaleetz.com.swol.ui.fragments;
 
 
 import android.app.AlertDialog;
@@ -45,6 +45,9 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
 import noaleetz.com.swol.models.User;
+import noaleetz.com.swol.ui.activities.MainActivity;
+import noaleetz.com.swol.ui.adapters.ProfileAdapter;
+import noaleetz.com.swol.R;
 import noaleetz.com.swol.models.Workout;
 
 
@@ -115,6 +118,7 @@ public class ProfileFragment extends Fragment{
         tvProfileName.setText(user.getString("name"));
         // TODO: fix facebook users
 
+        tvProfileUsername.setVisibility(View.VISIBLE);
 
         tvProfileUsername.setText("@" + user.getUsername());
         if (MainActivity.isFacebookUser(user)) {
@@ -153,7 +157,7 @@ public class ProfileFragment extends Fragment{
         tvMilesRun.setText(milesRun);
 
         //TODO: extract the weight, for now, just get a random number
-        String weight = "" + new Random().nextInt(29862)*5;
+        String weight = "" + new Random().nextInt(29862) * 5;
         tvWeightLifted.setText(weight);
 
         //TODO: extract the altitude run, for now, just get a random number

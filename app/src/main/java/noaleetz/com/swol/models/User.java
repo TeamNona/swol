@@ -25,7 +25,7 @@ public class User extends ParseObject {
 
     private static final String KEY_PROFILE_PICTURE = "profilePicture";
 
-    private static final String KEY_CURRENTLOCATION= "currentLocation";
+    private static final String KEY_CURRENTLOCATION = "currentLocation";
 
 
     // define setters and getters
@@ -63,17 +63,21 @@ public class User extends ParseObject {
     }
 
 
-    public ParseFile getProfilePicture () {
+    public ParseFile getProfilePicture() {
         return getParseFile(KEY_PROFILE_PICTURE);
     }
 
-    public void setProfilePicture (ParseFile profilePicture) {
+    public void setProfilePicture(ParseFile profilePicture) {
         put(KEY_PROFILE_PICTURE, profilePicture);
     }
 
-    public void setCurrentLocation(ParseGeoPoint currentLocation) { put(KEY_CURRENTLOCATION,currentLocation); }
+    public void setCurrentLocation(ParseGeoPoint currentLocation) {
+        put(KEY_CURRENTLOCATION, currentLocation);
+    }
 
-    public ParseGeoPoint getCurrentLocation() {return getParseGeoPoint(KEY_CURRENTLOCATION);}
+    public ParseGeoPoint getCurrentLocation() {
+        return getParseGeoPoint(KEY_CURRENTLOCATION);
+    }
 
     public static class Query extends ParseQuery<User> {
         public Query() {
@@ -84,8 +88,6 @@ public class User extends ParseObject {
             whereEqualTo(KEY_USERNAME, username);
             return this;
         }
+
     }
-
-
-
 }
