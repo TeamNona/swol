@@ -31,7 +31,9 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.parse.FindCallback;
 import com.parse.ParseException;
+import com.parse.ParseFile;
 import com.parse.ParseUser;
+import com.parse.SaveCallback;
 
 import org.json.JSONObject;
 
@@ -357,6 +359,7 @@ public class ProfileFragment extends Fragment{
 
 
             try {
+                // load bitmap into profile picture view
                 AddFragment.bitmap = MediaStore.Images.Media.getBitmap(getActivity().getApplicationContext().getContentResolver(), selectedImage);
                 Glide.with(this).load(AddFragment.bitmap)
                         .apply(RequestOptions.circleCropTransform()
@@ -364,6 +367,25 @@ public class ProfileFragment extends Fragment{
                                 .error(R.drawable.ic_person))
                         .into(ivProfileImage);
                 ivProfileImage.setImageBitmap(AddFragment.bitmap);
+
+                // save profile image onto Parse
+                final ParseFile parseFile = AddFragment.conversionBitmapParseFile(AddFragment.bitmap);
+                parseFile.saveInBackground();
+                user.put("profilePicture", parseFile);
+                user.saveInBackground(new SaveCallback() {
+                    @Override
+                    public void done(ParseException e) {
+                        if (e == null) {
+                            Log.d("ProfileFragment", "Change profile picture successful");
+
+                        } else {
+                            e.printStackTrace();
+                            Log.e("AddFragment", "Change profile picture was not successful");
+                            Toast.makeText(getActivity(), "Picture wasn't saved", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
+
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -371,8 +393,8 @@ public class ProfileFragment extends Fragment{
             // GETTING IMAGE FROM CAMERA
         } else if (requestCode == AddFragment.CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE) {
             if (resultCode == AddFragment.RESULT_OK) {
+                // load the bitmap into the profile view
                 // by this point we have the camera photo on disk
-                // bitmap = BitmapFactory.decodeFile(photoFile.getAbsolutePath());
                 AddFragment.bitmap = AddFragment.rotateBitmapOrientation(photoFile.getPath());
                 // RESIZE BITMAP, see section below
                 // Load the taken image into a preview
@@ -382,6 +404,24 @@ public class ProfileFragment extends Fragment{
                                 .error(R.drawable.ic_person))
                         .into(ivProfileImage);
                 ivProfileImage.setImageBitmap(AddFragment.bitmap);
+                // save the picture to parse
+                final ParseFile parseFile = AddFragment.conversionBitmapParseFile(AddFragment.bitmap);
+                parseFile.saveInBackground();
+                user.put("profilePicture", parseFile);
+                user.saveInBackground(new SaveCallback() {
+                    @Override
+                    public void done(ParseException e) {
+                        if (e == null) {
+                            Log.d("ProfileFragment", "Change profile picture successful");
+
+                        } else {
+                            e.printStackTrace();
+                            Log.e("AddFragment", "Change profile picture was not successful");
+                            Toast.makeText(getActivity(), "Picture wasn't saved", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
+
             } else { // Result was a failure
                 Toast.makeText(getActivity(), "Picture wasn't taken!", Toast.LENGTH_SHORT).show();
             }

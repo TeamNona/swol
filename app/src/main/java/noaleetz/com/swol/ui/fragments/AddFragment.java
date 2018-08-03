@@ -59,9 +59,12 @@ import com.parse.SaveCallback;
 
 import org.json.JSONArray;
 
+import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -138,6 +141,7 @@ public class AddFragment extends Fragment {
     public static final int REQUEST_VIDEO_CAPTURE = 100;
     Bitmap image;
     public static Bitmap bitmap;
+    public static Object test = null;
     public File photoFile;
     File videoFile;
     public static String photoFileName = "photo.jpg";
@@ -469,6 +473,13 @@ public class AddFragment extends Fragment {
 
                 final ParseFile media;
                 media = conversionBitmapParseFile(bitmap);
+                media.saveInBackground(new SaveCallback() {
+                    public void done(ParseException e) {
+                        // If successful add file to user and signUpInBackground
+                        if(null == e)
+                            Toast.makeText(getActivity(), "Picture post saved", Toast.LENGTH_SHORT).show();
+                    }
+                });
 
 
                 createNewWorkout(category, name, description, date, location, media, participants, tags);
@@ -728,12 +739,35 @@ public class AddFragment extends Fragment {
     }
 
 
-    public ParseFile conversionBitmapParseFile(Bitmap imageBitmap) {
+    public static ParseFile conversionBitmapParseFile(Bitmap imageBitmap) {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         imageBitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
+        try {
+            String path = null;
+            test = readInFile(path);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         byte[] imageByte = byteArrayOutputStream.toByteArray();
         ParseFile parseFile = new ParseFile("image_file.png", imageByte);
         return parseFile;
+    }
+
+    private static byte[] readInFile(String path) throws IOException {
+        // TODO Auto-generated method stub
+        byte[] data = null;
+        File file = new File(path);
+        InputStream input_stream = new BufferedInputStream(new FileInputStream(
+                file));
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        data = new byte[163840]; // 16K
+        int bytes_read;
+        while ((bytes_read = input_stream.read(data, 0, data.length)) != -1) {
+            buffer.write(data, 0, bytes_read);
+        }
+        input_stream.close();
+        return buffer.toByteArray();
+
     }
 
 
