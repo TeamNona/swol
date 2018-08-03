@@ -7,8 +7,12 @@ import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Matrix;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
+import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
@@ -37,10 +41,32 @@ import com.parse.ParseException;
 import com.parse.ParseFile;
 import com.parse.ParseGeoPoint;
 import com.parse.ParseUser;
+import com.parse.SaveCallback;
 
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.util.Arrays;
+import java.util.Collection;
 import java.io.ByteArrayOutputStream;
 
 import butterknife.BindView;
@@ -89,6 +115,12 @@ public class MainActivity extends AppCompatActivity implements AddFragment.NewMa
 
     ImageView ivAvatar;
 
+    Bitmap bitmapProfilePicture;
+
+    public static final int MY_PERMISSIONS_REQUEST_GALLERY = 98;
+    public static final int MY_PERMISSIONS_REQUEST_CAMERA = 99;
+    private static int RESULT_LOAD_IMAGE = 1;
+
 
     @OnClick(R.id.fab)
     public void onClick(View view) {
@@ -121,6 +153,8 @@ public class MainActivity extends AppCompatActivity implements AddFragment.NewMa
 
         getLocation();
 
+        ParseUser currentUser = ParseUser.getCurrentUser();
+
         final View hView = nvDrawer.getHeaderView(0);
 
         // TODO: all of these try catches look gross--fix it
@@ -135,41 +169,54 @@ public class MainActivity extends AppCompatActivity implements AddFragment.NewMa
 
 
         try {
-            navName.setText(ParseUser.getCurrentUser().fetchIfNeeded().getString("name"));
+            navName.setText(currentUser.fetchIfNeeded().getString("name"));
         } catch (ParseException e) {
             e.printStackTrace();
         }
 
-        if (isFacebookUser(ParseUser.getCurrentUser())) {
-            navUserame.setVisibility(View.GONE);
+        if (isFacebookUser(currentUser)) {
 
 
             // pulls the profile pic
-            String url = "https://graph.facebook.com/" + getFBID() + "/picture?type=large";
+            String url = "https://graph.facebook.com/" + getFBID(currentUser) + "/picture?type=large";
 
 
-            Glide.with(hView).load(url)
+            Glide.with(this).load(url)
                     .apply(RequestOptions.circleCropTransform()
                             .placeholder(R.drawable.ic_person)
                             .error(R.drawable.ic_person))
                     .into(ivAvatar);
+
+
 
             // save profile image onto parse
             if (ParseUser.getCurrentUser().get("profilePicture") == null) {
                 Drawable drawable = ivAvatar.getDrawable();
                 Bitmap bitmap = convertToBitmap(drawable, 500, 500);
                 ParseFile parseFile = conversionBitmapParseFile(bitmap);
-                ParseUser.getCurrentUser().put("profilePicture", parseFile);
+                currentUser.put("profilePicture", parseFile);
+                currentUser.saveInBackground(new SaveCallback() {
+                    @Override
+                    public void done(ParseException e) {
+                        if (e == null) {
+                            Log.d("MainFragment", "Save ProfilePicture successful");
+
+                        } else {
+                            e.printStackTrace();
+                            Log.e("AddFragment", "Save ProfilePicture was not successful");
+                        }
+                    }
+                });
             }
 
-            if (ParseUser.getCurrentUser().get("username").toString().length() >= 25) {
-                String name = ParseUser.getCurrentUser().get("name").toString().toLowerCase();
+            if (currentUser.get("username").toString().length() >= 25) {
+                String name = currentUser.get("name").toString().toLowerCase();
                 String[] splitName = name.split(" ");
                 name = splitName[0];
                 for (int i = 1; i < splitName.length; i++) {
                     name = name + "_" + splitName[i];
                 }
-                ParseUser.getCurrentUser().setUsername(name);
+                currentUser.setUsername(name);
             }
 
 
@@ -197,10 +244,10 @@ public class MainActivity extends AppCompatActivity implements AddFragment.NewMa
 //            request.executeAsync();
 
         } else {
-            navUserame.setText("@" + ParseUser.getCurrentUser().getUsername());
+            navUserame.setText("@" + currentUser.getUsername());
             navUserame.setVisibility(View.VISIBLE);
 
-            if (ParseUser.getCurrentUser().getParseFile("profilePicture") == null) {
+            if (currentUser.getParseFile("profilePicture") == null) {
                 Glide.with(hView).load(R.drawable.ic_person)
                         .apply(RequestOptions.circleCropTransform()
                                 .placeholder(R.drawable.ic_person)
@@ -208,7 +255,7 @@ public class MainActivity extends AppCompatActivity implements AddFragment.NewMa
                         .into(ivAvatar);
             } else {
                 try {
-                    Glide.with(hView).load(ParseUser.getCurrentUser().fetchIfNeeded().getParseFile("profilePicture").getFile())
+                    Glide.with(hView).load(currentUser.fetchIfNeeded().getParseFile("profilePicture").getFile())
                             .apply(RequestOptions.circleCropTransform()
                                     .placeholder(R.drawable.ic_person)
                                     .error(R.drawable.ic_person))
@@ -297,6 +344,27 @@ public class MainActivity extends AppCompatActivity implements AddFragment.NewMa
                 } else {
                     Toast.makeText(this,
                             R.string.location_permission_denied,
+                            Toast.LENGTH_SHORT).show();
+                }
+                break;
+            case MY_PERMISSIONS_REQUEST_GALLERY:
+                // If the permission is granted, get the location,
+                // otherwise, show a Toast
+                if (!(grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+                    Toast.makeText(this,
+                            R.string.gallery_permission_denied,
+                            Toast.LENGTH_SHORT).show();
+                }
+                break;
+            case MY_PERMISSIONS_REQUEST_CAMERA:
+                // If the permission is granted, get the location,
+                // otherwise, show a Toast
+                if (!(grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+
+                    Toast.makeText(this,
+                            R.string.camera_permission_denied,
                             Toast.LENGTH_SHORT).show();
                 }
                 break;
@@ -427,7 +495,7 @@ public class MainActivity extends AppCompatActivity implements AddFragment.NewMa
     }
 
 
-    public String getFBID() {
+    public static String getFBID(ParseUser user) {
         JSONObject authData = ParseUser.getCurrentUser().getJSONObject("authData");
         JSONObject facebook = null;
         try {
@@ -464,5 +532,144 @@ public class MainActivity extends AppCompatActivity implements AddFragment.NewMa
         return mutableBitmap;
     }
 
+//    private class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
+//        ImageView bmImage;
+//
+//        public DownloadImageTask(ImageView bmImage) {
+//            this.bmImage = bmImage;
+//        }
+//
+//        protected Bitmap doInBackground(String... urls) {
+//            String urldisplay = urls[0];
+//            Bitmap bmp = null;
+//            try {
+//                InputStream in = new java.net.URL(urldisplay).openStream();
+//                bmp = BitmapFactory.decodeStream(in);
+//            } catch (Exception e) {
+//                Log.e("Error", e.getMessage());
+//                e.printStackTrace();
+//            }
+//            bitmapProfilePicture = bmp;
+//            return bmp;
+//        }
+//
+//        protected void onPostExecute(Bitmap result) {
+//            ivAvatar.setImageBitmap(bitmapProfilePicture);
+//            bitmapProfilePicture = ((BitmapDrawable)ivAvatar.getDrawable()).getBitmap();
+//            final ParseFile parseFile = conversionBitmapParseFile(getResizedBitmap(bitmapProfilePicture, 50, 50));
+//            ParseUser.getCurrentUser().put("profilePicture", parseFile);
+//            // Initialize a new ByteArrayStream
+//            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+//            // Compress the bitmap with JPEG format and quality 50%
+//            result.compress(Bitmap.CompressFormat.JPEG,10,stream);
+//
+//            byte[] byteArray = stream.toByteArray();
+//            Bitmap compressedBitmap = BitmapFactory.decodeByteArray(byteArray,0,byteArray.length);
+//
+//            Bitmap resizedBitmap = getResizedBitmap(result, 10, 10);
+//
+//            //final ParseFile parseFile = conversionBitmapParseFile(result);
+//
+//            parseFile.saveInBackground(new SaveCallback() {
+//                @Override
+//                public void done(ParseException e) {
+//                    if (e == null) {
+//                        ParseUser.getCurrentUser().put("profilePicture", parseFile);
+//                        Log.d("MainFragment", "Save ProfilePicture successful");
+//
+//                    } else {
+//                        e.printStackTrace();
+//                        Log.e("AddFragment", "Save ProfilePicture was not successful");
+//                    }
+//                }
+//            });
+////            ParseUser.getCurrentUser().put("profilePicture", parseFile);
+////            ParseUser.getCurrentUser().saveInBackground(new SaveCallback() {
+////                @Override
+////                public void done(ParseException e) {
+////                    if (e == null) {
+////                        Log.d("MainFragment", "Save ProfilePicture successful");
+////
+////                    } else {
+////                        e.printStackTrace();
+////                        Log.e("AddFragment", "Save ProfilePicture was not successful");
+////                    }
+////                }
+////            });
+//            }
+//
+//
+//
+//    }
+
+//    public static class BitmapScaler
+//    {
+//        // scale and keep aspect ratio
+//        public static Bitmap scaleToFitWidth(Bitmap b, int width)
+//        {
+//            float factor = width / (float) b.getWidth();
+//            return Bitmap.createScaledBitmap(b, width, (int) (b.getHeight() * factor), true);
+//        }
+//
+//
+//        // scale and keep aspect ratio
+//        public static Bitmap scaleToFitHeight(Bitmap b, int height)
+//        {
+//            float factor = height / (float) b.getHeight();
+//            return Bitmap.createScaledBitmap(b, (int) (b.getWidth() * factor), height, true);
+//        }
+//
+//
+//        // scale and keep aspect ratio
+//        public static Bitmap scaleToFill(Bitmap b, int width, int height)
+//        {
+//            float factorH = height / (float) b.getWidth();
+//            float factorW = width / (float) b.getWidth();
+//            float factorToUse = (factorH > factorW) ? factorW : factorH;
+//            return Bitmap.createScaledBitmap(b, (int) (b.getWidth() * factorToUse),
+//                    (int) (b.getHeight() * factorToUse), true);
+//        }
+//
+//
+//        // scale and don't keep aspect ratio
+//        public static Bitmap strechToFill(Bitmap b, int width, int height)
+//        {
+//            float factorH = height / (float) b.getHeight();
+//            float factorW = width / (float) b.getWidth();
+//            return Bitmap.createScaledBitmap(b, (int) (b.getWidth() * factorW),
+//                    (int) (b.getHeight() * factorH), true);
+//        }
+//    }
+
+//    public Bitmap getResizedBitmap(Bitmap image, int maxSize) {
+//        int width = image.getWidth();
+//        int height = image.getHeight();
+//
+//        float bitmapRatio = (float) width / (float) height;
+//        if (bitmapRatio > 1) {
+//            width = maxSize;
+//            height = (int) (width / bitmapRatio);
+//        } else {
+//            height = maxSize;
+//            width = (int) (height * bitmapRatio);
+//        }
+//
+//        return Bitmap.createScaledBitmap(image, width, height, true);
+//    }
+
+//    public static Bitmap getResizedBitmap(Bitmap image, int newHeight, int newWidth) {
+//        int width = image.getWidth();
+//        int height = image.getHeight();
+//        float scaleWidth = ((float) newWidth) / width;
+//        float scaleHeight = ((float) newHeight) / height;
+//        // create a matrix for the manipulation
+//        Matrix matrix = new Matrix();
+//        // resize the bit map
+//        matrix.postScale(scaleWidth, scaleHeight);
+//        // recreate the new Bitmap
+//        Bitmap resizedBitmap = Bitmap.createBitmap(image, 0, 0, width, height,
+//                matrix, false);
+//        return resizedBitmap;
+//    }
 
 }
