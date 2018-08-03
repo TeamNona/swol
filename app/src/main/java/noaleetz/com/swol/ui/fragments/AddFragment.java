@@ -175,7 +175,7 @@ public class AddFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_add, container, false);
+        View view = inflater.inflate(R.layout.fragment_add_2, container, false);
         unbinder = ButterKnife.bind(this, view);
 
         // Inflate the layout for this fragment
@@ -189,6 +189,9 @@ public class AddFragment extends Fragment {
 
 
         fab = (FloatingActionButton) getActivity().findViewById(R.id.fab);
+
+        // show the post button
+        postButton.setVisibility(View.VISIBLE);
 
         // create Array of workout categories
         final String[] workoutCategories;
@@ -394,6 +397,7 @@ public class AddFragment extends Fragment {
 
                 // on some click or some loading we need to wait for...
                 pbPost.setVisibility(ProgressBar.VISIBLE);
+                postButton.setVisibility(View.GONE);
 
 
                 final String description = etDescription.getText().toString();
@@ -485,6 +489,8 @@ public class AddFragment extends Fragment {
 
                 } else {
                     e.printStackTrace();
+                    // show the button on failure
+                    postButton.setVisibility(View.VISIBLE);
                     Log.e("AddFragment", "Create post was not successful");
                 }
             }
