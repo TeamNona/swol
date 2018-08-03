@@ -4,35 +4,23 @@ package noaleetz.com.swol;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.graphics.Point;
-import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.SearchView;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.Toast;
 
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationServices;
 import com.parse.FindCallback;
 import com.parse.ParseException;
 import com.parse.ParseGeoPoint;
@@ -47,9 +35,6 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
 import noaleetz.com.swol.models.Workout;
-
-import static com.parse.ParseUser.getCurrentUser;
-import static noaleetz.com.swol.MainActivity.REQUEST_LOCATION_PERMISSION;
 
 
 /**
@@ -83,13 +68,7 @@ public class FeedFragment extends Fragment {
 
 
     String[] categories = new String[]{"Bike", "Cardio","Class","Dance","Game","Gym","High Intensity Interval Training","Hike","Meditation","Run","Swim","Weight"};
-
-
-
-
-
-
-
+    private String creatorUsername;
 
 
     public FeedFragment() {
@@ -224,19 +203,22 @@ public class FeedFragment extends Fragment {
                 });
                 break;
             case R.id.filterByTime:
-                svSearch.setQueryHint("filter by number of hours");
+                maxHourString = svSearch.getQuery().toString();
+
+                svSearch.setQueryHint("filter by number of hours away");
 
                 ivSubmit.setOnClickListener(new View.OnClickListener() {
 
                     @Override
                     public void onClick(View view) {
 
-                        maxHourString = String.valueOf(svSearch.getQuery());
-
-
-                        double maxHourDouble = Double.parseDouble(maxHourString);
-                        QueryByTime(maxHourDouble);
-
+                        if(maxHourString.isEmpty()) {
+                            NullHourAlert();
+                        }
+                        else {
+                            long maxHourLong = Long.parseLong(maxHourString);
+                            QueryByTime(maxHourLong);
+                        }
                     }
                 });
                 break;
@@ -249,19 +231,38 @@ public class FeedFragment extends Fragment {
                     public void onClick(View view) {
 
                         maxMileString = String.valueOf(svSearch.getQuery());
-
-
-                        double maxMileDouble = Double.parseDouble(maxMileString);
-                        QueryByDistance(maxMileDouble);
+                        if(maxMileString.isEmpty()){
+                            maxMileString = "30";
+                        }
+                        else{double maxMileDouble = Double.parseDouble(maxMileString);
+                        QueryByDistance(maxMileDouble);}
 
                     }
                 });
 
                 break;
             case R.id.filterByTitle:
+                svSearch.setQueryHint("filter by Workout Title");
 
                 break;
             case R.id.filterByUser:
+                svSearch.setQueryHint("filter by Creator");
+                ivSubmit.setOnClickListener(new View.OnClickListener() {
+
+                    @Override
+                    public void onClick(View view) {
+
+                        creatorUsername = String.valueOf(svSearch.getQuery());
+                        if(creatorUsername.isEmpty()){
+                            NullUserAlert();
+                        }
+                        else{
+                            QueryByUserCreated(creatorUsername);
+
+                        }
+
+                    }
+                });
 
                 break;
             default:
@@ -275,7 +276,36 @@ public class FeedFragment extends Fragment {
 
     }
 
-    private void QueryByTime(double maxHourDouble) {
+    private void QueryByTime(long maxHourLong) {
+        final Workout.Query postTimeQuery = new Workout.Query();
+        postTimeQuery.withUser().getWithinTimeRange(maxHourLong);
+        postTimeQuery.findInBackground(new FindCallback<Workout>() {
+            @Override
+            public void done(List<Workout> objects, ParseException e) {
+                if(e==null){
+
+                // order objects in time order
+                Collections.sort(objects, new Comparator<Workout>() {
+                    @Override
+                    public int compare(Workout o1, Workout o2) {
+                        return o1.compareToTime(o2);
+                    }
+                });
+
+                posts.clear();
+                posts.addAll(objects);
+                adapter.notifyDataSetChanged();
+                rvPosts.scrollToPosition(0);
+                InputMethodManager mgr = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+                assert mgr != null;
+                mgr.hideSoftInputFromWindow(svSearch.getWindowToken(), 0);
+
+                // TODO- scroll to bottom option
+            } else {
+                e.printStackTrace();
+            }
+            }
+        });
 
 
     }
@@ -288,6 +318,8 @@ public class FeedFragment extends Fragment {
                 posts.clear();
 
                 posts.addAll(objects);
+                adapter.notifyDataSetChanged();
+
                 rvPosts.scrollToPosition(0);
                 InputMethodManager mgr = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
                 assert mgr != null;
@@ -299,16 +331,15 @@ public class FeedFragment extends Fragment {
     }
 
 
-    public void QueryByUserCreated() {
-        final Workout.Query postQuery = new Workout.Query();
+    public void QueryByUserCreated(String creatorUsername) {
+        final Workout.Query creatorQuery = new Workout.Query();
 
+
+        ParseUser userObject;
+        creatorQuery.withUser().createdBy(userObject);
 
     }
     public void QueryByDistance(double maxMileNumber) {
-        // user didn't input max range - sort by distance
-        if(maxMileNumber!=0){
-            maxMileNumber = 30.0;
-        }
 
         final Workout.Query postDistanceQuery = new Workout.Query();
 
@@ -316,9 +347,7 @@ public class FeedFragment extends Fragment {
 
 //        postDistanceQuery.withUser().orderByLastCreated().getWithinRange(currentLocation,maxMileNumber);
 
-        postDistanceQuery.withUser().getWithinRange(currentGeoPoint, maxMileNumber);
-
-        postDistanceQuery.findInBackground(new FindCallback<Workout>() {
+        postDistanceQuery.withUser().getWithinRange(currentGeoPoint, maxMileNumber).findInBackground(new FindCallback<Workout>() {
             @Override
             public void done(List<Workout> objects, ParseException e) {
                 if (e == null) {
@@ -332,14 +361,14 @@ public class FeedFragment extends Fragment {
                     Collections.sort(objects, new Comparator<Workout>() {
                         @Override
                         public int compare(Workout o1, Workout o2) {
-                            return o1.compareTo(o2);
+                            return o1.compareToDistance(o2);
                         }
                     });
 
                     posts.clear();
 
                     posts.addAll(objects);
-//                    adapter.notifyDataSetChanged();
+                    adapter.notifyDataSetChanged();
                     rvPosts.scrollToPosition(0);
                     InputMethodManager mgr = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
                     assert mgr != null;
@@ -393,30 +422,32 @@ public class FeedFragment extends Fragment {
         AlertDialog alertDialog = new AlertDialog.Builder(
                 this.getContext()).create();
 
-        if(tagString != null){
-            // category entered but doesn't exist
-            //Setting Dialog Title
-            alertDialog.setTitle("Oops!");
-
-            // Setting Dialog Message
-            alertDialog.setMessage("This workout category doesn't exist yet");
-
-            // Setting Icon to Dialog
-            alertDialog.setIcon(R.drawable.ic_fitness_center_black_24dp);
+        if(tagString.isEmpty()){
+            alertDialog.setTitle("Please Enter a Category!");
+            alertDialog.setIcon(R.drawable.ic_pencil);
         }
         else{
-
-            //Setting Dialog Title
-            alertDialog.setTitle("Please Enter a Category!");
-
-            // Setting Dialog Message
-//            alertDialog.setMessage("This workout category doesn't exist yet");
-
-            // Setting Icon to Dialog
-            alertDialog.setIcon(R.drawable.ic_pencil);
+            // category entered but doesn't exist
+            alertDialog.setTitle("Oops!");
+            alertDialog.setMessage("This workout category doesn't exist yet");
+            alertDialog.setIcon(R.drawable.ic_fitness_center_black_24dp);
         }
 
         // Setting OK Button
+        alertDialog.setButton("OK", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                // code here to execute after dialog closed
+            }
+        });
+        alertDialog.show();
+
+    }
+    public void NullHourAlert(){
+        AlertDialog alertDialog = new AlertDialog.Builder(
+                this.getContext()).create();
+        alertDialog.setTitle("Wait a second!");
+        alertDialog.setMessage("Please enter a limit for how many hours away your available workouts should be");
+        alertDialog.setIcon(R.drawable.ic_pencil);
         alertDialog.setButton("OK", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
                 // Write your code here to execute after dialog closed
@@ -425,7 +456,21 @@ public class FeedFragment extends Fragment {
         });
         // Showing Alert Message
         alertDialog.show();
-
+    }
+    public void NullUserAlert(){
+        AlertDialog alertDialog = new AlertDialog.Builder(
+                this.getContext()).create();
+        alertDialog.setTitle("Wait a second!");
+        alertDialog.setMessage("Please enter a user to filter available workouts");
+        alertDialog.setIcon(R.drawable.ic_pencil);
+        alertDialog.setButton("OK", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                // Write your code here to execute after dialog closed
+//                            Toast.makeText(getApplicationContext(), "You clicked on OK", Toast.LENGTH_SHORT).show();
+            }
+        });
+        // Showing Alert Message
+        alertDialog.show();
     }
 //    @Override
 //    public void onResume() {

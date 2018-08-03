@@ -22,7 +22,7 @@ import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 @ParseClassName("exerciseEvent")
-public class Workout extends ParseObject implements Comparable<Workout>{
+public class Workout extends ParseObject{
 
     // declare database fields
 
@@ -37,6 +37,8 @@ public class Workout extends ParseObject implements Comparable<Workout>{
     private static final String KEY_LOCATION = "eventLocation";
 
     private static final String KEY_USER = "user";
+
+
 
     private static final String KEY_PARTICIPANTS = "eventParticipants";
 
@@ -132,6 +134,11 @@ public class Workout extends ParseObject implements Comparable<Workout>{
     public Boolean isInRange(ParseGeoPoint other, double maxRange) {
         return getLocation().distanceInMilesTo(other) < maxRange;
     }
+
+    public Boolean isInTimeRange(long maxTimeRange) {
+        return getHoursUntil() < maxTimeRange;
+    }
+
     public double getDistance(ParseGeoPoint user) {
         return getLocation().distanceInMilesTo(user);
     }
@@ -156,15 +163,15 @@ public class Workout extends ParseObject implements Comparable<Workout>{
         return diffInHours;
     }
 
-    @Override
-    public int compareTo(@NonNull Workout workoutToCompare) {
+
+    public int compareToDistance(@NonNull Workout workoutToCompare) {
         double otherWorkoutDistance = workoutToCompare.getDistance(ParseUser.getCurrentUser().getParseGeoPoint("currentLocation"));
         double currentWorkoutDistance = this.getDistance(ParseUser.getCurrentUser().getParseGeoPoint("currentLocation"));
         int difference = (int) (currentWorkoutDistance - otherWorkoutDistance);
 
         return difference;
     }
-    @Override
+
     public int compareToTime(@NonNull Workout workoutToCompare) {
         double otherWorkoutTime = workoutToCompare.getHoursUntil();
         double currentWorkoutTime = this.getHoursUntil();
@@ -208,6 +215,19 @@ public class Workout extends ParseObject implements Comparable<Workout>{
 
         public Query getWithinRange(ParseGeoPoint currentLocation, double maxRange) {
             whereWithinMiles("eventLocation", currentLocation, maxRange);
+            return this;
+        }
+        public Query getWithinTimeRange(long maxHours){
+//            workout.isInTimeRange(maxHours);
+            int maxHoursInt = (int) maxHours;
+            Date currentTime = Calendar.getInstance().getTime();
+            whereGreaterThan(KEY_TIME,currentTime);
+
+            Calendar currentInstance = Calendar.getInstance();
+            currentInstance.setTime(new Date());
+            currentInstance.add(Calendar.HOUR_OF_DAY,maxHoursInt);
+            Date maxDate = currentInstance.getTime();
+            whereLessThanOrEqualTo(KEY_TIME,maxDate);
             return this;
         }
 
