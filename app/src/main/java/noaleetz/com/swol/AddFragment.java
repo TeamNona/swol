@@ -1,6 +1,7 @@
 package noaleetz.com.swol;
 
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.DatePickerDialog;
@@ -8,6 +9,7 @@ import android.app.Dialog;
 import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -27,9 +29,11 @@ import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
 import android.text.format.DateFormat;
 import android.util.Log;
@@ -90,6 +94,8 @@ import butterknife.Unbinder;
 import noaleetz.com.swol.models.User;
 import noaleetz.com.swol.models.Workout;
 
+import static android.Manifest.permission.CAMERA;
+import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
 import static android.support.constraint.Constraints.TAG;
 import static android.view.View.INVISIBLE;
 import static android.view.View.VISIBLE;
@@ -150,17 +156,17 @@ public class AddFragment extends Fragment{
     private ParseUser currentUser = ParseUser.getCurrentUser();
 
     // declare important variables for accessing photo gallery and for accessing camerq
-    private static final int RESULT_OK = -1;
+    public static final int RESULT_OK = -1;
     public final static int CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE = 1034;
-    private static int RESULT_LOAD_IMAGE = 1;
-    private static final int RESULT_LOAD_VIDEO = 101;
-    static final int REQUEST_VIDEO_CAPTURE = 100;
+    public static int RESULT_LOAD_IMAGE = 1;
+    public static final int RESULT_LOAD_VIDEO = 101;
+    public static final int REQUEST_VIDEO_CAPTURE = 100;
     Bitmap image;
-    Bitmap bitmap;
-    File photoFile;
+    public static Bitmap bitmap;
+    public File photoFile;
     File videoFile;
-    public String photoFileName = "photo.jpg";
-    public final String APP_TAG = "Swol";
+    public static String photoFileName = "photo.jpg";
+    public static final String APP_TAG = "Swol";
 
     private NewMapItemListener listener;
 
@@ -169,6 +175,10 @@ public class AddFragment extends Fragment{
     // declare variables for spinners
     String workoutCategoryPrompt = "Choose a Workout Category";
     String tagsPrompt = "Choose up to 5 tags";
+
+    // variables for permissions
+    public static final int MY_PERMISSIONS_REQUEST_CAMERA = 99;
+    public static final int MY_PERMISSIONS_REQUEST_GALLERY = 98;
 
 
 
@@ -364,11 +374,22 @@ public class AddFragment extends Fragment{
                 upload.setVisibility(INVISIBLE);
                 capture.setVisibility(INVISIBLE);
 
-                Intent i = new Intent(
-                        Intent.ACTION_PICK,
-                        android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                if (ActivityCompat.checkSelfPermission(getActivity(), READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
 
-                startActivityForResult(i, RESULT_LOAD_IMAGE);
+                    // Permission is not granted, so request permission
+                    ActivityCompat.requestPermissions(getActivity(),
+                            new String[]{READ_EXTERNAL_STORAGE},
+                            MY_PERMISSIONS_REQUEST_GALLERY);
+                } else {
+                    // Permission has already been granted
+                    Intent i = new Intent(
+                            Intent.ACTION_PICK,
+                            android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+
+                    startActivityForResult(i, RESULT_LOAD_IMAGE);
+                }
+
+
             }
         });
 
@@ -392,7 +413,17 @@ public class AddFragment extends Fragment{
             public void onClick(View view) {
                 upload.setVisibility(INVISIBLE);
                 capture.setVisibility(INVISIBLE);
-                onLaunchCamera(view);
+                if (ActivityCompat.checkSelfPermission(getActivity(), CAMERA) != PackageManager.PERMISSION_GRANTED) {
+
+                    // Permission is not granted, so request permission
+                    ActivityCompat.requestPermissions(getActivity(),
+                            new String[]{CAMERA},
+                            MY_PERMISSIONS_REQUEST_CAMERA);
+                } else {
+                    // Permission has already been granted
+                    onLaunchCamera();
+                }
+
             }
         });
 
@@ -527,6 +558,33 @@ public class AddFragment extends Fragment{
 
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case MY_PERMISSIONS_REQUEST_GALLERY:
+                // If the permission is granted, get the location,
+                // otherwise, show a Toast
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Intent i = new Intent(
+                            Intent.ACTION_PICK,
+                            android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+
+                    startActivityForResult(i, RESULT_LOAD_IMAGE);
+                } else {
+                    Toast.makeText(getActivity(),
+                            R.string.camera_permission_denied,
+                            Toast.LENGTH_SHORT).show();
+                }
+                break;
+                default:
+                    Toast.makeText(getActivity(),
+                            R.string.camera_permission_denied,
+                            Toast.LENGTH_SHORT).show();
+        }
+    }
+
 
     private void showTimePicker() {
         TimePickerFragment time = new TimePickerFragment();
@@ -583,7 +641,7 @@ public class AddFragment extends Fragment{
     };
 
 
-    public void onLaunchCamera(View view) {
+    public void onLaunchCamera() {
         // create Intent to take a picture and return control to the calling application
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         // Create a File reference to access to future access
@@ -719,7 +777,7 @@ public class AddFragment extends Fragment{
         return mutableBitmap;
     }
 
-    public Bitmap rotateBitmapOrientation(String photoFilePath) {
+    public static Bitmap rotateBitmapOrientation(String photoFilePath) {
         // Create and configure BitmapFactory
         BitmapFactory.Options bounds = new BitmapFactory.Options();
         bounds.inJustDecodeBounds = true;

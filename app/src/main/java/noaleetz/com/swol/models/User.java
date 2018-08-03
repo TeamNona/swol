@@ -75,14 +75,15 @@ public class User extends ParseObject {
 
     public ParseGeoPoint getCurrentLocation() {return getParseGeoPoint(KEY_CURRENTLOCATION);}
 
-    public int getFBID (ParseUser user) throws JSONException {
-        JSONObject test = user.getJSONObject("authData");
-        JSONObject test1 = test.getJSONObject("facebook");
+    public static class Query extends ParseQuery<User> {
+        public Query() {
+            super(User.class);
+        }
 
-        String test2 = test1.getString("id");
-
-        return Integer.parseInt(test2);
-
+        public Query getUsername(String username) {
+            whereEqualTo(KEY_USERNAME, username);
+            return this;
+        }
     }
 
 
