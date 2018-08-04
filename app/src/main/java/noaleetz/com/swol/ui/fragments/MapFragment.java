@@ -44,7 +44,10 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.maps.android.PolyUtil;
 import com.google.maps.android.clustering.Cluster;
 import com.google.maps.android.clustering.ClusterManager;
 import com.google.maps.android.clustering.view.DefaultClusterRenderer;
@@ -125,7 +128,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
     boolean init = true;
 
     boolean showNew;
-    Workout newWorkout = null;
+
+    Polyline currentPolyline;
 
     Unbinder unbinder;
 
@@ -270,6 +274,10 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
                     // TODO: same as the onInfoWindowClick
                     m.showInfoWindow();
 
+                    List<LatLng> decodedPath = PolyUtil.decode(workout.getPolyline());
+                    currentPolyline = map.addPolyline(new PolylineOptions().addAll(decodedPath));
+                    showNearbyWorkouts(workout.getPolylineLatLngBounds());
+
                     final Handler handler = new Handler();
                     handler.postDelayed(new Runnable() {
                         @Override
@@ -279,7 +287,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
                         }
                     }, 400);
 
-                    return false;
+                    return true;
                 }
             });
             clusterManager.setOnClusterClickListener(new ClusterManager.OnClusterClickListener<Workout>() {
@@ -357,6 +365,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
     @Override
     public void onMapClick(LatLng latLng) {
         hideZoomButtons();
+        currentPolyline.remove();
     }
 
     public void loadTopWorkouts() {
@@ -567,6 +576,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
         if (currentGeoPoint == null) return;
         Log.i("MapView", "Showing workout bounds: " + bounds.northeast.toString() + " --> " + bounds.southwest.toString());
         map.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, convertDpToPixel(42)));
+        // TODO: move this
         Toast.makeText(getContext(), "Showing Nearby Workouts", Toast.LENGTH_SHORT).show();
     }
 

@@ -77,6 +77,9 @@ dependencies {
     // Map clustering
     implementation 'com.google.maps.android:android-maps-utils:0.5+'
 
+    // google directions api network requests
+    implementation 'com.android.volley:volley:1.1.1'
+
 
     implementation 'com.github.sharish:ShimmerRecyclerView:v1.3'
 

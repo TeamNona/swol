@@ -12,6 +12,7 @@ import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.drawable.Drawable;
 import android.media.ExifInterface;
+import android.media.VolumeAutomation;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -26,6 +27,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.DatePicker;
@@ -38,6 +40,13 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.ui.PlaceSelectionListener;
@@ -50,10 +59,13 @@ import com.parse.ParseUser;
 import com.parse.SaveCallback;
 
 import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.StringReader;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -71,7 +83,7 @@ import static android.view.View.VISIBLE;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class AddFragment extends Fragment {
+public class AddFragment extends Fragment implements AdapterView.OnItemSelectedListener {
 
     // Use butterknife to bind
     @BindView(R.id.btnPost)
@@ -104,11 +116,14 @@ public class AddFragment extends Fragment {
     Spinner workoutCategory;
     @BindView(R.id.pbLoading)
     ProgressBar pbPost;
+    SupportPlaceAutocompleteFragment pafBegin;
+    SupportPlaceAutocompleteFragment pafEnd;
 
 
     // declare other variables
     Date Date;
     ParseGeoPoint postLocation;
+    ParseGeoPoint endLocation;
     // initialize time to midnight of current date
     int postYear = Calendar.getInstance().get(Calendar.YEAR);
     int postMonth = Calendar.getInstance().get(Calendar.MONTH);
@@ -140,6 +155,10 @@ public class AddFragment extends Fragment {
     // declare variables for spinners
     String workoutCategoryPrompt = "Choose a Workout Category";
     String tagsPrompt = "Choose up to 5 tags";
+
+    // maps api request stuff
+    String modeOfTransit = "walking";
+    String polyline;
 
 
     public AddFragment() {
@@ -182,6 +201,26 @@ public class AddFragment extends Fragment {
         return view;
     }
 
+    @Override
+    public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+        String category = (String) adapterView.getItemAtPosition(i);
+        String[] distanceCategories = getResources().getStringArray(R.array.distance_categories);
+        endLocationShower: for (String item : distanceCategories) {
+            Log.d("ItemSelector", "item: " + item + "\tcategory: " + category);
+            if(item.equals(category)) {
+                if (item.equals("bike")) modeOfTransit = "bicycling";
+                pafEnd.getView().setVisibility(View.VISIBLE);
+                break endLocationShower;
+            } else {
+                pafEnd.getView().setVisibility(View.GONE);
+            }
+        }
+    }
+
+    @Override
+    public void onNothingSelected(AdapterView<?> adapterView) {
+
+    }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
@@ -192,6 +231,9 @@ public class AddFragment extends Fragment {
 
         // show the post button
         postButton.setVisibility(View.VISIBLE);
+
+        // hide the end places input
+
 
         // create Array of workout categories
         final String[] workoutCategories;
@@ -263,13 +305,13 @@ public class AddFragment extends Fragment {
 
 
         // utilize the Google Places API to autocomplete the location for the workout
-        SupportPlaceAutocompleteFragment autocompleteFragment = (SupportPlaceAutocompleteFragment)
-                getChildFragmentManager().findFragmentById(R.id.place_autocomplete_fragment);
+        pafBegin = (SupportPlaceAutocompleteFragment)
+                getChildFragmentManager().findFragmentById(R.id.pafBegin);
 
-        ((EditText) autocompleteFragment.getView().findViewById(R.id.place_autocomplete_search_input)).setHint("Choose Location");
-        ((EditText) autocompleteFragment.getView().findViewById(R.id.place_autocomplete_search_input)).setTextSize(18.0f);
+        ((EditText) pafBegin.getView().findViewById(R.id.place_autocomplete_search_input)).setHint("Choose Location");
+        ((EditText) pafBegin.getView().findViewById(R.id.place_autocomplete_search_input)).setTextSize(18.0f);
 
-        autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
+        pafBegin.setOnPlaceSelectedListener(new PlaceSelectionListener() {
             @Override
             public void onPlaceSelected(Place place) {
                 LatLng latlng = place.getLatLng();
@@ -277,7 +319,32 @@ public class AddFragment extends Fragment {
                 postLocation.setLatitude(latlng.latitude);
                 postLocation.setLongitude(latlng.longitude);
 
-                Log.i(TAG, "Place: " + place.getName());
+                Log.i(TAG, "startLocation: " + place.getName());
+            }
+
+            @Override
+            public void onError(Status status) {
+                // TODO: Handle the error.
+                Log.i(TAG, "An error occurred: " + status);
+            }
+        });
+
+        // utilize the Google Places API to autocomplete the location for the workout
+        pafEnd = (SupportPlaceAutocompleteFragment)
+                getChildFragmentManager().findFragmentById(R.id.pafEnd);
+
+        ((EditText) pafEnd.getView().findViewById(R.id.place_autocomplete_search_input)).setHint("Choose Ending Location");
+        ((EditText) pafEnd.getView().findViewById(R.id.place_autocomplete_search_input)).setTextSize(18.0f);
+
+        pafEnd.setOnPlaceSelectedListener(new PlaceSelectionListener() {
+            @Override
+            public void onPlaceSelected(Place place) {
+                LatLng latlng = place.getLatLng();
+                endLocation = new ParseGeoPoint();
+                endLocation.setLatitude(latlng.latitude);
+                endLocation.setLongitude(latlng.longitude);
+
+                Log.i(TAG, "endLocation: " + place.getName());
             }
 
             @Override
@@ -374,6 +441,10 @@ public class AddFragment extends Fragment {
         });
         */
 
+
+
+        workoutCategory.setOnItemSelectedListener(this);
+
         // send new workout info to Parse
         postButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -416,7 +487,6 @@ public class AddFragment extends Fragment {
                 }
                 final ParseGeoPoint location = postLocation;
 
-
                 // get the final tags
                 final JSONArray tags = new JSONArray();
                 if (tagsPrompt.equals((String) spTags.getSelectedItem())) {
@@ -439,14 +509,45 @@ public class AddFragment extends Fragment {
                 final ParseFile media;
                 media = conversionBitmapParseFile(bitmap);
 
+                if (endLocation != null && pafEnd.getView().getVisibility() == View.VISIBLE) {
+                    RequestQueue queue = Volley.newRequestQueue(getContext());
+                    String url = "https://maps.googleapis.com/maps/api/directions/json?origin=" +
+                            postLocation.getLatitude() + "," + postLocation.getLongitude() + "&destination=" +
+                            endLocation.getLatitude() + "," + endLocation.getLongitude() + "&mode=" + modeOfTransit +
+                            "&key=" + getResources().getString(R.string.api_key);
 
-                createNewWorkout(category, name, description, date, location, media, participants, tags);
-//                FragmentManager fm = getActivity().getSupportFragmentManager();
-//                fab.show();
-//                fm.popBackStackImmediate();
+                    Log.d("API Hit", "url: "+ url);
 
-                // run a background job and once complete
-                //pbPost.setVisibility(ProgressBar.INVISIBLE);
+                    JsonObjectRequest polylineRequest = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
+                        @Override
+                        public void onResponse(JSONObject response) {
+                            JSONObject southwest;
+                            JSONObject northeast;
+                            String boundsString = null;
+                            try {
+                                polyline = response.getJSONArray("routes").getJSONObject(0).getJSONObject("overview_polyline").getString("points");
+                                southwest = response.getJSONArray("routes").getJSONObject(0).getJSONObject("bounds").getJSONObject("southwest");
+                                northeast = response.getJSONArray("routes").getJSONObject(0).getJSONObject("bounds").getJSONObject("northeast");
+                                boundsString = southwest.getDouble("lat") + "," + southwest.getDouble("lng") + "," + northeast.getDouble("lat") + "," + northeast.getDouble("lng");
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                            Log.d("PolylineRequest","Polyline: " + polyline);
+                            createNewWorkout(category, name, description, date, location, media, participants, tags, polyline, boundsString);
+                        }
+                    }, new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+                            error.printStackTrace();
+                            Log.d("PolylineRequest", "Request failed :(");
+                            createNewWorkout(category, name, description, date, location, media, participants, tags, null, null);
+                        }
+                    });
+
+                    queue.add(polylineRequest);
+
+                }
+
 
 
             }
@@ -456,7 +557,7 @@ public class AddFragment extends Fragment {
     }
 
 
-    private void createNewWorkout(String category, String name, String description, Date time, ParseGeoPoint location, ParseFile media, JSONArray participants, JSONArray tags) {
+    private void createNewWorkout(String category, String name, String description, Date time, ParseGeoPoint location, ParseFile media, JSONArray participants, JSONArray tags, String polyline, String boundsString) {
 
 
         // create a new event
@@ -472,6 +573,8 @@ public class AddFragment extends Fragment {
         workout.setTime(time);
         workout.setTags(tags);
         workout.setUser(currentUser);
+        workout.setPolyline(polyline);
+        workout.setPolylineBounds(boundsString);
 
         workout.saveInBackground(new SaveCallback() {
             @Override
@@ -491,6 +594,7 @@ public class AddFragment extends Fragment {
                     e.printStackTrace();
                     // show the button on failure
                     postButton.setVisibility(View.VISIBLE);
+                    pbPost.setVisibility(View.GONE);
                     Log.e("AddFragment", "Create post was not successful");
                 }
             }
