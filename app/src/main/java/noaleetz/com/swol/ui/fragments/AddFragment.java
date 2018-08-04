@@ -59,9 +59,12 @@ import com.parse.SaveCallback;
 
 import org.json.JSONArray;
 
+import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -83,7 +86,7 @@ import static android.view.View.VISIBLE;
  */
 public class AddFragment extends Fragment {
 
-    // Use butterknife to bind
+    // Bind variables
     @BindView(R.id.btnPost)
     Button postButton;
     @BindView(R.id.btnUpload)
@@ -115,20 +118,21 @@ public class AddFragment extends Fragment {
     @BindView(R.id.pbLoading)
     ProgressBar pbPost;
 
+    // keep track of who is logged on
+    private ParseUser currentUser = ParseUser.getCurrentUser();
 
-    // declare other variables
+    // workout variables
     Date Date;
     ParseGeoPoint postLocation;
+
     // initialize time to midnight of current date
     int postYear = Calendar.getInstance().get(Calendar.YEAR);
     int postMonth = Calendar.getInstance().get(Calendar.MONTH);
     int postDay = Calendar.getInstance().get(Calendar.DAY_OF_MONTH);
     int postHour = 23;
     int postMinute = 59;
-    FloatingActionButton fab;
 
-    // keep track of who is logged on
-    private ParseUser currentUser = ParseUser.getCurrentUser();
+    FloatingActionButton fab;
 
     // declare important variables for accessing photo gallery and for accessing camerq
     public static final int RESULT_OK = -1;
@@ -136,29 +140,29 @@ public class AddFragment extends Fragment {
     public static int RESULT_LOAD_IMAGE = 1;
     public static final int RESULT_LOAD_VIDEO = 101;
     public static final int REQUEST_VIDEO_CAPTURE = 100;
-    Bitmap image;
     public static Bitmap bitmap;
+    public static Object test = null;
     public File photoFile;
-    File videoFile;
     public static String photoFileName = "photo.jpg";
     public static final String APP_TAG = "Swol";
-
-    private NewMapItemListener listener;
-
-    private Unbinder unbinder;
-
-    // declare variables for spinners
-    String workoutCategoryPrompt = "Choose a Workout Category";
-    String tagsPrompt = "Choose up to 5 tags";
 
     // variables for permissions
     public static final int MY_PERMISSIONS_REQUEST_CAMERA = 99;
     public static final int MY_PERMISSIONS_REQUEST_GALLERY = 98;
 
+    private NewMapItemListener listener;
+
+    // variables for spinners
+    String workoutCategoryPrompt = "Choose a Workout Category";
+    String tagsPrompt = "Choose up to 5 tags";
+
+    private Unbinder unbinder;
+
 
     public AddFragment() {
         // Required empty public constructor
     }
+
 
     public static AddFragment create(ParseGeoPoint point) {
         AddFragment fragment = new AddFragment();
@@ -167,6 +171,7 @@ public class AddFragment extends Fragment {
         fragment.setArguments(args);
         return fragment;
     }
+
 
     @Override
     public void onAttach(Context context) {
@@ -178,6 +183,7 @@ public class AddFragment extends Fragment {
         }
     }
 
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -185,6 +191,7 @@ public class AddFragment extends Fragment {
             postLocation = getArguments().getParcelable("geoLoc");
         }
     }
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -208,6 +215,7 @@ public class AddFragment extends Fragment {
         final String[] workoutCategories;
         workoutCategories = getResources().getStringArray(R.array.workout_categories);
 
+        // declare Adapter to populate workout category spinner
         ArrayAdapter<CharSequence> categoryAdapter = new ArrayAdapter<CharSequence>(getActivity(),
                 android.R.layout.simple_spinner_dropdown_item, workoutCategories) {
             // Disable click item
@@ -237,22 +245,52 @@ public class AddFragment extends Fragment {
 
         };
 
-
-//        // Create an ArrayAdapter using the string array and a default spinner layout
-//        ArrayAdapter<CharSequence> categoryAdapter = ArrayAdapter.createFromResource(getActivity(),
-//                R.array.workout_categories, android.R.layout.simple_spinner_item) ;
         // Specify the layout to use when the list of choices appears
         categoryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         // Apply the adapter to the spinner
         workoutCategory.setAdapter(categoryAdapter);
 
-        post.setOnClickListener(new View.OnClickListener() {
+
+
+        // create Array of tag categories
+        String[] tagCategories;
+        tagCategories = getResources().getStringArray(R.array.tags);
+
+        // declare Adapter to populate tag category spinner
+        ArrayAdapter<CharSequence> tagsAdapter = new ArrayAdapter<CharSequence>(getActivity(),
+                android.R.layout.simple_spinner_dropdown_item, tagCategories) {
+            // Disable click item
             @Override
-            public void onClick(View view) {
-                upload.setVisibility(VISIBLE);
-                capture.setVisibility(VISIBLE);
+            public boolean isEnabled(int position) {
+                // TODO Auto-generated method stub
+                if (position == 0) {
+                    return false;
+                }
+                return true;
             }
-        });
+
+            // Change color item
+            @Override
+            public View getDropDownView(int position, View convertView,
+                                        ViewGroup parent) {
+                // TODO Auto-generated method stub
+                View mView = super.getDropDownView(position, convertView, parent);
+                TextView mTextView = (TextView) mView;
+                if (position == 0) {
+                    mTextView.setTextColor(Color.GRAY);
+                } else {
+                    mTextView.setTextColor(Color.BLACK);
+                }
+                return mView;
+            }
+
+        };
+
+        // Specify the layout to use when the list of choices appears
+        tagsAdapter.setDropDownViewResource(android.R.layout.simple_list_item_multiple_choice);
+
+        // Apply the adapter to the spinner
+        spTags.setAdapter(tagsAdapter);
 
 
         // set on click listener for user to add time
@@ -298,44 +336,15 @@ public class AddFragment extends Fragment {
             }
         });
 
-        // create Array of workout categories
-        String[] tagCategories;
-        tagCategories = getResources().getStringArray(R.array.tags);
 
-        ArrayAdapter<CharSequence> tagsAdapter = new ArrayAdapter<CharSequence>(getActivity(),
-                android.R.layout.simple_spinner_dropdown_item, tagCategories) {
-            // Disable click item
+        // allow user to upload or capture a video
+        post.setOnClickListener(new View.OnClickListener() {
             @Override
-            public boolean isEnabled(int position) {
-                // TODO Auto-generated method stub
-                if (position == 0) {
-                    return false;
-                }
-                return true;
+            public void onClick(View view) {
+                upload.setVisibility(VISIBLE);
+                capture.setVisibility(VISIBLE);
             }
-
-            // Change color item
-            @Override
-            public View getDropDownView(int position, View convertView,
-                                        ViewGroup parent) {
-                // TODO Auto-generated method stub
-                View mView = super.getDropDownView(position, convertView, parent);
-                TextView mTextView = (TextView) mView;
-                if (position == 0) {
-                    mTextView.setTextColor(Color.GRAY);
-                } else {
-                    mTextView.setTextColor(Color.BLACK);
-                }
-                return mView;
-            }
-
-        };
-
-        // Specify the layout to use when the list of choices appears
-        tagsAdapter.setDropDownViewResource(android.R.layout.simple_list_item_multiple_choice);
-        // Apply the adapter to the spinner
-        spTags.setAdapter(tagsAdapter);
-
+        });
 
         // allow user to upload and post a photo for the workout
         upload.setOnClickListener(new View.OnClickListener() {
@@ -411,24 +420,40 @@ public class AddFragment extends Fragment {
             @Override
             public void onClick(View view) {
 
+                // on some click or some loading we need to wait for...
+                pbPost.setVisibility(ProgressBar.VISIBLE);
+
 
                 // ensure user enters event name
                 final String name = etName.getText().toString();
                 if (name.length() == 0) {
                     Toast.makeText(getActivity(), "Your workout must have a name.", Toast.LENGTH_SHORT).show();
+
+                    // hide the progress bar
+                    pbPost.setVisibility(ProgressBar.INVISIBLE);
                     return;
                 }
 
                 final String category;
                 if (workoutCategoryPrompt.equals((String) workoutCategory.getSelectedItem())) {
                     Toast.makeText(getActivity(), "Please categorize your workout", Toast.LENGTH_SHORT).show();
+
+                    // hide the progress bar
+                    pbPost.setVisibility(ProgressBar.INVISIBLE);
                     return;
                 } else {
                     category = (String) workoutCategory.getSelectedItem();
                 }
 
-                // on some click or some loading we need to wait for...
-                pbPost.setVisibility(ProgressBar.VISIBLE);
+
+                // get the final tags
+                final JSONArray tags = new JSONArray();
+                if (tagsPrompt.equals((String) spTags.getSelectedItem())) {
+                    Toast.makeText(getActivity(), "Please add a least one tag to your workout.", Toast.LENGTH_SHORT).show();
+                    return;
+                } else {
+                    tags.put(spTags.getSelectedItem());
+                }
 
 
                 final String description = etDescription.getText().toString();
@@ -448,16 +473,6 @@ public class AddFragment extends Fragment {
                 final ParseGeoPoint location = postLocation;
 
 
-                // get the final tags
-                final JSONArray tags = new JSONArray();
-                if (tagsPrompt.equals((String) spTags.getSelectedItem())) {
-                    Toast.makeText(getActivity(), "Please add a least one tag to your workout.", Toast.LENGTH_SHORT).show();
-                    return;
-                } else {
-                    tags.put(spTags.getSelectedItem());
-                }
-
-
                 // populate participants
                 final JSONArray participants = new JSONArray();
                 participants.put(currentUser.getObjectId().toString());
@@ -469,16 +484,19 @@ public class AddFragment extends Fragment {
 
                 final ParseFile media;
                 media = conversionBitmapParseFile(bitmap);
+                media.saveInBackground(new SaveCallback() {
+                    public void done(ParseException e) {
+                        // If successful add file to user and signUpInBackground
+                        if (null == e) {
+                            Toast.makeText(getActivity(), "Picture post saved", Toast.LENGTH_SHORT).show();
+                        } else  {
+                            Toast.makeText(getActivity(), "Picture post not saved", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
 
 
                 createNewWorkout(category, name, description, date, location, media, participants, tags);
-//                FragmentManager fm = getActivity().getSupportFragmentManager();
-//                fab.show();
-//                fm.popBackStackImmediate();
-
-                // run a background job and once complete
-                //pbPost.setVisibility(ProgressBar.INVISIBLE);
-
 
             }
         });
@@ -527,32 +545,32 @@ public class AddFragment extends Fragment {
 
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           @NonNull String[] permissions, @NonNull int[] grantResults) {
-        switch (requestCode) {
-            case MY_PERMISSIONS_REQUEST_GALLERY:
-                // If the permission is granted, get the location,
-                // otherwise, show a Toast
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    Intent i = new Intent(
-                            Intent.ACTION_PICK,
-                            android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-
-                    startActivityForResult(i, RESULT_LOAD_IMAGE);
-                } else {
-                    Toast.makeText(getActivity(),
-                            R.string.camera_permission_denied,
-                            Toast.LENGTH_SHORT).show();
-                }
-                break;
-                default:
-                    Toast.makeText(getActivity(),
-                            R.string.camera_permission_denied,
-                            Toast.LENGTH_SHORT).show();
-        }
-    }
+//    @Override
+//    public void onRequestPermissionsResult(int requestCode,
+//                                           @NonNull String[] permissions, @NonNull int[] grantResults) {
+//        switch (requestCode) {
+//            case MY_PERMISSIONS_REQUEST_GALLERY:
+//                // If the permission is granted, get the location,
+//                // otherwise, show a Toast
+//                if (grantResults.length > 0
+//                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+//                    Intent i = new Intent(
+//                            Intent.ACTION_PICK,
+//                            android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+//
+//                    startActivityForResult(i, RESULT_LOAD_IMAGE);
+//                } else {
+//                    Toast.makeText(getActivity(),
+//                            R.string.camera_permission_denied,
+//                            Toast.LENGTH_SHORT).show();
+//                }
+//                break;
+//                default:
+//                    Toast.makeText(getActivity(),
+//                            R.string.camera_permission_denied,
+//                            Toast.LENGTH_SHORT).show();
+//        }
+//    }
 
 
     private void showTimePicker() {
@@ -574,10 +592,17 @@ public class AddFragment extends Fragment {
         public void onTimeSet(TimePicker timePicker, int hour, int minute) {
             postHour = hour;
             postMinute = minute;
+            String hourofday = "AM";
+            if (hour > 12) {
+                hour = hour - 12;
+                hourofday = "PM";
+            } else if (hour == 0)  {
+                hour = 12;
+            }
             if (minute < 10) {
-                tvTime.setText(String.valueOf(hour) + ":0" + String.valueOf(minute));
+                tvTime.setText(String.valueOf(hour) + ":0" + String.valueOf(minute) + " " + hourofday);
             } else {
-                tvTime.setText(String.valueOf(hour) + ":" + String.valueOf(minute));
+                tvTime.setText(String.valueOf(hour) + ":" + String.valueOf(minute) + " " + hourofday);
             }
 
 
@@ -728,12 +753,35 @@ public class AddFragment extends Fragment {
     }
 
 
-    public ParseFile conversionBitmapParseFile(Bitmap imageBitmap) {
+    public static ParseFile conversionBitmapParseFile(Bitmap imageBitmap) {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         imageBitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
+        try {
+            String path = null;
+            test = readInFile(path);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         byte[] imageByte = byteArrayOutputStream.toByteArray();
         ParseFile parseFile = new ParseFile("image_file.png", imageByte);
         return parseFile;
+    }
+
+    private static byte[] readInFile(String path) throws IOException {
+        // TODO Auto-generated method stub
+        byte[] data = null;
+        File file = new File(path);
+        InputStream input_stream = new BufferedInputStream(new FileInputStream(
+                file));
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        data = new byte[163840]; // 16K
+        int bytes_read;
+        while ((bytes_read = input_stream.read(data, 0, data.length)) != -1) {
+            buffer.write(data, 0, bytes_read);
+        }
+        input_stream.close();
+        return buffer.toByteArray();
+
     }
 
 

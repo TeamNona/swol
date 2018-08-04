@@ -4,12 +4,15 @@ package noaleetz.com.swol.ui.fragments;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.NavigationView;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -31,7 +34,9 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.parse.FindCallback;
 import com.parse.ParseException;
+import com.parse.ParseFile;
 import com.parse.ParseUser;
+import com.parse.SaveCallback;
 
 import org.json.JSONObject;
 
@@ -49,6 +54,9 @@ import noaleetz.com.swol.ui.activities.MainActivity;
 import noaleetz.com.swol.ui.adapters.ProfileAdapter;
 import noaleetz.com.swol.R;
 import noaleetz.com.swol.models.Workout;
+
+import static android.Manifest.permission.CAMERA;
+import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
 
 
 /**
@@ -112,23 +120,18 @@ public class ProfileFragment extends Fragment{
         super.onViewCreated(view, savedInstanceState);
 
 
+        // get the user's profile
         Bundle bundle = getArguments();
         user = bundle.getParcelable("user");
 
+        // get user's name
         tvProfileName.setText(user.getString("name"));
-        // TODO: fix facebook users
 
-        tvProfileUsername.setVisibility(View.VISIBLE);
-
+        // get user's username
         tvProfileUsername.setText("@" + user.getUsername());
-        if (MainActivity.isFacebookUser(user)) {
-            String url = "https://graph.facebook.com/" + MainActivity.getFBID(user) + "/picture?type=large";
-            Glide.with(view).load(url)
-                    .apply(RequestOptions.circleCropTransform()
-                            .placeholder(R.drawable.ic_person)
-                            .error(R.drawable.ic_person))
-                    .into(ivProfileImage);
-        } else {
+
+        // get the user's profile picture
+        if (user.getParseFile("profilePicture") != null) {
             try {
                 Glide.with(view).load(user.getParseFile("profilePicture").getFile())
                         .apply(RequestOptions.circleCropTransform()
@@ -138,7 +141,14 @@ public class ProfileFragment extends Fragment{
             } catch (ParseException e) {
                 e.printStackTrace();
             }
+        } else {
+            Glide.with(view).load(R.drawable.ic_person)
+                    .apply(RequestOptions.circleCropTransform()
+                            .placeholder(R.drawable.ic_person)
+                            .error(R.drawable.ic_person))
+                    .into(ivProfileImage);
         }
+
 
 
 
@@ -172,120 +182,138 @@ public class ProfileFragment extends Fragment{
             }
         });
 
-        // edit the profile
-        tvProfileName.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View view) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-                builder.setTitle("Edit your name.");
+        // if the current user is on his or her profile, allow user to edit the profile
+        ParseUser currentuser = ParseUser.getCurrentUser();
+        if (user.getObjectId().equals(currentuser.getObjectId())) {
+            tvProfileName.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View view) {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                    builder.setTitle("Edit your name.");
 
-                // Set up the input
-                final EditText input = new EditText(getActivity());
-                // Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
-                input.setInputType(InputType.TYPE_CLASS_TEXT);
-                builder.setView(input);
+                    // Set up the input
+                    final EditText input = new EditText(getActivity());
+                    // Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
+                    input.setInputType(InputType.TYPE_CLASS_TEXT);
+                    builder.setView(input);
 
-                // Set up the buttons
-                builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        String result = input.getText().toString();
-                        user.put("name", result);
-                        user.saveInBackground();
-                        tvProfileName.setText(result);
-                    }
-                });
-                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.cancel();
-                    }
-                });
-
-                builder.show();
-                return false;
-            }
-        });
-
-        tvProfileUsername.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View view) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-                builder.setTitle("Edit your username.");
-
-                // Set up the input
-                final EditText input = new EditText(getActivity());
-                // Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
-                input.setInputType(InputType.TYPE_CLASS_TEXT);
-                builder.setView(input);
-
-                // Set up the buttons
-                builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        String result = input.getText().toString();
-                        final User.Query userQuery = new User.Query();
-                        if (userQuery.getUsername(result) == null) {
-                            user.setUsername(result);
+                    // Set up the buttons
+                    builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            String result = input.getText().toString();
+                            user.put("name", result);
                             user.saveInBackground();
-                            tvProfileUsername.setText(result);
-                        } else {
-                            Toast.makeText(getActivity(), "Username already exists",
-                                    Toast.LENGTH_LONG).show();
+                            tvProfileName.setText(result);
                         }
+                    });
+                    builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.cancel();
+                        }
+                    });
 
-
-                    }
-                });
-                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.cancel();
-                    }
-                });
-
-                builder.show();
-                return false;
-
-            }
-        });
-        ivProfileImage.setOnLongClickListener(new View.OnLongClickListener() {
-
-            @Override
-            public boolean onLongClick(View view) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-
-            builder.setTitle("Change Profile Photo");
-
-
-            // Set up the buttons
-            builder.setNeutralButton("Upload", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    Intent i = new Intent(
-                            Intent.ACTION_PICK,
-                            android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-
-                    photoFile = getPhotoFileUri(AddFragment.photoFileName);
-
-                    startActivityForResult(i, AddFragment.RESULT_LOAD_IMAGE);
-
-                }
-            });
-            builder.setNegativeButton("Capture", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    onLaunchCamera();
+                    builder.show();
+                    return false;
                 }
             });
 
-            builder.show();
-            return false;
+            tvProfileUsername.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View view) {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                    builder.setTitle("Edit your username.");
 
+                    // Set up the input
+                    final EditText input = new EditText(getActivity());
+                    // Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
+                    input.setInputType(InputType.TYPE_CLASS_TEXT);
+                    builder.setView(input);
+
+                    // Set up the buttons
+                    builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            String result = input.getText().toString();
+                            final User.Query userQuery = new User.Query();
+                            if (userQuery.getUsername(result) == null) {
+                                user.setUsername(result);
+                                user.saveInBackground();
+                                tvProfileUsername.setText(result);
+                            } else {
+                                Toast.makeText(getActivity(), "Username already exists",
+                                        Toast.LENGTH_LONG).show();
+                            }
+
+
+                        }
+                    });
+                    builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.cancel();
+                        }
+                    });
+
+                    builder.show();
+                    return false;
+
+                }
+            });
+            ivProfileImage.setOnLongClickListener(new View.OnLongClickListener() {
+
+                @Override
+                public boolean onLongClick(View view) {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+
+                    builder.setTitle("Change Profile Photo");
+
+
+                    // Set up the buttons
+                    builder.setNeutralButton("Upload", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+
+                            if (ActivityCompat.checkSelfPermission(getActivity(), READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+
+                                // Permission is not granted, so request permission
+                                ActivityCompat.requestPermissions(getActivity(),
+                                        new String[]{READ_EXTERNAL_STORAGE},
+                                        AddFragment.MY_PERMISSIONS_REQUEST_GALLERY);
+                            } else {
+                                // Permission has already been granted
+                                Intent i = new Intent(
+                                        Intent.ACTION_PICK,
+                                        android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+
+                                startActivityForResult(i, AddFragment.RESULT_LOAD_IMAGE);
+                            }
+
+                        }
+                    });
+                    builder.setNegativeButton("Capture", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            if (ActivityCompat.checkSelfPermission(getActivity(), CAMERA) != PackageManager.PERMISSION_GRANTED) {
+
+                                // Permission is not granted, so request permission
+                                ActivityCompat.requestPermissions(getActivity(),
+                                        new String[]{CAMERA},
+                                        AddFragment.MY_PERMISSIONS_REQUEST_CAMERA);
+                            } else {
+                                // Permission has already been granted
+                                onLaunchCamera();
+                            }
+                        }
+                    });
+
+                    builder.show();
+                    return false;
+
+                }
+            });
         }
-        });
-
-
 
     }
 
@@ -318,11 +346,6 @@ public class ProfileFragment extends Fragment{
         unbinder.unbind();
     }
 
-    public boolean isFacebookUser(ParseUser user) {
-        if (user.get("authData") == null) return false;
-        JSONObject authData = user.getJSONObject("authData");
-        return authData.has("facebook");
-    }
 
     public void onLaunchCamera() {
         // create Intent to take a picture and return control to the calling application
@@ -357,6 +380,7 @@ public class ProfileFragment extends Fragment{
 
 
             try {
+                // load bitmap into profile picture view
                 AddFragment.bitmap = MediaStore.Images.Media.getBitmap(getActivity().getApplicationContext().getContentResolver(), selectedImage);
                 Glide.with(this).load(AddFragment.bitmap)
                         .apply(RequestOptions.circleCropTransform()
@@ -364,15 +388,37 @@ public class ProfileFragment extends Fragment{
                                 .error(R.drawable.ic_person))
                         .into(ivProfileImage);
                 ivProfileImage.setImageBitmap(AddFragment.bitmap);
+
+                // save profile image onto Parse
+                final ParseFile parseFile = AddFragment.conversionBitmapParseFile(AddFragment.bitmap);
+                parseFile.saveInBackground();
+                user.put("profilePicture", parseFile);
+                user.saveInBackground(new SaveCallback() {
+                    @Override
+                    public void done(ParseException e) {
+                        if (e == null) {
+                            Log.d("ProfileFragment", "Change profile picture successful");
+                            Toast.makeText(getActivity(), "Profile picture successfully saved.", Toast.LENGTH_SHORT).show();
+
+                        } else {
+                            e.printStackTrace();
+                            Log.e("AddFragment", "Change profile picture was not successful");
+                            Toast.makeText(getActivity(), "Sorry, profile picture could not be saved.", Toast.LENGTH_SHORT).show();
+
+                        }
+                    }
+                });
+
             } catch (IOException e) {
                 e.printStackTrace();
             }
 
+
             // GETTING IMAGE FROM CAMERA
         } else if (requestCode == AddFragment.CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE) {
             if (resultCode == AddFragment.RESULT_OK) {
+                // load the bitmap into the profile view
                 // by this point we have the camera photo on disk
-                // bitmap = BitmapFactory.decodeFile(photoFile.getAbsolutePath());
                 AddFragment.bitmap = AddFragment.rotateBitmapOrientation(photoFile.getPath());
                 // RESIZE BITMAP, see section below
                 // Load the taken image into a preview
@@ -382,9 +428,30 @@ public class ProfileFragment extends Fragment{
                                 .error(R.drawable.ic_person))
                         .into(ivProfileImage);
                 ivProfileImage.setImageBitmap(AddFragment.bitmap);
+                // save the picture to parse
+                final ParseFile parseFile = AddFragment.conversionBitmapParseFile(AddFragment.bitmap);
+                parseFile.saveInBackground();
+                user.put("profilePicture", parseFile);
+                user.saveInBackground(new SaveCallback() {
+                    @Override
+                    public void done(ParseException e) {
+                        if (e == null) {
+                            Log.d("ProfileFragment", "Change profile picture successful");
+                            Toast.makeText(getActivity(), "Profile picture successfully saved.", Toast.LENGTH_SHORT).show();
+
+                        } else {
+                            e.printStackTrace();
+                            Log.e("AddFragment", "Change profile picture was not successful");
+                            Toast.makeText(getActivity(), "Sorry, profile picture could not be saved.", Toast.LENGTH_SHORT).show();
+
+                        }
+                    }
+                });
+
             } else { // Result was a failure
                 Toast.makeText(getActivity(), "Picture wasn't taken!", Toast.LENGTH_SHORT).show();
             }
+
         }
     }
 
@@ -405,5 +472,6 @@ public class ProfileFragment extends Fragment{
 
         return file;
     }
+
 
 }

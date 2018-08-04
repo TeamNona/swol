@@ -6,6 +6,7 @@ import android.Manifest;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.drawable.BitmapDrawable;
@@ -163,6 +164,10 @@ public class MainActivity extends AppCompatActivity implements AddFragment.NewMa
         TextView navName = hView.findViewById(R.id.tvNavName);
         // sets the username in the drawer
         final TextView navUserame = hView.findViewById(R.id.tvNavUsername);
+
+        navUserame.setText("@" + currentUser.getUsername());
+        navUserame.setVisibility(View.VISIBLE);
+
         // sets the profile pic in the drawer
         // final ImageView ivAvatar = hView.findViewById(R.id.ivAvatar);
         ivAvatar = hView.findViewById(R.id.ivAvatar);
@@ -174,7 +179,7 @@ public class MainActivity extends AppCompatActivity implements AddFragment.NewMa
             e.printStackTrace();
         }
 
-        if (isFacebookUser(currentUser)) {
+        if (isFacebookUser(currentUser) && currentUser.getParseFile("profilePicture") == null) {
 
 
             // pulls the profile pic
@@ -190,24 +195,26 @@ public class MainActivity extends AppCompatActivity implements AddFragment.NewMa
 
 
             // save profile image onto parse
-            if (ParseUser.getCurrentUser().get("profilePicture") == null) {
-                Drawable drawable = ivAvatar.getDrawable();
-                Bitmap bitmap = convertToBitmap(drawable, 500, 500);
-                ParseFile parseFile = conversionBitmapParseFile(bitmap);
-                currentUser.put("profilePicture", parseFile);
-                currentUser.saveInBackground(new SaveCallback() {
-                    @Override
-                    public void done(ParseException e) {
-                        if (e == null) {
-                            Log.d("MainFragment", "Save ProfilePicture successful");
+//                Drawable drawable = ivAvatar.getDrawable();
+//                Bitmap bitmap = convertToBitmap(drawable, 500, 500);
+//                ParseFile parseFile = conversionBitmapParseFile(bitmap);
+//                currentUser.put("profilePicture", parseFile);
+//                currentUser.saveInBackground(new SaveCallback() {
+//                    @Override
+//                    public void done(ParseException e) {
+//                        if (e == null) {
+//                            Log.d("MainFragment", "Save ProfilePicture successful");
+//
+//                        } else {
+//                            e.printStackTrace();
+//                            Log.e("AddFragment", "Save ProfilePicture was not successful");
+//                        }
+//                    }
+//                });
 
-                        } else {
-                            e.printStackTrace();
-                            Log.e("AddFragment", "Save ProfilePicture was not successful");
-                        }
-                    }
-                });
-            }
+                new DownloadImageTask(ivAvatar)
+                        .execute(url);
+
 
             if (currentUser.get("username").toString().length() >= 25) {
                 String name = currentUser.get("name").toString().toLowerCase();
@@ -244,8 +251,6 @@ public class MainActivity extends AppCompatActivity implements AddFragment.NewMa
 //            request.executeAsync();
 
         } else {
-            navUserame.setText("@" + currentUser.getUsername());
-            navUserame.setVisibility(View.VISIBLE);
 
             if (currentUser.getParseFile("profilePicture") == null) {
                 Glide.with(hView).load(R.drawable.ic_person)
@@ -532,32 +537,31 @@ public class MainActivity extends AppCompatActivity implements AddFragment.NewMa
         return mutableBitmap;
     }
 
-//    private class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
-//        ImageView bmImage;
-//
-//        public DownloadImageTask(ImageView bmImage) {
-//            this.bmImage = bmImage;
-//        }
-//
-//        protected Bitmap doInBackground(String... urls) {
-//            String urldisplay = urls[0];
-//            Bitmap bmp = null;
-//            try {
-//                InputStream in = new java.net.URL(urldisplay).openStream();
-//                bmp = BitmapFactory.decodeStream(in);
-//            } catch (Exception e) {
-//                Log.e("Error", e.getMessage());
-//                e.printStackTrace();
-//            }
-//            bitmapProfilePicture = bmp;
-//            return bmp;
-//        }
-//
-//        protected void onPostExecute(Bitmap result) {
+    private class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
+        ImageView bmImage;
+
+        public DownloadImageTask(ImageView bmImage) {
+            this.bmImage = bmImage;
+        }
+
+        protected Bitmap doInBackground(String... urls) {
+            String urldisplay = urls[0];
+            Bitmap bmp = null;
+            try {
+                InputStream in = new java.net.URL(urldisplay).openStream();
+                bmp = BitmapFactory.decodeStream(in);
+            } catch (Exception e) {
+                Log.e("Error", e.getMessage());
+                e.printStackTrace();
+            }
+            bitmapProfilePicture = bmp;
+            return bmp;
+        }
+
+        protected void onPostExecute(Bitmap result) {
 //            ivAvatar.setImageBitmap(bitmapProfilePicture);
 //            bitmapProfilePicture = ((BitmapDrawable)ivAvatar.getDrawable()).getBitmap();
-//            final ParseFile parseFile = conversionBitmapParseFile(getResizedBitmap(bitmapProfilePicture, 50, 50));
-//            ParseUser.getCurrentUser().put("profilePicture", parseFile);
+
 //            // Initialize a new ByteArrayStream
 //            ByteArrayOutputStream stream = new ByteArrayOutputStream();
 //            // Compress the bitmap with JPEG format and quality 50%
@@ -567,40 +571,43 @@ public class MainActivity extends AppCompatActivity implements AddFragment.NewMa
 //            Bitmap compressedBitmap = BitmapFactory.decodeByteArray(byteArray,0,byteArray.length);
 //
 //            Bitmap resizedBitmap = getResizedBitmap(result, 10, 10);
-//
-//            //final ParseFile parseFile = conversionBitmapParseFile(result);
-//
-//            parseFile.saveInBackground(new SaveCallback() {
-//                @Override
-//                public void done(ParseException e) {
-//                    if (e == null) {
-//                        ParseUser.getCurrentUser().put("profilePicture", parseFile);
-//                        Log.d("MainFragment", "Save ProfilePicture successful");
-//
-//                    } else {
-//                        e.printStackTrace();
-//                        Log.e("AddFragment", "Save ProfilePicture was not successful");
-//                    }
-//                }
-//            });
-////            ParseUser.getCurrentUser().put("profilePicture", parseFile);
-////            ParseUser.getCurrentUser().saveInBackground(new SaveCallback() {
-////                @Override
-////                public void done(ParseException e) {
-////                    if (e == null) {
-////                        Log.d("MainFragment", "Save ProfilePicture successful");
-////
-////                    } else {
-////                        e.printStackTrace();
-////                        Log.e("AddFragment", "Save ProfilePicture was not successful");
-////                    }
-////                }
-////            });
-//            }
-//
-//
-//
-//    }
+
+            final ParseFile parseFile = conversionBitmapParseFile(result);
+
+            parseFile.saveInBackground(new SaveCallback() {
+                @Override
+                public void done(ParseException e) {
+                    if (e == null) {
+                        ParseUser.getCurrentUser().put("profilePicture", parseFile);
+                        Log.d("MainFragment", "Save ProfilePicture successful");
+
+                    } else {
+                        e.printStackTrace();
+                        Log.e("AddFragment", "Save ProfilePicture was not successful");
+                    }
+                }
+            });
+
+            ParseUser.getCurrentUser().put("profilePicture", parseFile);
+;
+            ParseUser.getCurrentUser().saveInBackground(new SaveCallback() {
+                @Override
+                public void done(ParseException e) {
+                    if (e == null) {
+                        Log.d("MainFragment", "Profile Successfully Saved");
+
+                    } else {
+                        e.printStackTrace();
+                        Log.e("AddFragment", "Profile not saved successfully");
+
+                    }
+                }
+            });
+            }
+
+
+
+    }
 
 //    public static class BitmapScaler
 //    {
