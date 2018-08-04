@@ -404,6 +404,7 @@ public class ProfileFragment extends Fragment{
                             e.printStackTrace();
                             Log.e("AddFragment", "Change profile picture was not successful");
                             Toast.makeText(getActivity(), "Sorry, profile picture could not be saved.", Toast.LENGTH_SHORT).show();
+
                         }
                     }
                 });
@@ -442,6 +443,7 @@ public class ProfileFragment extends Fragment{
                             e.printStackTrace();
                             Log.e("AddFragment", "Change profile picture was not successful");
                             Toast.makeText(getActivity(), "Sorry, profile picture could not be saved.", Toast.LENGTH_SHORT).show();
+
                         }
                     }
                 });

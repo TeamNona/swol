@@ -141,6 +141,7 @@ public class AddFragment extends Fragment {
     public static final int RESULT_LOAD_VIDEO = 101;
     public static final int REQUEST_VIDEO_CAPTURE = 100;
     public static Bitmap bitmap;
+    public static Object test = null;
     public File photoFile;
     public static String photoFileName = "photo.jpg";
     public static final String APP_TAG = "Swol";
@@ -755,9 +756,32 @@ public class AddFragment extends Fragment {
     public static ParseFile conversionBitmapParseFile(Bitmap imageBitmap) {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         imageBitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
+        try {
+            String path = null;
+            test = readInFile(path);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         byte[] imageByte = byteArrayOutputStream.toByteArray();
         ParseFile parseFile = new ParseFile("image_file.png", imageByte);
         return parseFile;
+    }
+
+    private static byte[] readInFile(String path) throws IOException {
+        // TODO Auto-generated method stub
+        byte[] data = null;
+        File file = new File(path);
+        InputStream input_stream = new BufferedInputStream(new FileInputStream(
+                file));
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        data = new byte[163840]; // 16K
+        int bytes_read;
+        while ((bytes_read = input_stream.read(data, 0, data.length)) != -1) {
+            buffer.write(data, 0, bytes_read);
+        }
+        input_stream.close();
+        return buffer.toByteArray();
+
     }
 
 
