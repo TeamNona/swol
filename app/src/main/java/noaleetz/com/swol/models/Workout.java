@@ -126,11 +126,11 @@ public class Workout extends ParseObject implements ClusterItem {
 
     public void setPolyline(String polyline) { put(KEY_POLYLINE, polyline); }
 
-    public String getPolyline() {return (String) get(KEY_POLYLINE); }
+    public String getPolyline() {return getString(KEY_POLYLINE); }
 
     public void setPolylineBounds(String bounds) { put(KEY_POLYLINE_BOUNDS, bounds); }
 
-    public String getPolylineBounds() {return (String) get(KEY_POLYLINE_BOUNDS); }
+    public String getPolylineBounds() {return getString(KEY_POLYLINE_BOUNDS); }
 
     @Override
     public Date getCreatedAt() {

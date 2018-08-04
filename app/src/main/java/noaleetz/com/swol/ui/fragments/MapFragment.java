@@ -274,18 +274,24 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
                     // TODO: same as the onInfoWindowClick
                     m.showInfoWindow();
 
-                    List<LatLng> decodedPath = PolyUtil.decode(workout.getPolyline());
-                    currentPolyline = map.addPolyline(new PolylineOptions().addAll(decodedPath));
-                    showNearbyWorkouts(workout.getPolylineLatLngBounds());
+                    String polyString = workout.getPolyline();
+                    if (polyString != null) {
+                        List<LatLng> decodedPath = PolyUtil.decode(polyString);
+                        currentPolyline = map.addPolyline(new PolylineOptions().addAll(decodedPath));
+                        showNearbyWorkouts(workout.getPolylineLatLngBounds());
 
-                    final Handler handler = new Handler();
-                    handler.postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            m.showInfoWindow();
+                        final Handler handler = new Handler();
+                        handler.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                m.showInfoWindow();
 
-                        }
-                    }, 400);
+                            }
+                        }, 400);
+
+                        return false;
+                    }
+
 
                     return true;
                 }

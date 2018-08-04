@@ -503,7 +503,7 @@ public class AddFragment extends Fragment implements AdapterView.OnItemSelectedL
 
                 if (bitmap == null) {
                     Drawable drawable = getResources().getDrawable(R.drawable.ic_directions_run_black_24dp);
-                    bitmap = convertToBitmap(drawable, 1000, 1000);
+                    bitmap = convertToBitmap(drawable, 10, 10);
                 }
 
                 final ParseFile media;
