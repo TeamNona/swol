@@ -274,10 +274,12 @@ public class MainActivity extends AppCompatActivity implements AddFragment.NewMa
         switch (menuItem.getItemId()) {
             case R.id.nav_feed_fragment:
                 fab.show();
+
                 fragmentManager.beginTransaction().replace(R.id.flContent, new FeedFragment()).addToBackStack(null).commit();
                 break;
             case R.id.nav_map_fragment:
                 fab.show();
+
                 // if there is no api key, then throw this exception
                 if (TextUtils.isEmpty(getResources().getString(R.string.api_key))) {
                     throw new IllegalStateException("You forgot to supply a Google Maps API key");

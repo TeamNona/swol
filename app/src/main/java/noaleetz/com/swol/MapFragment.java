@@ -61,6 +61,7 @@ import static noaleetz.com.swol.MainActivity.REQUEST_LOCATION_PERMISSION;
 
 public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleMap.OnMapLongClickListener, GoogleMap.OnInfoWindowClickListener, GoogleMap.OnMapClickListener {
 
+    FloatingActionButton fab;
 
 
     ArrayList<Marker> workoutMarkers;
@@ -130,6 +131,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
 
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.google_map_fragment);
 
+        fab = getActivity().findViewById(R.id.fab);
+        fab.setTranslationY(-1200);
         mapFragment.getMapAsync(this);
 
         hideZoomButtons();
@@ -576,8 +579,16 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
 
     }
 
+    @Override public void onPause() {
+        super.onPause();
+
+//        fab.setTranslationY(1200);
+
+
+    }
     @Override public void onDestroyView() {
         super.onDestroyView();
+
         unbinder.unbind();
     }
 }

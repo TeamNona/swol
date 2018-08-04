@@ -6,7 +6,7 @@
         android:id="@+id/filterByTag"
         android:checked="true"
         android:icon="@drawable/ic_add_tag"
-        android:title="Workout Tag"
+        android:title="Workout Category"
         app:srcCompat="@drawable/ic_add_tag" />
 
     <item

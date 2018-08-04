@@ -2,13 +2,18 @@ package noaleetz.com.swol;
 
 
 import android.app.AlertDialog;
+import android.app.SearchManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.view.menu.MenuBuilder;
+import android.support.v7.view.menu.MenuPopupHelper;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -17,8 +22,13 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.ImageView;
 import android.widget.PopupMenu;
+import android.widget.SearchView;
+import android.widget.SimpleCursorAdapter;
 import android.widget.Toast;
 
 import com.parse.FindCallback;
@@ -26,7 +36,10 @@ import com.parse.ParseException;
 import com.parse.ParseGeoPoint;
 import com.parse.ParseUser;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -35,6 +48,9 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
 import noaleetz.com.swol.models.Workout;
+
+import static android.content.Context.SEARCH_SERVICE;
+import static android.support.v4.content.ContextCompat.getSystemService;
 
 
 /**
@@ -55,8 +71,9 @@ public class FeedFragment extends Fragment {
     android.widget.SearchView svSearch;
     @BindView(R.id.ivFilterOptions)
     ImageView ivFilterOptions;
-    @BindView(R.id.ivSubmit)
-    ImageView ivSubmit;
+
+//    @BindView(R.id.search_src_text)
+//    android.support.v7.widget.SearchView.SearchAutoComplete categorySearchAutoComplete;
     private FeedAdapter adapter;
     private List<Workout> posts;
     private Unbinder unbinder;
@@ -64,10 +81,13 @@ public class FeedFragment extends Fragment {
     String maxHourString;
     String tagString;
     ParseGeoPoint currentGeoPoint;
+    FloatingActionButton fab;
 
 
 
-    String[] categories = new String[]{"Bike", "Cardio","Class","Dance","Game","Gym","High Intensity Interval Training","Hike","Meditation","Run","Swim","Weight"};
+
+
+    String[] categories;
     private String creatorUsername;
 
 
@@ -113,6 +133,8 @@ public class FeedFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         this.adapter = new FeedAdapter(posts); // this class implements callback
+        fab = (FloatingActionButton) getActivity().findViewById(R.id.fab);
+        fab.bringToFront();
 
 
         posts = new ArrayList<>();
@@ -122,9 +144,12 @@ public class FeedFragment extends Fragment {
         rvPosts.setLayoutManager(linearLayoutManager);
         rvPosts.setAdapter(adapter);
 
-
+        categories = new String[]{"Bike", "Cardio","Class","Dance","Game","Gym","High Intensity Interval Training","Hike","Meditation","Run","Swim","Weight"};
 
         loadTopPosts();
+
+
+
 
 
         swipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
@@ -134,6 +159,10 @@ public class FeedFragment extends Fragment {
                 // Make sure you call swipeContainer.setRefreshing(false)
                 // once the network request has completed successfully.
                 fetchTimelineAsync(0);
+                svSearch.setQuery("",false);
+                ivFilterOptions.setImageResource(R.drawable.ic_arrow);
+
+
 
                 swipeContainer.setColorSchemeResources(android.R.color.holo_blue_bright,
                         android.R.color.holo_green_light,
@@ -150,20 +179,22 @@ public class FeedFragment extends Fragment {
 
                 //Creating the instance of PopupMenu
                 final PopupMenu popup = new PopupMenu(view.getContext(), ivFilterOptions);
+                setForceShowIcon(popup);
                 //Inflating the Popup using xml file
                 popup.getMenuInflater()
                         .inflate(R.menu.popup_icon, popup.getMenu());
+
 
                 //registering popup with OnMenuItemClickListener
 
                 popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                     public boolean onMenuItemClick(MenuItem item) {
                         // toast on item click
-                        Toast.makeText(
-                                getContext(),
-                                "You Clicked : " + item.getTitle(),
-                                Toast.LENGTH_SHORT
-                        ).show();
+//                        Toast.makeText(
+//                                getContext(),
+//                                "You Clicked : " + item.getTitle(),
+//                                Toast.LENGTH_SHORT
+//                        ).show();
                         // select icon
                         selectPopupItem(item);
                         popup.dismiss();
@@ -179,39 +210,70 @@ public class FeedFragment extends Fragment {
 
 
     }
+    public static void setForceShowIcon(PopupMenu popupMenu) {
+        try {
+            Field[] fields = popupMenu.getClass().getDeclaredFields();
+            for (Field field : fields) {
+                if ("mPopup".equals(field.getName())) {
+                    field.setAccessible(true);
+                    Object menuPopupHelper = field.get(popupMenu);
+                    Class<?> classPopupHelper = Class.forName(menuPopupHelper
+                            .getClass().getName());
+                    Method setForceIcons = classPopupHelper.getMethod(
+                            "setForceShowIcon", boolean.class);
+                    setForceIcons.invoke(menuPopupHelper, true);
+                    break;
+                }
+            }
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
+    }
 
     public void selectPopupItem(MenuItem menuItem) {
         ivFilterOptions.setImageDrawable(menuItem.getIcon());
+        svSearch.setSubmitButtonEnabled(true);
+
 
         switch (menuItem.getItemId()) {
             case R.id.filterByTag:
-                svSearch.setQueryHint("filter by a workout category");
-                tagString = svSearch.getQuery().toString();
 
-                ivSubmit.setOnClickListener(new View.OnClickListener() {
+                svSearch.setQueryHint("filter by Category");
+                svSearch.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
                     @Override
-                    public void onClick(View view) {
+                    public boolean onQueryTextSubmit(String s) {
+//                        tagString = svSearch.getQuery().toString();
+                        tagString = s;
+
                         // check if category exists
-                        if(categories.equals(tagString)){
+                        if(Arrays.asList(categories).contains(tagString)){
                             // user has searched an existing category
                             QueryByCategory(tagString);
                         }
                         else{
                             CategoryNullOrDoesNotExist();
                         }
+                        return false;
+                    }
+
+                    @Override
+                    public boolean onQueryTextChange(String s) {
+                        return false;
                     }
                 });
+
+                categoriesAutocomplete();
+
+
                 break;
             case R.id.filterByTime:
                 maxHourString = svSearch.getQuery().toString();
 
-                svSearch.setQueryHint("filter by number of hours away");
+                svSearch.setQueryHint("filter by hours away");
 
-                ivSubmit.setOnClickListener(new View.OnClickListener() {
-
+                svSearch.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
                     @Override
-                    public void onClick(View view) {
-
+                    public boolean onQueryTextSubmit(String s) {
                         if(maxHourString.isEmpty()) {
                             NullHourAlert();
                         }
@@ -219,26 +281,37 @@ public class FeedFragment extends Fragment {
                             long maxHourLong = Long.parseLong(maxHourString);
                             QueryByTime(maxHourLong);
                         }
+                        return true;
+                    }
+
+                    @Override
+                    public boolean onQueryTextChange(String s) {
+                        return false;
                     }
                 });
+
+
                 break;
             case R.id.filterByDistance:
                 svSearch.setQueryHint("filter by number of miles");
-
-                ivSubmit.setOnClickListener(new View.OnClickListener() {
-
+                svSearch.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
                     @Override
-                    public void onClick(View view) {
-
-                        maxMileString = String.valueOf(svSearch.getQuery());
+                    public boolean onQueryTextSubmit(String s) {
+                        maxMileString = s;
                         if(maxMileString.isEmpty()){
                             maxMileString = "30";
                         }
                         else{double maxMileDouble = Double.parseDouble(maxMileString);
-                        QueryByDistance(maxMileDouble);}
+                            QueryByDistance(maxMileDouble);}
+                        return true;
+                    }
 
+                    @Override
+                    public boolean onQueryTextChange(String s) {
+                        return false;
                     }
                 });
+
 
                 break;
             case R.id.filterByTitle:
@@ -247,11 +320,10 @@ public class FeedFragment extends Fragment {
                 break;
             case R.id.filterByUser:
                 svSearch.setQueryHint("filter by Creator");
-                ivSubmit.setOnClickListener(new View.OnClickListener() {
 
+                svSearch.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
                     @Override
-                    public void onClick(View view) {
-
+                    public boolean onQueryTextSubmit(String s) {
                         creatorUsername = String.valueOf(svSearch.getQuery());
                         if(creatorUsername.isEmpty()){
                             NullUserAlert();
@@ -260,7 +332,12 @@ public class FeedFragment extends Fragment {
                             QueryByUserCreated(creatorUsername);
 
                         }
+                        return true;
+                    }
 
+                    @Override
+                    public boolean onQueryTextChange(String s) {
+                        return false;
                     }
                 });
 
@@ -273,6 +350,13 @@ public class FeedFragment extends Fragment {
         menuItem.setChecked(true);
 
         // Close the navigation drawer
+
+    }
+
+    private void categoriesAutocomplete() {
+//        List<String> stringList = Arrays.asList("Bike", "Cardio","Class","Dance","Game","Gym","High Intensity Interval Training","Hike","Meditation","Run","Swim","Weight");
+//        ArrayList<String> categoriesArrayList = new ArrayList(stringList);
+
 
     }
 
@@ -332,11 +416,11 @@ public class FeedFragment extends Fragment {
 
 
     public void QueryByUserCreated(String creatorUsername) {
-        final Workout.Query creatorQuery = new Workout.Query();
-
-
-        ParseUser userObject;
-        creatorQuery.withUser().createdBy(userObject);
+//        final Workout.Query creatorQuery = new Workout.Query();
+//
+//
+//        ParseUser userObject;
+//        creatorQuery.withUser().createdBy(userObject);
 
     }
     public void QueryByDistance(double maxMileNumber) {
