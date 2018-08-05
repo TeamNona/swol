@@ -15,6 +15,11 @@
         <item>Run</item>
         <item>Swim</item>
         <item>Weight</item>
+    </string-array>
 
+    <string-array name="distance_categories">
+        <item>Bike</item>
+        <item>Hike</item>
+        <item>Run</item>
     </string-array>
 </resources>

@@ -44,7 +44,10 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.maps.android.PolyUtil;
 import com.google.maps.android.clustering.Cluster;
 import com.google.maps.android.clustering.ClusterManager;
 import com.google.maps.android.clustering.view.DefaultClusterRenderer;
@@ -125,7 +128,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
     boolean init = true;
 
     boolean showNew;
-    Workout newWorkout = null;
+
+    Polyline currentPolyline;
 
     Unbinder unbinder;
 
@@ -270,6 +274,17 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
                     // TODO: same as the onInfoWindowClick
                     m.showInfoWindow();
 
+                    String polyString = workout.getPolyline();
+                    if (polyString != null) {
+                        List<LatLng> decodedPath = PolyUtil.decode(polyString);
+                        currentPolyline = map.addPolyline(new PolylineOptions().addAll(decodedPath));
+                        LatLngBounds bounds = workout.getPolylineLatLngBounds();
+                        map.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, convertDpToPixel(42)));
+
+                        return true;
+
+                    }
+
                     final Handler handler = new Handler();
                     handler.postDelayed(new Runnable() {
                         @Override
@@ -278,6 +293,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
 
                         }
                     }, 400);
+
 
                     return false;
                 }
@@ -357,6 +373,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
     @Override
     public void onMapClick(LatLng latLng) {
         hideZoomButtons();
+        currentPolyline.remove();
     }
 
     public void loadTopWorkouts() {

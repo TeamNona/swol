@@ -3,6 +3,7 @@ package noaleetz.com.swol.models;
 import android.text.format.DateUtils;
 
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.maps.android.clustering.ClusterItem;
 import com.parse.ParseClassName;
 import com.parse.ParseFile;
@@ -40,6 +41,10 @@ public class Workout extends ParseObject implements ClusterItem {
     private static final String KEY_ID = "objectId";
 
     private static final String KEY_CATEGORY = "eventCategory";
+
+    private static final String KEY_POLYLINE = "polyline";
+
+    private static final String KEY_POLYLINE_BOUNDS = "polylineBounds";
 
     // define setters and getters
 
@@ -119,6 +124,14 @@ public class Workout extends ParseObject implements ClusterItem {
         return (String) get(KEY_ID);
     }
 
+    public void setPolyline(String polyline) { put(KEY_POLYLINE, polyline); }
+
+    public String getPolyline() {return getString(KEY_POLYLINE); }
+
+    public void setPolylineBounds(String bounds) { put(KEY_POLYLINE_BOUNDS, bounds); }
+
+    public String getPolylineBounds() {return getString(KEY_POLYLINE_BOUNDS); }
+
     @Override
     public Date getCreatedAt() {
         return super.getCreatedAt();
@@ -133,6 +146,18 @@ public class Workout extends ParseObject implements ClusterItem {
     public LatLng getLatLng() {
         final ParseGeoPoint loc = getLocation();
         return new LatLng(loc.getLatitude(), loc.getLongitude());
+    }
+
+    public LatLngBounds getPolylineLatLngBounds () {
+        if (getPolyline() == null) return null;
+        LatLngBounds.Builder builder = new LatLngBounds.Builder();
+        String[] stringNums = getPolylineBounds().split(",");
+        double[] nums = new double[4];
+        for (int i = 0; i < 4; i ++) nums[i] = Double.parseDouble(stringNums[i]);
+        LatLng southwest = new LatLng(nums[0], nums[1]);
+        LatLng northeast = new LatLng(nums[2], nums[3]);
+        builder.include(southwest).include(northeast);
+        return builder.build();
     }
 
     public String getTimeUntil() {
