@@ -278,22 +278,24 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
                     if (polyString != null) {
                         List<LatLng> decodedPath = PolyUtil.decode(polyString);
                         currentPolyline = map.addPolyline(new PolylineOptions().addAll(decodedPath));
-                        showNearbyWorkouts(workout.getPolylineLatLngBounds());
+                        LatLngBounds bounds = workout.getPolylineLatLngBounds();
+                        map.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, convertDpToPixel(42)));
 
-                        final Handler handler = new Handler();
-                        handler.postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                m.showInfoWindow();
+                        return true;
 
-                            }
-                        }, 400);
-
-                        return false;
                     }
 
+                    final Handler handler = new Handler();
+                    handler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            m.showInfoWindow();
 
-                    return true;
+                        }
+                    }, 400);
+
+
+                    return false;
                 }
             });
             clusterManager.setOnClusterClickListener(new ClusterManager.OnClusterClickListener<Workout>() {
@@ -582,7 +584,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
         if (currentGeoPoint == null) return;
         Log.i("MapView", "Showing workout bounds: " + bounds.northeast.toString() + " --> " + bounds.southwest.toString());
         map.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, convertDpToPixel(42)));
-        // TODO: move this
         Toast.makeText(getContext(), "Showing Nearby Workouts", Toast.LENGTH_SHORT).show();
     }
 
