@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
+import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -47,12 +48,21 @@ public class CategoriesDialogFragment extends android.support.v4.app.DialogFragm
 
 
     Unbinder unbinder;
+    CategoryDialogListener listener = (CategoryDialogListener) getTargetFragment();
+
+
+
 
     public CategoriesDialogFragment() {
         // Required empty public constructor
     }
 
-
+    public interface CategoryDialogListener {
+        void onFinishCategoryDialog(String inputText);
+    }
+    public void setCallBack(CategoriesDialogFragment.CategoryDialogListener categoryDialogListener) {
+        listener = categoryDialogListener;
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -61,7 +71,7 @@ public class CategoriesDialogFragment extends android.support.v4.app.DialogFragm
         View view = inflater.inflate(R.layout.fragment_categories_dialog, null, false);
         unbinder = ButterKnife.bind(this, view);
 
-        getDialog().getWindow().setLayout(300,500);
+//        getDialog().getWindow().setLayout(300,500);
         getDialog().getWindow().requestFeature(Window.FEATURE_NO_TITLE);
 
 
@@ -85,10 +95,11 @@ public class CategoriesDialogFragment extends android.support.v4.app.DialogFragm
         Toast.makeText(getActivity(), catArray[i], Toast.LENGTH_SHORT)
                 .show();
 
-        Intent intent = new Intent()
-                .putExtra("category", catArray[i]);
-        getTargetFragment().onActivityResult(getTargetRequestCode(), Activity.RESULT_OK, intent);
+//        Intent intent = new Intent()
+//                .putExtra("category", catArray[i]);
+//        getTargetFragment().onActivityResult(getTargetRequestCode(), Activity.RESULT_OK, intent);
 
+        listener.onFinishCategoryDialog(catArray[i]);
 
         dismiss();
     }

@@ -5,18 +5,23 @@
     android:layout_height="match_parent"
     tools:context=".CategoriesDialogFragment">
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginLeft="5dp"
-        android:layout_marginRight="5dp" >
+    <ScrollView
+        android:layout_width="wrap_content"
+        android:layout_height="291dp">
 
-        <ListView
-            android:id="@+id/list"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:isScrollContainer="true"></ListView>
+            android:layout_marginLeft="5dp"
+            android:layout_marginRight="5dp">
 
-    </LinearLayout>
+            <ListView
+                android:id="@+id/list"
+                android:layout_width="match_parent"
+                android:layout_height="475dp"
+                android:isScrollContainer="true"
+                android:scrollbarAlwaysDrawVerticalTrack="true"></ListView>
+        </LinearLayout>
+    </ScrollView>
 
 </FrameLayout>

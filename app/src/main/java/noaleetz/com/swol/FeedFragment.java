@@ -59,9 +59,18 @@ import static android.support.v4.content.ContextCompat.getSystemService;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class FeedFragment extends Fragment {
+public class FeedFragment extends Fragment implements CategoriesDialogFragment.CategoryDialogListener{
 
     private static final String TAG = "FeedFragmentTAG";
+    public static final int CATEGORIES_DIALOG_FRAGMENT = 1; // class variable
+    CategoriesDialogFragment.CategoryDialogListener listener = new CategoriesDialogFragment.CategoryDialogListener() {
+        @Override
+        public void onFinishCategoryDialog(String inputText) {
+            svSearch.setQuery(inputText,false);
+        }
+    };
+
+
 
 //    private AdapterView.OnItemSelectedListener listener;
 
@@ -147,6 +156,8 @@ public class FeedFragment extends Fragment {
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext());
         rvPosts.setLayoutManager(linearLayoutManager);
         rvPosts.setAdapter(adapter);
+
+
 
         categories = new String[]{"Bike", "Cardio","Class","Dance","Game","Gym","High Intensity Interval Training","Hike","Meditation","Run","Swim","Weight"};
 
@@ -238,26 +249,20 @@ public class FeedFragment extends Fragment {
 
         FragmentManager manager = getFragmentManager();
 
+
         CategoriesDialogFragment dialog = new CategoriesDialogFragment();
+//        CategoriesDialogFragment.setTargetFragment(FeedFragment.this, 300);
+        dialog.setCallBack(listener);
+
         dialog.show(manager,"dialog");
 
     }
 
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        switch (requestCode) {
-            case setTargetFragment(CategoriesDialogFragment,Activity.RESULT_OK,);:
-                if (resultCode == Activity.RESULT_OK) {
-                    Bundle bundle = data.getExtras();
-                    String mMonth = bundle.getString("month", Month);
-                    int mYear = bundle.getInt("year");
-                    Log.i("PICKER", "Got year=" + year + " and month=" + month + ", yay!");
-                } else if (resultCode == Activity.RESULT_CANCELED) {
-                ...
-                }
-                break;
-        }
-    }
+
+
+
+
+
 
     public void selectPopupItem(MenuItem menuItem) {
         ivFilterOptions.setImageDrawable(menuItem.getIcon());
@@ -579,6 +584,17 @@ public class FeedFragment extends Fragment {
         // Showing Alert Message
         alertDialog.show();
     }
+
+    @Override
+    public void onFinishCategoryDialog(String inputText) {
+        return;
+    }
+
+//    @Override
+//    public void onFinishCategoryDialog(String inputText) {
+//
+//
+//    }
 //    @Override
 //    public void onResume() {
 //        super.onResume();
