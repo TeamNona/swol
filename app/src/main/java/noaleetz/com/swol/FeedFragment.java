@@ -62,7 +62,6 @@ import static android.support.v4.content.ContextCompat.getSystemService;
 public class FeedFragment extends Fragment implements CategoriesDialogFragment.CategoryDialogListener{
 
     private static final String TAG = "FeedFragmentTAG";
-    public static final int CATEGORIES_DIALOG_FRAGMENT = 1; // class variable
     CategoriesDialogFragment.CategoryDialogListener listener = new CategoriesDialogFragment.CategoryDialogListener() {
         @Override
         public void onFinishCategoryDialog(String inputText) {

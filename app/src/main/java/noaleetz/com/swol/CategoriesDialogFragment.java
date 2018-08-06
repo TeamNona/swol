@@ -82,7 +82,7 @@ public class CategoriesDialogFragment extends android.support.v4.app.DialogFragm
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(view.getContext(),android.R.layout.simple_list_item_1,catArray);
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(view.getContext(),android.R.layout.simple_list_item_1,categories);
         list.setAdapter(adapter);
         list.setOnItemClickListener(this);
 
