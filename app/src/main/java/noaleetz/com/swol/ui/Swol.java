@@ -1,4 +1,4 @@
-package noaleetz.com.swol;
+package noaleetz.com.swol.ui;
 
 import android.app.Application;
 
@@ -16,7 +16,7 @@ import com.facebook.appevents.AppEventsLogger;
 import com.parse.facebook.ParseFacebookUtils;
 
 
-public class ParseApp extends Application {
+public class Swol extends Application {
 
     @Override
     public void onCreate() {

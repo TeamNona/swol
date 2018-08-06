@@ -9,7 +9,7 @@
     android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity"
+    tools:context=".ui.activities.MainActivity"
     app:headerLayout="@layout/nav_header">
 
     <FrameLayout
@@ -66,8 +66,30 @@
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_gravity="start"
-        android:background="@android:color/white"
-        app:headerLayout="@layout/nav_header"
-        app:menu="@menu/drawer_view" />
+        android:background="@android:color/white">
+
+        <android.support.design.widget.NavigationView
+            android:id="@+id/navigation_drawer"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_gravity="top"
+            android:layout_marginBottom="112dp"
+            android:background="@android:color/white"
+            app:headerLayout="@layout/nav_header"
+            app:menu="@menu/drawer_view" />
+
+        <android.support.design.widget.NavigationView
+            android:id="@+id/navigation_drawer_bottom"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:background="@android:color/white"
+            app:menu="@menu/drawer_view_bottom" />
+
+    </android.support.design.widget.NavigationView>
+
+
+
+
     </android.support.v4.widget.DrawerLayout>
 

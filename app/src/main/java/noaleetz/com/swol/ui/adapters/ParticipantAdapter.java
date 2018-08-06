@@ -1,4 +1,4 @@
-package noaleetz.com.swol;
+package noaleetz.com.swol.ui.adapters;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
@@ -12,22 +12,16 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
-import com.parse.Parse;
 import com.parse.ParseException;
 import com.parse.ParseUser;
 
-import org.json.JSONArray;
-
-import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import jp.wasabeef.glide.transformations.RoundedCornersTransformation;
-import noaleetz.com.swol.models.User;
-import noaleetz.com.swol.models.Workout;
+import noaleetz.com.swol.ui.activities.MainActivity;
+import noaleetz.com.swol.R;
 
 public class ParticipantAdapter extends RecyclerView.Adapter<ParticipantAdapter.ViewHolder> {
 
@@ -37,7 +31,7 @@ public class ParticipantAdapter extends RecyclerView.Adapter<ParticipantAdapter.
     String url;
 
 
-    public ParticipantAdapter(List<ParseUser> participants){
+    public ParticipantAdapter(List<ParseUser> participants) {
         mparticipants = participants;
 
     }
@@ -50,7 +44,7 @@ public class ParticipantAdapter extends RecyclerView.Adapter<ParticipantAdapter.
         // Referencing the layout created for individual list item to get attached to RecyclerView
         mcontext = parent.getContext();
         LayoutInflater inflater = LayoutInflater.from(mcontext);
-        View participantView = inflater.inflate(R.layout.participant_item,parent,false);
+        View participantView = inflater.inflate(R.layout.participant_item, parent, false);
         return new ViewHolder(participantView);
     }
 
@@ -59,7 +53,7 @@ public class ParticipantAdapter extends RecyclerView.Adapter<ParticipantAdapter.
         final ParseUser participant = mparticipants.get(i);
 
 
-        final RoundedCornersTransformation roundedCornersTransformation = new RoundedCornersTransformation(15,15);
+        final RoundedCornersTransformation roundedCornersTransformation = new RoundedCornersTransformation(15, 15);
         final RequestOptions requestOptions = RequestOptions.bitmapTransform(roundedCornersTransformation);
 
         holder.tvFullName.setText(participant.getString("name"));
@@ -107,11 +101,11 @@ public class ParticipantAdapter extends RecyclerView.Adapter<ParticipantAdapter.
         @BindView(R.id.tvUsername)
         TextView tvUsername;
 
-        public ViewHolder (View itemView) {
+        public ViewHolder(View itemView) {
             super(itemView);
 
             itemView.setOnClickListener(this);
-            ButterKnife.bind(this,itemView);
+            ButterKnife.bind(this, itemView);
 
         }
 
@@ -119,7 +113,6 @@ public class ParticipantAdapter extends RecyclerView.Adapter<ParticipantAdapter.
         public void onClick(View view) {
         }
     }
-
 
 
     // Clean all elements of the recycler

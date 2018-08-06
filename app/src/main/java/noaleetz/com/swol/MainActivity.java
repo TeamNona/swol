@@ -47,6 +47,12 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import noaleetz.com.swol.models.Workout;
+import noaleetz.com.swol.ui.activities.DispatchActivity;
+import noaleetz.com.swol.ui.fragments.AddFragment;
+import noaleetz.com.swol.ui.fragments.DetailFragment;
+import noaleetz.com.swol.ui.fragments.FeedFragment;
+import noaleetz.com.swol.ui.fragments.MapFragment;
+import noaleetz.com.swol.ui.fragments.ProfileFragment;
 
 public class MainActivity extends AppCompatActivity implements AddFragment.NewMapItemListener {
 

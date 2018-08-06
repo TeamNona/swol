@@ -1,4 +1,4 @@
-package noaleetz.com.swol;
+package noaleetz.com.swol.ui.adapters;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
@@ -20,6 +20,8 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import jp.wasabeef.glide.transformations.RoundedCornersTransformation;
+import noaleetz.com.swol.ui.activities.MainActivity;
+import noaleetz.com.swol.R;
 import noaleetz.com.swol.models.Workout;
 
 public class ProfileAdapter extends RecyclerView.Adapter<ProfileAdapter.ViewHolder> {

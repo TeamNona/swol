@@ -4,6 +4,8 @@ import android.support.annotation.NonNull;
 import android.text.format.DateUtils;
 
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.maps.android.clustering.ClusterItem;
 import com.parse.ParseClassName;
 import com.parse.ParseFile;
 import com.parse.ParseGeoPoint;
@@ -22,8 +24,8 @@ import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 @ParseClassName("exerciseEvent")
-public class Workout extends ParseObject{
-
+public class Workout extends ParseObject implements ClusterItem {
+    // the reason it is implementing cluster item is that now it can be used as a marker for clusters
     // declare database fields
 
     private static final String KEY_NAME = "eventName";
@@ -47,6 +49,10 @@ public class Workout extends ParseObject{
     private static final String KEY_ID = "objectId";
 
     private static final String KEY_CATEGORY = "eventCategory";
+
+    private static final String KEY_POLYLINE = "polyline";
+
+    private static final String KEY_POLYLINE_BOUNDS = "polylineBounds";
 
     // define setters and getters
 
@@ -94,7 +100,7 @@ public class Workout extends ParseObject{
         return getParseUser(KEY_USER);
     }
 
-    public void setUser (ParseUser user) {
+    public void setUser(ParseUser user) {
         put(KEY_USER, user);
     }
 
@@ -126,6 +132,14 @@ public class Workout extends ParseObject{
         return (String) get(KEY_ID);
     }
 
+    public void setPolyline(String polyline) { put(KEY_POLYLINE, polyline); }
+
+    public String getPolyline() {return getString(KEY_POLYLINE); }
+
+    public void setPolylineBounds(String bounds) { put(KEY_POLYLINE_BOUNDS, bounds); }
+
+    public String getPolylineBounds() {return getString(KEY_POLYLINE_BOUNDS); }
+
     @Override
     public Date getCreatedAt() {
         return super.getCreatedAt();
@@ -145,7 +159,22 @@ public class Workout extends ParseObject{
 
     // helper methods for other functions
 
-    public LatLng getLatLng() { final ParseGeoPoint loc = getLocation(); return new LatLng(loc.getLatitude(), loc.getLongitude());}
+    public LatLng getLatLng() {
+        final ParseGeoPoint loc = getLocation();
+        return new LatLng(loc.getLatitude(), loc.getLongitude());
+    }
+
+    public LatLngBounds getPolylineLatLngBounds () {
+        if (getPolyline() == null) return null;
+        LatLngBounds.Builder builder = new LatLngBounds.Builder();
+        String[] stringNums = getPolylineBounds().split(",");
+        double[] nums = new double[4];
+        for (int i = 0; i < 4; i ++) nums[i] = Double.parseDouble(stringNums[i]);
+        LatLng southwest = new LatLng(nums[0], nums[1]);
+        LatLng northeast = new LatLng(nums[2], nums[3]);
+        builder.include(southwest).include(northeast);
+        return builder.build();
+    }
 
     public String getTimeUntil() {
         String relativeDate;
@@ -244,4 +273,21 @@ public class Workout extends ParseObject{
     }
 
 
+    // cluster item stuff
+
+
+    @Override
+    public LatLng getPosition() {
+        return getLatLng();
+    }
+
+    @Override
+    public String getTitle() {
+        return getName();
+    }
+
+    @Override
+    public String getSnippet() {
+        return getDescription();
+    }
 }

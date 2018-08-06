@@ -1,42 +1,41 @@
-package noaleetz.com.swol;
+package noaleetz.com.swol.ui.fragments;
 
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.DatePickerDialog;
-import android.app.Dialog;
 import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.media.ExifInterface;
-import android.media.Image;
-import android.media.MediaPlayer;
+import android.media.VolumeAutomation;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.Parcelable;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
-import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.DatePicker;
@@ -48,20 +47,19 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
-import android.widget.VideoView;
 
-import com.bumptech.glide.Glide;
-import com.google.android.gms.common.api.GoogleApiClient;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.google.android.gms.common.api.Status;
-import com.google.android.gms.location.places.GeoDataClient;
 import com.google.android.gms.location.places.Place;
-import com.google.android.gms.location.places.PlaceDetectionClient;
-import com.google.android.gms.location.places.Places;
-import com.google.android.gms.location.places.ui.PlaceAutocompleteFragment;
 import com.google.android.gms.location.places.ui.PlaceSelectionListener;
 import com.google.android.gms.location.places.ui.SupportPlaceAutocompleteFragment;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
 import com.parse.ParseException;
 import com.parse.ParseFile;
 import com.parse.ParseGeoPoint;
@@ -69,33 +67,37 @@ import com.parse.ParseUser;
 import com.parse.SaveCallback;
 
 import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
+import noaleetz.com.swol.R;
 import noaleetz.com.swol.models.Workout;
 
+import static android.Manifest.permission.CAMERA;
+import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
 import static android.support.constraint.Constraints.TAG;
+import static android.view.View.INVISIBLE;
+import static android.view.View.VISIBLE;
 
 
 /**
  * A simple {@link Fragment} subclass.
  */
-public class AddFragment extends Fragment{
+public class AddFragment extends Fragment implements AdapterView.OnItemSelectedListener {
 
-    // Use butterknife to bind
+    // Bind variables
     @BindView(R.id.btnPost)
     Button postButton;
     @BindView(R.id.btnUpload)
@@ -124,49 +126,61 @@ public class AddFragment extends Fragment{
     ImageView post;
     @BindView(R.id.spCategory)
     Spinner workoutCategory;
+    @BindView(R.id.pbLoading)
+    ProgressBar pbPost;
+    SupportPlaceAutocompleteFragment pafBegin;
+    SupportPlaceAutocompleteFragment pafEnd;
 
+    // keep track of who is logged on
+    private ParseUser currentUser = ParseUser.getCurrentUser();
 
-    // declare other variables
+    // workout variables
     Date Date;
     ParseGeoPoint postLocation;
+    ParseGeoPoint endLocation;
+
     // initialize time to midnight of current date
     int postYear = Calendar.getInstance().get(Calendar.YEAR);
     int postMonth = Calendar.getInstance().get(Calendar.MONTH);
     int postDay = Calendar.getInstance().get(Calendar.DAY_OF_MONTH);
     int postHour = 23;
     int postMinute = 59;
+
     FloatingActionButton fab;
-    
-    // keep track of who is logged on
-    private ParseUser currentUser = ParseUser.getCurrentUser();
 
     // declare important variables for accessing photo gallery and for accessing camerq
-    private static final int RESULT_OK = -1;
+    public static final int RESULT_OK = -1;
     public final static int CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE = 1034;
-    private static int RESULT_LOAD_IMAGE = 1;
-    private static final int RESULT_LOAD_VIDEO = 101;
-    static final int REQUEST_VIDEO_CAPTURE = 100;
-    Bitmap image;
-    Bitmap bitmap;
-    File photoFile;
-    File videoFile;
-    public String photoFileName = "photo.jpg";
-    public final String APP_TAG = "Swol";
+    public static int RESULT_LOAD_IMAGE = 1;
+    public static final int RESULT_LOAD_VIDEO = 101;
+    public static final int REQUEST_VIDEO_CAPTURE = 100;
+    public static Bitmap bitmap;
+    public static Object test = null;
+    public File photoFile;
+    public static String photoFileName = "photo.jpg";
+    public static final String APP_TAG = "Swol";
+
+    // variables for permissions
+    public static final int MY_PERMISSIONS_REQUEST_CAMERA = 99;
+    public static final int MY_PERMISSIONS_REQUEST_GALLERY = 98;
 
     private NewMapItemListener listener;
 
-    private Unbinder unbinder;
-
-    // declare variables for spinners
+    // variables for spinners
     String workoutCategoryPrompt = "Choose a Workout Category";
     String tagsPrompt = "Choose up to 5 tags";
 
+    // maps api request stuff
+    String modeOfTransit = "walking";
+    String polyline;
 
+    private Unbinder unbinder;
 
 
     public AddFragment() {
         // Required empty public constructor
     }
+
 
     public static AddFragment create(ParseGeoPoint point) {
         AddFragment fragment = new AddFragment();
@@ -175,6 +189,7 @@ public class AddFragment extends Fragment{
         fragment.setArguments(args);
         return fragment;
     }
+
 
     @Override
     public void onAttach(Context context) {
@@ -186,6 +201,7 @@ public class AddFragment extends Fragment{
         }
     }
 
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -194,29 +210,58 @@ public class AddFragment extends Fragment{
         }
     }
 
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_add, container, false);
+        View view = inflater.inflate(R.layout.fragment_add_2, container, false);
         unbinder = ButterKnife.bind(this, view);
 
         // Inflate the layout for this fragment
         return view;
     }
 
+    @Override
+    public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+        String category = (String) adapterView.getItemAtPosition(i);
+        String[] distanceCategories = getResources().getStringArray(R.array.distance_categories);
+        endLocationShower: for (String item : distanceCategories) {
+            Log.d("ItemSelector", "item: " + item + "\tcategory: " + category);
+            if(item.equals(category)) {
+                if (item.equals("bike")) modeOfTransit = "bicycling";
+                pafEnd.getView().setVisibility(View.VISIBLE);
+                break endLocationShower;
+            } else {
+                pafEnd.getView().setVisibility(View.GONE);
+            }
+        }
+    }
+
+    @Override
+    public void onNothingSelected(AdapterView<?> adapterView) {
+
+    }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+
         fab = (FloatingActionButton) getActivity().findViewById(R.id.fab);
+
+        // show the post button
+        postButton.setVisibility(View.VISIBLE);
+
+        // hide the end places input
+
 
         // create Array of workout categories
         final String[] workoutCategories;
         workoutCategories = getResources().getStringArray(R.array.workout_categories);
 
+        // declare Adapter to populate workout category spinner
         ArrayAdapter<CharSequence> categoryAdapter = new ArrayAdapter<CharSequence>(getActivity(),
-                android.R.layout.simple_spinner_dropdown_item, workoutCategories ) {
+                android.R.layout.simple_spinner_dropdown_item, workoutCategories) {
             // Disable click item
             @Override
             public boolean isEnabled(int position) {
@@ -244,76 +289,20 @@ public class AddFragment extends Fragment{
 
         };
 
-
-
-//        // Create an ArrayAdapter using the string array and a default spinner layout
-//        ArrayAdapter<CharSequence> categoryAdapter = ArrayAdapter.createFromResource(getActivity(),
-//                R.array.workout_categories, android.R.layout.simple_spinner_item) ;
         // Specify the layout to use when the list of choices appears
-        categoryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item) ;
+        categoryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         // Apply the adapter to the spinner
         workoutCategory.setAdapter(categoryAdapter);
 
-        post.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                upload.setVisibility(View.VISIBLE);
-                capture.setVisibility(View.VISIBLE);
-            }
-        });
 
 
-
-
-        // set on click listener for user to add time
-        addTime.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                showTimePicker();
-            }
-        });
-
-
-        // set on click listener for user to add date
-        addDate.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                showDatePicker();
-            }
-        });
-
-
-        // utilize the Google Places API to autocomplete the location for the workout
-        SupportPlaceAutocompleteFragment autocompleteFragment = (SupportPlaceAutocompleteFragment)
-                getChildFragmentManager().findFragmentById(R.id.place_autocomplete_fragment);
-
-        ((EditText)autocompleteFragment.getView().findViewById(R.id.place_autocomplete_search_input)).setHint("Choose Location");
-        ((EditText)autocompleteFragment.getView().findViewById(R.id.place_autocomplete_search_input)).setTextSize(18.0f);
-
-        autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
-            @Override
-            public void onPlaceSelected(Place place) {
-                LatLng latlng = place.getLatLng();
-                postLocation = new ParseGeoPoint();
-                postLocation.setLatitude(latlng.latitude);
-                postLocation.setLongitude(latlng.longitude);
-
-                Log.i(TAG, "Place: " + place.getName());
-            }
-
-            @Override
-            public void onError(Status status) {
-                // TODO: Handle the error.
-                Log.i(TAG, "An error occurred: " + status);
-            }
-        });
-
-        // create Array of workout categories
+        // create Array of tag categories
         String[] tagCategories;
         tagCategories = getResources().getStringArray(R.array.tags);
 
+        // declare Adapter to populate tag category spinner
         ArrayAdapter<CharSequence> tagsAdapter = new ArrayAdapter<CharSequence>(getActivity(),
-                android.R.layout.simple_spinner_dropdown_item, tagCategories ) {
+                android.R.layout.simple_spinner_dropdown_item, tagCategories) {
             // Disable click item
             @Override
             public boolean isEnabled(int position) {
@@ -343,22 +332,112 @@ public class AddFragment extends Fragment{
 
         // Specify the layout to use when the list of choices appears
         tagsAdapter.setDropDownViewResource(android.R.layout.simple_list_item_multiple_choice);
+
         // Apply the adapter to the spinner
         spTags.setAdapter(tagsAdapter);
 
 
-                // allow user to upload and post a photo for the workout
+        // set on click listener for user to add time
+        addTime.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                showTimePicker();
+            }
+        });
+
+
+        // set on click listener for user to add date
+        addDate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                showDatePicker();
+            }
+        });
+
+
+        // utilize the Google Places API to autocomplete the location for the workout
+        pafBegin = (SupportPlaceAutocompleteFragment)
+                getChildFragmentManager().findFragmentById(R.id.pafBegin);
+
+        ((EditText) pafBegin.getView().findViewById(R.id.place_autocomplete_search_input)).setHint("Choose Location");
+        ((EditText) pafBegin.getView().findViewById(R.id.place_autocomplete_search_input)).setTextSize(18.0f);
+
+        pafBegin.setOnPlaceSelectedListener(new PlaceSelectionListener() {
+            @Override
+            public void onPlaceSelected(Place place) {
+                LatLng latlng = place.getLatLng();
+                postLocation = new ParseGeoPoint();
+                postLocation.setLatitude(latlng.latitude);
+                postLocation.setLongitude(latlng.longitude);
+
+                Log.i(TAG, "startLocation: " + place.getName());
+            }
+
+            @Override
+            public void onError(Status status) {
+                // TODO: Handle the error.
+                Log.i(TAG, "An error occurred: " + status);
+            }
+        });
+
+        // utilize the Google Places API to autocomplete the location for the workout
+        pafEnd = (SupportPlaceAutocompleteFragment)
+                getChildFragmentManager().findFragmentById(R.id.pafEnd);
+
+        ((EditText) pafEnd.getView().findViewById(R.id.place_autocomplete_search_input)).setHint("Choose Ending Location");
+        ((EditText) pafEnd.getView().findViewById(R.id.place_autocomplete_search_input)).setTextSize(18.0f);
+
+        pafEnd.setOnPlaceSelectedListener(new PlaceSelectionListener() {
+            @Override
+            public void onPlaceSelected(Place place) {
+                LatLng latlng = place.getLatLng();
+                endLocation = new ParseGeoPoint();
+                endLocation.setLatitude(latlng.latitude);
+                endLocation.setLongitude(latlng.longitude);
+
+                Log.i(TAG, "endLocation: " + place.getName());
+            }
+
+            @Override
+            public void onError(Status status) {
+                // TODO: Handle the error.
+                Log.i(TAG, "An error occurred: " + status);
+            }
+        });
+
+
+        // allow user to upload or capture a video
+        post.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                upload.setVisibility(VISIBLE);
+                capture.setVisibility(VISIBLE);
+            }
+        });
+
+        // allow user to upload and post a photo for the workout
         upload.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                upload.setVisibility(View.INVISIBLE);
-                capture.setVisibility(View.INVISIBLE);
+                upload.setVisibility(INVISIBLE);
+                capture.setVisibility(INVISIBLE);
 
-                Intent i = new Intent(
-                        Intent.ACTION_PICK,
-                        android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                if (ActivityCompat.checkSelfPermission(getActivity(), READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
 
-                startActivityForResult(i, RESULT_LOAD_IMAGE);
+                    // Permission is not granted, so request permission
+                    ActivityCompat.requestPermissions(getActivity(),
+                            new String[]{READ_EXTERNAL_STORAGE},
+                            MY_PERMISSIONS_REQUEST_GALLERY);
+                } else {
+                    // Permission has already been granted
+                    Intent i = new Intent(
+                            Intent.ACTION_PICK,
+                            android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+
+                    startActivityForResult(i, RESULT_LOAD_IMAGE);
+                }
+
+
             }
         });
 
@@ -380,9 +459,19 @@ public class AddFragment extends Fragment{
         capture.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                upload.setVisibility(View.INVISIBLE);
-                capture.setVisibility(View.INVISIBLE);
-                onLaunchCamera(view);
+                upload.setVisibility(INVISIBLE);
+                capture.setVisibility(INVISIBLE);
+                if (ActivityCompat.checkSelfPermission(getActivity(), CAMERA) != PackageManager.PERMISSION_GRANTED) {
+
+                    // Permission is not granted, so request permission
+                    ActivityCompat.requestPermissions(getActivity(),
+                            new String[]{CAMERA},
+                            MY_PERMISSIONS_REQUEST_CAMERA);
+                } else {
+                    // Permission has already been granted
+                    onLaunchCamera();
+                }
+
             }
         });
 
@@ -395,24 +484,51 @@ public class AddFragment extends Fragment{
         });
         */
 
+
+
+        workoutCategory.setOnItemSelectedListener(this);
+
         // send new workout info to Parse
         postButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
+                // on some click or some loading we need to wait for...
+                pbPost.setVisibility(ProgressBar.VISIBLE);
+
+
                 // ensure user enters event name
                 final String name = etName.getText().toString();
                 if (name.length() == 0) {
                     Toast.makeText(getActivity(), "Your workout must have a name.", Toast.LENGTH_SHORT).show();
+
+                    // hide the progress bar
+                    pbPost.setVisibility(ProgressBar.INVISIBLE);
                     return;
                 }
 
                 final String category;
                 if (workoutCategoryPrompt.equals((String) workoutCategory.getSelectedItem())) {
                     Toast.makeText(getActivity(), "Please categorize your workout", Toast.LENGTH_SHORT).show();
+
+                    // hide the progress bar
+                    pbPost.setVisibility(ProgressBar.INVISIBLE);
                     return;
                 } else {
                     category = (String) workoutCategory.getSelectedItem();
+                }
+
+                // on some click or some loading we need to wait for...
+                pbPost.setVisibility(ProgressBar.VISIBLE);
+                postButton.setVisibility(View.GONE);
+
+                // get the final tags
+                final JSONArray tags = new JSONArray();
+                if (tagsPrompt.equals((String) spTags.getSelectedItem())) {
+                    Toast.makeText(getActivity(), "Please add a least one tag to your workout.", Toast.LENGTH_SHORT).show();
+                    return;
+                } else {
+                    tags.put(spTags.getSelectedItem());
                 }
 
 
@@ -433,34 +549,70 @@ public class AddFragment extends Fragment{
                 final ParseGeoPoint location = postLocation;
 
 
-                // get the final tags
-                final JSONArray tags = new JSONArray();
-                if (tagsPrompt.equals((String) spTags.getSelectedItem())) {
-                    Toast.makeText(getActivity(), "Please add a least one tag to your workout.", Toast.LENGTH_SHORT).show();
-                    return;
-                } else {
-                    tags.put(spTags.getSelectedItem());
-                }
-
-
-
                 // populate participants
                 final JSONArray participants = new JSONArray();
                 participants.put(currentUser.getObjectId().toString());
 
                 if (bitmap == null) {
                     Drawable drawable = getResources().getDrawable(R.drawable.ic_directions_run_black_24dp);
-                    bitmap = convertToBitmap(drawable, 1000, 1000);
+                    bitmap = convertToBitmap(drawable, 10, 10);
                 }
 
                 final ParseFile media;
                 media = conversionBitmapParseFile(bitmap);
+                media.saveInBackground(new SaveCallback() {
+                    public void done(ParseException e) {
+                        // If successful add file to user and signUpInBackground
+                        if (null == e) {
+                            Toast.makeText(getActivity(), "Picture post saved", Toast.LENGTH_SHORT).show();
+                        } else  {
+                            Toast.makeText(getActivity(), "Picture post not saved", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
+
+                if (endLocation != null && pafEnd.getView().getVisibility() == View.VISIBLE) {
+                    RequestQueue queue = Volley.newRequestQueue(getContext());
+                    String url = "https://maps.googleapis.com/maps/api/directions/json?origin=" +
+                            postLocation.getLatitude() + "," + postLocation.getLongitude() + "&destination=" +
+                            endLocation.getLatitude() + "," + endLocation.getLongitude() + "&mode=" + modeOfTransit +
+                            "&key=" + getResources().getString(R.string.api_key);
+
+                    Log.d("API Hit", "url: "+ url);
+
+                    JsonObjectRequest polylineRequest = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
+                        @Override
+                        public void onResponse(JSONObject response) {
+                            JSONObject southwest;
+                            JSONObject northeast;
+                            String boundsString = null;
+                            try {
+                                polyline = response.getJSONArray("routes").getJSONObject(0).getJSONObject("overview_polyline").getString("points");
+                                southwest = response.getJSONArray("routes").getJSONObject(0).getJSONObject("bounds").getJSONObject("southwest");
+                                northeast = response.getJSONArray("routes").getJSONObject(0).getJSONObject("bounds").getJSONObject("northeast");
+                                boundsString = southwest.getDouble("lat") + "," + southwest.getDouble("lng") + "," + northeast.getDouble("lat") + "," + northeast.getDouble("lng");
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                            Log.d("PolylineRequest","Polyline: " + polyline);
+                            createNewWorkout(category, name, description, date, location, media, participants, tags, polyline, boundsString);
+                        }
+                    }, new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+                            error.printStackTrace();
+                            Log.d("PolylineRequest", "Request failed :(");
+                            createNewWorkout(category, name, description, date, location, media, participants, tags, null, null);
+                        }
+                    });
+
+                    queue.add(polylineRequest);
 
 
-                createNewWorkout(category, name, description, date, location, media, participants, tags);
 //                FragmentManager fm = getActivity().getSupportFragmentManager();
 //                fab.show();
 //                fm.popBackStackImmediate();
+                }
 
             }
         });
@@ -469,7 +621,7 @@ public class AddFragment extends Fragment{
     }
 
 
-    private void createNewWorkout(String category, String name, String description, Date time, ParseGeoPoint location, ParseFile media, JSONArray participants, JSONArray tags) {
+    private void createNewWorkout(String category, String name, String description, Date time, ParseGeoPoint location, ParseFile media, JSONArray participants, JSONArray tags, String polyline, String boundsString) {
 
 
         // create a new event
@@ -485,6 +637,8 @@ public class AddFragment extends Fragment{
         workout.setTime(time);
         workout.setTags(tags);
         workout.setUser(currentUser);
+        workout.setPolyline(polyline);
+        workout.setPolylineBounds(boundsString);
 
         workout.saveInBackground(new SaveCallback() {
             @Override
@@ -503,13 +657,42 @@ public class AddFragment extends Fragment{
 
                 } else {
                     e.printStackTrace();
+                    // show the button on failure
+                    postButton.setVisibility(View.VISIBLE);
+                    pbPost.setVisibility(View.GONE);
                     Log.e("AddFragment", "Create post was not successful");
                 }
             }
         });
 
-
     }
+
+//    @Override
+//    public void onRequestPermissionsResult(int requestCode,
+//                                           @NonNull String[] permissions, @NonNull int[] grantResults) {
+//        switch (requestCode) {
+//            case MY_PERMISSIONS_REQUEST_GALLERY:
+//                // If the permission is granted, get the location,
+//                // otherwise, show a Toast
+//                if (grantResults.length > 0
+//                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+//                    Intent i = new Intent(
+//                            Intent.ACTION_PICK,
+//                            android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+//
+//                    startActivityForResult(i, RESULT_LOAD_IMAGE);
+//                } else {
+//                    Toast.makeText(getActivity(),
+//                            R.string.camera_permission_denied,
+//                            Toast.LENGTH_SHORT).show();
+//                }
+//                break;
+//                default:
+//                    Toast.makeText(getActivity(),
+//                            R.string.camera_permission_denied,
+//                            Toast.LENGTH_SHORT).show();
+//        }
+//    }
 
 
     private void showTimePicker() {
@@ -531,10 +714,17 @@ public class AddFragment extends Fragment{
         public void onTimeSet(TimePicker timePicker, int hour, int minute) {
             postHour = hour;
             postMinute = minute;
+            String hourofday = "AM";
+            if (hour > 12) {
+                hour = hour - 12;
+                hourofday = "PM";
+            } else if (hour == 0)  {
+                hour = 12;
+            }
             if (minute < 10) {
-                tvTime.setText(String.valueOf(hour) + ":0" + String.valueOf(minute));
+                tvTime.setText(String.valueOf(hour) + ":0" + String.valueOf(minute) + " " + hourofday);
             } else {
-                tvTime.setText(String.valueOf(hour) + ":" + String.valueOf(minute));
+                tvTime.setText(String.valueOf(hour) + ":" + String.valueOf(minute) + " " + hourofday);
             }
 
 
@@ -567,7 +757,7 @@ public class AddFragment extends Fragment{
     };
 
 
-    public void onLaunchCamera(View view) {
+    public void onLaunchCamera() {
         // create Intent to take a picture and return control to the calling application
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         // Create a File reference to access to future access
@@ -656,7 +846,7 @@ public class AddFragment extends Fragment{
         File mediaStorageDir = new File(getContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES), APP_TAG);
 
         // Create the storage directory if it does not exist
-        if (!mediaStorageDir.exists() && !mediaStorageDir.mkdirs()){
+        if (!mediaStorageDir.exists() && !mediaStorageDir.mkdirs()) {
             Log.d(APP_TAG, "failed to create directory");
         }
 
@@ -674,7 +864,7 @@ public class AddFragment extends Fragment{
         File mediaStorageDir = new File(getContext().getExternalFilesDir(Environment.DIRECTORY_DCIM), APP_TAG);
 
         // Create the storage directory if it does not exist
-        if (!mediaStorageDir.exists() && !mediaStorageDir.mkdirs()){
+        if (!mediaStorageDir.exists() && !mediaStorageDir.mkdirs()) {
             Log.d(APP_TAG, "failed to create directory");
         }
 
@@ -685,12 +875,35 @@ public class AddFragment extends Fragment{
     }
 
 
-    public ParseFile conversionBitmapParseFile(Bitmap imageBitmap){
-        ByteArrayOutputStream byteArrayOutputStream=new ByteArrayOutputStream();
-        imageBitmap.compress(Bitmap.CompressFormat.PNG,100,byteArrayOutputStream);
+    public static ParseFile conversionBitmapParseFile(Bitmap imageBitmap) {
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        imageBitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
+        try {
+            String path = null;
+            test = readInFile(path);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         byte[] imageByte = byteArrayOutputStream.toByteArray();
-        ParseFile parseFile = new ParseFile("image_file.png",imageByte);
+        ParseFile parseFile = new ParseFile("image_file.png", imageByte);
         return parseFile;
+    }
+
+    private static byte[] readInFile(String path) throws IOException {
+        // TODO Auto-generated method stub
+        byte[] data = null;
+        File file = new File(path);
+        InputStream input_stream = new BufferedInputStream(new FileInputStream(
+                file));
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        data = new byte[163840]; // 16K
+        int bytes_read;
+        while ((bytes_read = input_stream.read(data, 0, data.length)) != -1) {
+            buffer.write(data, 0, bytes_read);
+        }
+        input_stream.close();
+        return buffer.toByteArray();
+
     }
 
 
@@ -703,7 +916,7 @@ public class AddFragment extends Fragment{
         return mutableBitmap;
     }
 
-    public Bitmap rotateBitmapOrientation(String photoFilePath) {
+    public static Bitmap rotateBitmapOrientation(String photoFilePath) {
         // Create and configure BitmapFactory
         BitmapFactory.Options bounds = new BitmapFactory.Options();
         bounds.inJustDecodeBounds = true;
@@ -734,7 +947,8 @@ public class AddFragment extends Fragment{
 
     // When binding a fragment in onCreateView, set the views to null in onDestroyView.
     // ButterKnife returns an Unbinder on the initial binding that has an unbind method to do this automatically.
-    @Override public void onDestroyView() {
+    @Override
+    public void onDestroyView() {
         super.onDestroyView();
         unbinder.unbind();
     }

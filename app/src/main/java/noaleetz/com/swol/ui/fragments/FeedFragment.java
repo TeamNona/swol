@@ -1,4 +1,4 @@
-package noaleetz.com.swol;
+package noaleetz.com.swol.ui.fragments;
 
 
 import android.app.Activity;
@@ -34,6 +34,7 @@ import android.widget.SearchView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.Toast;
 
+
 import com.parse.FindCallback;
 import com.parse.ParseException;
 import com.parse.ParseGeoPoint;
@@ -50,6 +51,9 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
+import noaleetz.com.swol.CategoriesDialogFragment;
+import noaleetz.com.swol.ui.adapters.FeedAdapter;
+import noaleetz.com.swol.R;
 import noaleetz.com.swol.models.Workout;
 
 import static android.content.Context.SEARCH_SERVICE;
@@ -100,6 +104,7 @@ public class FeedFragment extends Fragment implements CategoriesDialogFragment.C
 
     String[] categories;
     private String creatorUsername;
+
 
 
     public FeedFragment() {
@@ -300,9 +305,10 @@ public class FeedFragment extends Fragment implements CategoriesDialogFragment.C
 
                 break;
             case R.id.filterByTime:
-                maxHourString = svSearch.getQuery().toString();
 
                 svSearch.setQueryHint("filter by hours away");
+                maxHourString = svSearch.getQuery().toString();
+
 
                 svSearch.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
                     @Override

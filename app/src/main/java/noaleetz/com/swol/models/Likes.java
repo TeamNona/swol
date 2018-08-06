@@ -6,7 +6,7 @@ import com.parse.ParseQuery;
 import com.parse.ParseUser;
 
 @ParseClassName("Likes")
-public class Likes extends ParseObject{
+public class Likes extends ParseObject {
 
     // declare database fields
     private static final String KEY_USER = "likedBy";
@@ -14,15 +14,15 @@ public class Likes extends ParseObject{
     private static final String KEY_POST = "likedPost";
 
     // define setters and getters
-    public ParseUser getLikedBy () {
+    public ParseUser getLikedBy() {
         return getParseUser(KEY_USER);
     }
 
-    public void setLikedBy (ParseUser user) {
+    public void setLikedBy(ParseUser user) {
         put(KEY_USER, user);
     }
 
-    public ParseObject getLikedPost () {
+    public ParseObject getLikedPost() {
         return getParseObject(KEY_POST);
     }
 

@@ -9,6 +9,8 @@
     <string-array name="my_facebook_permissions">
         <item>public_profile</item>
         <item>user_friends</item>
+        <item>email</item>
+        <item>photo</item>
     </string-array>
 
     <!--    Permissions : from https://github.com/googlemaps/android-samples/blob/master/ApiDemos/java/app/src/main/res/values/strings.xml -->
@@ -22,4 +24,6 @@
     <string name="title_activity_maps">Map</string>
     <string name="location_permission_denied">Permission to access location was denied</string>
     <string name="location_text">"Latitude: %1$.4f \n Longitude: %2$.4f\n Timestamp: %3$tr"</string>
+    <string name="camera_permission_denied">Permission to access camera was denied</string>
+    <string name="gallery_permission_denied">Permission to access gallery photos was denied</string>
 </resources>

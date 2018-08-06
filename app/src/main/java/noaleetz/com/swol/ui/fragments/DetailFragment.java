@@ -1,4 +1,4 @@
-package noaleetz.com.swol;
+package noaleetz.com.swol.ui.fragments;
 
 
 import android.app.AlertDialog;
@@ -15,7 +15,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -26,10 +25,7 @@ import com.bumptech.glide.request.RequestOptions;
 import com.parse.CountCallback;
 import com.parse.FindCallback;
 import com.parse.GetCallback;
-import com.parse.Parse;
-import com.parse.ParseClassName;
 import com.parse.ParseException;
-import com.parse.ParseFile;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
@@ -37,20 +33,18 @@ import com.parse.SaveCallback;
 
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
-import org.w3c.dom.Comment;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import bolts.Task;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
 import jp.wasabeef.glide.transformations.RoundedCornersTransformation;
+import noaleetz.com.swol.ui.adapters.CommentAdapter;
+import noaleetz.com.swol.ui.adapters.ParticipantAdapter;
+import noaleetz.com.swol.R;
 import noaleetz.com.swol.models.Comments;
-import noaleetz.com.swol.models.User;
 import noaleetz.com.swol.models.Workout;
 
 import static com.parse.Parse.getApplicationContext;
@@ -62,7 +56,6 @@ import static com.parse.Parse.getApplicationContext;
 public class DetailFragment extends Fragment {
 
     FloatingActionButton fab;
-
 
 
     private static final String TAG = "TAGDetailFragment";
@@ -126,7 +119,6 @@ public class DetailFragment extends Fragment {
     public JSONArray comment_list;
 
 
-
     public DetailFragment() {
         // Required empty public constructor
     }
@@ -154,7 +146,6 @@ public class DetailFragment extends Fragment {
         fab.hide();
 
 
-
         final RoundedCornersTransformation roundedCornersTransformation = new RoundedCornersTransformation(30, 30);
         final RequestOptions requestOptions = RequestOptions.bitmapTransform(roundedCornersTransformation);
 
@@ -163,8 +154,12 @@ public class DetailFragment extends Fragment {
 
         tvWorkoutTitle.setText(workout.getName());
         tvBeginsIn.setText(workout.getTimeUntil());
-        tvFullName.setText(workout.getUser().getString("name"));
-        tvUsername.setText(workout.getUser().getUsername());
+        try {
+            tvFullName.setText(workout.getUser().fetchIfNeeded().getString("name"));
+            tvUsername.setText(workout.getUser().fetchIfNeeded().getUsername());
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
         tvDescription.setText(workout.getDescription());
 
         participant_list = new JSONArray();
@@ -231,7 +226,6 @@ public class DetailFragment extends Fragment {
         getLikesCount(workout);
 
 
-
         // set up and populate data for  participant adapter
 
         participants = new ArrayList<>();
@@ -255,14 +249,12 @@ public class DetailFragment extends Fragment {
         rvComments.setAdapter(commentAdapter);
 
 
-
         btAddComment.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 addComment();
             }
         });
-
 
 
         btBack.setOnClickListener(new View.OnClickListener() {
@@ -287,7 +279,7 @@ public class DetailFragment extends Fragment {
                 String UserIdToAdd = ParseUser.getCurrentUser().getObjectId().toString();
 
                 // check if user has already joined
-                if(didUserJoin(participant_list,UserIdToAdd)){
+                if (didUserJoin(participant_list, UserIdToAdd)) {
                     Log.d(TAG, "is user there?" + String.valueOf(participant_list.equals(UserIdToAdd)));
 
 
@@ -313,8 +305,7 @@ public class DetailFragment extends Fragment {
                     // Showing Alert Message
                     alertDialog.show();
 
-                }
-                else {
+                } else {
                     participant_list.put(UserIdToAdd);
 
                     Log.d(TAG, participant_list.toString());
@@ -338,8 +329,6 @@ public class DetailFragment extends Fragment {
                     });
 
 
-
-
                 }
 
 
@@ -348,12 +337,12 @@ public class DetailFragment extends Fragment {
     }
 
     public boolean didUserJoin(JSONArray participantListToCheck, String userIdToCheck) {
-        for(int i=0;i<participantListToCheck.length();i++){
+        for (int i = 0; i < participantListToCheck.length(); i++) {
             try {
 //                if(participantListToCheck.get(i).equals(userIdToCheck)){
 //                if(userIdToCheck.equals(participantListToCheck.get(i))){
 
-                if(userIdToCheck.equals(participantListToCheck.getString(i))){
+                if (userIdToCheck.equals(participantListToCheck.getString(i))) {
 
                     Log.d(TAG, "participantListToCheck.getString(i):" + participantListToCheck.getString(i));
                     Log.d(TAG, "user ID found in participantListToCheck");
@@ -367,21 +356,20 @@ public class DetailFragment extends Fragment {
         return false;
     }
 
-    public void getLikesCount(Workout workout_event){
+    public void getLikesCount(Workout workout_event) {
         String workoutId = workout_event.getObjectId();
 
         ParseQuery<ParseObject> query = ParseQuery.getQuery("Likes");
 
-        query.whereEqualTo("likedPost",workout_event).countInBackground(new CountCallback() {
+        query.whereEqualTo("likedPost", workout_event).countInBackground(new CountCallback() {
             @Override
             public void done(int count, ParseException e) {
-                if (e == null){
+                if (e == null) {
                     // no error
                     Log.d(TAG, "like count:" + String.valueOf(count));
                     tvLikesCt.setText(String.valueOf(count));
 
-                }
-                else{
+                } else {
                     // something went wrong
                     Log.d(TAG, "unable to find like count");
                     tvLikesCt.setText(String.valueOf(0));
@@ -392,7 +380,7 @@ public class DetailFragment extends Fragment {
 
     // get comment data
 
-    public void loadComments(Workout workout_event){
+    public void loadComments(Workout workout_event) {
 
 
         final JSONArray comment_ids = new JSONArray();
@@ -400,10 +388,10 @@ public class DetailFragment extends Fragment {
 //         get list of comment object ids
         Comments.Query commentQuery = new Comments.Query();
 
-        commentQuery.getTop().whereEqualTo("PostedTo",workout_event).findInBackground(new FindCallback<Comments>() {
+        commentQuery.getTop().whereEqualTo("PostedTo", workout_event).findInBackground(new FindCallback<Comments>() {
             @Override
             public void done(List<Comments> objects, ParseException e) {
-                for(int i =0;i< objects.size();i++) {
+                for (int i = 0; i < objects.size(); i++) {
                     Comments comments1 = objects.get(i);
                     String commentId = comments1.getObjectId();
                     Log.d(TAG, "comment ID to add to JSONArray" + commentId);
@@ -414,12 +402,12 @@ public class DetailFragment extends Fragment {
                 Log.d(TAG, "full JSON Array of comment IDs" + comment_ids);
 //                comments.clear();
 
-                for (int i=0;i<comment_ids.length();i++){
+                for (int i = 0; i < comment_ids.length(); i++) {
 
                     try {
                         Comments.Query getCommentQuery = new Comments.Query();
 
-                        getCommentQuery.getTop().whereEqualTo("objectId",comment_ids.get(i));
+                        getCommentQuery.getTop().whereEqualTo("objectId", comment_ids.get(i));
 
                         getCommentQuery.findInBackground(new FindCallback<Comments>() {
                             public void done(List<Comments> object, ParseException e) {
@@ -447,7 +435,6 @@ public class DetailFragment extends Fragment {
         });
 
 
-
 //        for(int i=0; i<)
     }
 
@@ -472,8 +459,6 @@ public class DetailFragment extends Fragment {
 //        commentAdapter.notifyItemChanged(0);
 
 
-
-
     }
 
     // get participant data and add it to list to assemble adapter
@@ -492,7 +477,7 @@ public class DetailFragment extends Fragment {
             try {
 
                 ParseQuery<ParseUser> query = ParseQuery.getQuery("_User");
-                query.whereEqualTo("objectId",user_ids.get(i));
+                query.whereEqualTo("objectId", user_ids.get(i));
 
 
                 query.findInBackground(new FindCallback<ParseUser>() {
@@ -515,7 +500,6 @@ public class DetailFragment extends Fragment {
                 });
 
 
-
 //                participant_list.add((ParseUser) user_ids.get(i));
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -526,10 +510,6 @@ public class DetailFragment extends Fragment {
 //        participants.clear();
 //        participants.addAll(participant_list);
     }
-
-
-
-
 
 
     @Override
