@@ -608,6 +608,10 @@ public class AddFragment extends Fragment implements AdapterView.OnItemSelectedL
 
                     queue.add(polylineRequest);
 
+
+//                FragmentManager fm = getActivity().getSupportFragmentManager();
+//                fab.show();
+//                fm.popBackStackImmediate();
                 }
 
             }
@@ -649,6 +653,7 @@ public class AddFragment extends Fragment implements AdapterView.OnItemSelectedL
                         fm.popBackStackImmediate();
                         listener.updateMap();
                     } else fm.popBackStackImmediate();
+                    fab.show();;
 
                 } else {
                     e.printStackTrace();

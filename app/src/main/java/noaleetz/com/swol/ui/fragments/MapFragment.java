@@ -66,6 +66,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
 import noaleetz.com.swol.ui.adapters.ClusterWindowAdapter;
+
 import noaleetz.com.swol.ui.activities.MainActivity;
 import noaleetz.com.swol.R;
 import noaleetz.com.swol.models.Workout;
@@ -78,6 +79,8 @@ import static noaleetz.com.swol.ui.activities.MainActivity.REQUEST_LOCATION_PERM
  * A simple {@link Fragment} subclass.
  */
 
+
+
 public class MapFragment extends Fragment implements OnMapReadyCallback,
         GoogleMap.OnMapLongClickListener,
         GoogleMap.OnInfoWindowClickListener,
@@ -85,6 +88,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
         ClusterManager.OnClusterItemClickListener<Workout>,
         ClusterManager.OnClusterItemInfoWindowClickListener<Workout>,
         ClusterWindowAdapter.itemClickListener {
+
+    FloatingActionButton fab;
 
 
     ArrayList<Marker> workoutMarkers;
@@ -163,6 +168,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
 
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.google_map_fragment);
 
+        fab = getActivity().findViewById(R.id.fab);
+        fab.setTranslationY(-1200);
         mapFragment.getMapAsync(this);
 
         hideZoomButtons();
@@ -627,9 +634,18 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
         return withinForever;
     }
 
-    @Override
-    public void onDestroyView() {
+    @Override public void onPause() {
+        super.onPause();
+
+//        fab.setTranslationY(1200);
+
+
+    }
+    @Override public void onDestroyView() {
+
+
         super.onDestroyView();
+
         unbinder.unbind();
     }
 

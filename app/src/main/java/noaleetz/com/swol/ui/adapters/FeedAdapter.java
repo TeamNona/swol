@@ -33,6 +33,14 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
 
     private AdapterCallback mAdapterCallback;
 
+    // TODO - Filter Class - perform queries here to rebuild feed based on tags
+    public void filter(String charText) {
+
+
+    }
+
+
+
     // implements interface that we have in adapter- called upon when user clicks on item in rv
     public interface AdapterCallback {
         void onMethodCallback(int position);
