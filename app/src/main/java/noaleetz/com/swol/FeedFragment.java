@@ -1,15 +1,18 @@
 package noaleetz.com.swol;
 
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.view.menu.MenuBuilder;
@@ -128,6 +131,7 @@ public class FeedFragment extends Fragment {
 
     }
 
+
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -230,6 +234,31 @@ public class FeedFragment extends Fragment {
         }
     }
 
+    public void showDialog(View view) {
+
+        FragmentManager manager = getFragmentManager();
+
+        CategoriesDialogFragment dialog = new CategoriesDialogFragment();
+        dialog.show(manager,"dialog");
+
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch (requestCode) {
+            case setTargetFragment(CategoriesDialogFragment,Activity.RESULT_OK,);:
+                if (resultCode == Activity.RESULT_OK) {
+                    Bundle bundle = data.getExtras();
+                    String mMonth = bundle.getString("month", Month);
+                    int mYear = bundle.getInt("year");
+                    Log.i("PICKER", "Got year=" + year + " and month=" + month + ", yay!");
+                } else if (resultCode == Activity.RESULT_CANCELED) {
+                ...
+                }
+                break;
+        }
+    }
+
     public void selectPopupItem(MenuItem menuItem) {
         ivFilterOptions.setImageDrawable(menuItem.getIcon());
         svSearch.setSubmitButtonEnabled(true);
@@ -239,6 +268,7 @@ public class FeedFragment extends Fragment {
             case R.id.filterByTag:
 
                 svSearch.setQueryHint("filter by Category");
+                showDialog(getView());
                 svSearch.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
                     @Override
                     public boolean onQueryTextSubmit(String s) {
@@ -262,7 +292,6 @@ public class FeedFragment extends Fragment {
                     }
                 });
 
-                categoriesAutocomplete();
 
 
                 break;
@@ -353,12 +382,6 @@ public class FeedFragment extends Fragment {
 
     }
 
-    private void categoriesAutocomplete() {
-//        List<String> stringList = Arrays.asList("Bike", "Cardio","Class","Dance","Game","Gym","High Intensity Interval Training","Hike","Meditation","Run","Swim","Weight");
-//        ArrayList<String> categoriesArrayList = new ArrayList(stringList);
-
-
-    }
 
     private void QueryByTime(long maxHourLong) {
         final Workout.Query postTimeQuery = new Workout.Query();
