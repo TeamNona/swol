@@ -380,7 +380,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
     @Override
     public void onMapClick(LatLng latLng) {
         hideZoomButtons();
-        currentPolyline.remove();
+        if (currentPolyline != null) currentPolyline.remove();
     }
 
     public void loadTopWorkouts() {
