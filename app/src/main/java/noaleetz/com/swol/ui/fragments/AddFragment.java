@@ -66,6 +66,8 @@ import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Calendar;
@@ -160,13 +162,15 @@ public class AddFragment extends Fragment implements AdapterView.OnItemSelectedL
 
     // variables for spinners
     String workoutCategoryPrompt = "Choose a Workout Category";
-    String tagsPrompt = "Choose up to 5 tags";
+    String tagsPrompt = "Choose a tag";
 
     // maps api request stuff
     String modeOfTransit = "walking";
     String polyline;
 
     private Unbinder unbinder;
+
+    File resizedFile;
 
 
     public AddFragment() {
@@ -217,9 +221,10 @@ public class AddFragment extends Fragment implements AdapterView.OnItemSelectedL
     public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
         String category = (String) adapterView.getItemAtPosition(i);
         String[] distanceCategories = getResources().getStringArray(R.array.distance_categories);
-        endLocationShower: for (String item : distanceCategories) {
+        endLocationShower:
+        for (String item : distanceCategories) {
             Log.d("ItemSelector", "item: " + item + "\tcategory: " + category);
-            if(item.equals(category)) {
+            if (item.equals(category)) {
                 if (item.equals("bike")) modeOfTransit = "bicycling";
                 pafEnd.getView().setVisibility(View.VISIBLE);
                 break endLocationShower;
@@ -285,7 +290,6 @@ public class AddFragment extends Fragment implements AdapterView.OnItemSelectedL
         categoryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         // Apply the adapter to the spinner
         workoutCategory.setAdapter(categoryAdapter);
-
 
 
         // create Array of tag categories
@@ -477,7 +481,6 @@ public class AddFragment extends Fragment implements AdapterView.OnItemSelectedL
         */
 
 
-
         workoutCategory.setOnItemSelectedListener(this);
 
         // send new workout info to Parse
@@ -516,8 +519,11 @@ public class AddFragment extends Fragment implements AdapterView.OnItemSelectedL
 
                 // get the final tags
                 final JSONArray tags = new JSONArray();
+                String help = (String) spTags.getSelectedItem();
                 if (tagsPrompt.equals((String) spTags.getSelectedItem())) {
                     Toast.makeText(getActivity(), "Please add a least one tag to your workout.", Toast.LENGTH_SHORT).show();
+                    // hide the progress bar
+                    pbPost.setVisibility(ProgressBar.INVISIBLE);
                     return;
                 } else {
                     tags.put(spTags.getSelectedItem());
@@ -551,13 +557,13 @@ public class AddFragment extends Fragment implements AdapterView.OnItemSelectedL
                 }
 
                 final ParseFile media;
+                //media = new ParseFile(resizedFile);
                 media = conversionBitmapParseFile(bitmap);
                 media.saveInBackground(new SaveCallback() {
                     public void done(ParseException e) {
-                        // If successful add file to user and signUpInBackground
                         if (null == e) {
                             Toast.makeText(getActivity(), "Picture post saved", Toast.LENGTH_SHORT).show();
-                        } else  {
+                        } else {
                             Toast.makeText(getActivity(), "Picture post not saved", Toast.LENGTH_SHORT).show();
                         }
                     }
@@ -570,7 +576,7 @@ public class AddFragment extends Fragment implements AdapterView.OnItemSelectedL
                             endLocation.getLatitude() + "," + endLocation.getLongitude() + "&mode=" + modeOfTransit +
                             "&key=" + getResources().getString(R.string.api_key);
 
-                    Log.d("API Hit", "url: "+ url);
+                    Log.d("API Hit", "url: " + url);
 
                     JsonObjectRequest polylineRequest = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
                         @Override
@@ -586,7 +592,7 @@ public class AddFragment extends Fragment implements AdapterView.OnItemSelectedL
                             } catch (JSONException e) {
                                 e.printStackTrace();
                             }
-                            Log.d("PolylineRequest","Polyline: " + polyline);
+                            Log.d("PolylineRequest", "Polyline: " + polyline);
                             createNewWorkout(category, name, description, date, location, media, participants, tags, polyline, boundsString);
                         }
                     }, new Response.ErrorListener() {
@@ -645,7 +651,8 @@ public class AddFragment extends Fragment implements AdapterView.OnItemSelectedL
                         fm.popBackStackImmediate();
                         listener.updateMap();
                     } else fm.popBackStackImmediate();
-                    fab.show();;
+                    fab.show();
+                    ;
 
                 } else {
                     e.printStackTrace();
@@ -710,7 +717,7 @@ public class AddFragment extends Fragment implements AdapterView.OnItemSelectedL
             if (hour > 12) {
                 hour = hour - 12;
                 hourofday = "PM";
-            } else if (hour == 0)  {
+            } else if (hour == 0) {
                 hour = 12;
             }
             if (minute < 10) {
@@ -801,6 +808,37 @@ public class AddFragment extends Fragment implements AdapterView.OnItemSelectedL
                 // by this point we have the camera photo on disk
                 // bitmap = BitmapFactory.decodeFile(photoFile.getAbsolutePath());
                 bitmap = rotateBitmapOrientation(photoFile.getPath());
+//                // RESIZE BITMAP, see section below
+//                bitmap = BitmapScaler.scaleToFitWidth(original_bitmap, 250);
+//                // Configure byte output stream
+//                ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+//                // Compress the image further
+//                bitmap.compress(Bitmap.CompressFormat.JPEG, 40, bytes);
+//                // Create a new file for the resized bitmap (`getPhotoFileUri` defined above)
+//                resizedFile = getPhotoFileUri(photoFileName + "_resized");
+//                try {
+//                    resizedFile.createNewFile();
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//                FileOutputStream fos = null;
+//                try {
+//                    fos = new FileOutputStream(resizedFile);
+//                } catch (FileNotFoundException e) {
+//                    e.printStackTrace();
+//                }
+//                // Write the bytes of the bitmap to file
+//                try {
+//                    fos.write(bytes.toByteArray());
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//                try {
+//                    fos.close();
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//                // Load the taken image into a preview
                 // RESIZE BITMAP, see section below
                 // Load the taken image into a preview
                 bitmap = getResizedBitmap(bitmap, MapFragment.convertDpToPixel(350), MapFragment.convertDpToPixel(350));
@@ -962,19 +1000,54 @@ public class AddFragment extends Fragment implements AdapterView.OnItemSelectedL
         public void updateMap();
     }
 
-    public Bitmap getResizedBitmap(Bitmap bm, int newWidth, int newHeight) {
-        int width = bm.getWidth();
-        int height = bm.getHeight();
-        float scaleWidth = ((float) newWidth) / width;
-        float scaleHeight = ((float) newHeight) / height;
-        // CREATE A MATRIX FOR THE MANIPULATION
-        Matrix matrix = new Matrix();
-        // RESIZE THE BIT MAP
-        matrix.postScale(scaleWidth, scaleHeight);
+    public static class BitmapScaler {
+        // scale and keep aspect ratio
+        public static Bitmap scaleToFitWidth(Bitmap b, int width) {
+            float factor = width / (float) b.getWidth();
+            return Bitmap.createScaledBitmap(b, width, (int) (b.getHeight() * factor), true);
+        }
 
-        // "RECREATE" THE NEW BITMAP
-        Bitmap resizedBitmap = Bitmap.createBitmap(bm, 0, 0, width, height, matrix, false);
-        return resizedBitmap;
+
+        // scale and keep aspect ratio
+        public static Bitmap scaleToFitHeight(Bitmap b, int height) {
+            float factor = height / (float) b.getHeight();
+            return Bitmap.createScaledBitmap(b, (int) (b.getWidth() * factor), height, true);
+        }
+
+
+        // scale and keep aspect ratio
+        public static Bitmap scaleToFill(Bitmap b, int width, int height) {
+            float factorH = height / (float) b.getWidth();
+            float factorW = width / (float) b.getWidth();
+            float factorToUse = (factorH > factorW) ? factorW : factorH;
+            return Bitmap.createScaledBitmap(b, (int) (b.getWidth() * factorToUse),
+                    (int) (b.getHeight() * factorToUse), true);
+        }
+
+
+        // scale and don't keep aspect ratio
+        public static Bitmap strechToFill(Bitmap b, int width, int height) {
+            float factorH = height / (float) b.getHeight();
+            float factorW = width / (float) b.getWidth();
+            return Bitmap.createScaledBitmap(b, (int) (b.getWidth() * factorW),
+                    (int) (b.getHeight() * factorH), true);
+        }
+
     }
+
+        public Bitmap getResizedBitmap(Bitmap bm, int newWidth, int newHeight) {
+            int width = bm.getWidth();
+            int height = bm.getHeight();
+            float scaleWidth = ((float) newWidth) / width;
+            float scaleHeight = ((float) newHeight) / height;
+            // CREATE A MATRIX FOR THE MANIPULATION
+            Matrix matrix = new Matrix();
+            // RESIZE THE BIT MAP
+            matrix.postScale(scaleWidth, scaleHeight);
+
+            // "RECREATE" THE NEW BITMAP
+            Bitmap resizedBitmap = Bitmap.createBitmap(bm, 0, 0, width, height, matrix, false);
+            return resizedBitmap;
+        }
 
 }
