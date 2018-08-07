@@ -63,6 +63,8 @@ import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Calendar;
@@ -154,9 +156,11 @@ public class AddFragment extends Fragment {
 
     // variables for spinners
     String workoutCategoryPrompt = "Choose a Workout Category";
-    String tagsPrompt = "Choose up to 5 tags";
+    String tagsPrompt = "Choose a tag";
 
     private Unbinder unbinder;
+
+    File resizedFile;
 
 
     public AddFragment() {
@@ -448,8 +452,11 @@ public class AddFragment extends Fragment {
 
                 // get the final tags
                 final JSONArray tags = new JSONArray();
+                String help = (String) spTags.getSelectedItem();
                 if (tagsPrompt.equals((String) spTags.getSelectedItem())) {
                     Toast.makeText(getActivity(), "Please add a least one tag to your workout.", Toast.LENGTH_SHORT).show();
+                    // hide the progress bar
+                    pbPost.setVisibility(ProgressBar.INVISIBLE);
                     return;
                 } else {
                     tags.put(spTags.getSelectedItem());
@@ -483,10 +490,10 @@ public class AddFragment extends Fragment {
                 }
 
                 final ParseFile media;
+                //media = new ParseFile(resizedFile);
                 media = conversionBitmapParseFile(bitmap);
                 media.saveInBackground(new SaveCallback() {
                     public void done(ParseException e) {
-                        // If successful add file to user and signUpInBackground
                         if (null == e) {
                             Toast.makeText(getActivity(), "Picture post saved", Toast.LENGTH_SHORT).show();
                         } else  {
@@ -686,8 +693,37 @@ public class AddFragment extends Fragment {
                 // by this point we have the camera photo on disk
                 // bitmap = BitmapFactory.decodeFile(photoFile.getAbsolutePath());
                 bitmap = rotateBitmapOrientation(photoFile.getPath());
-                // RESIZE BITMAP, see section below
-                // Load the taken image into a preview
+//                // RESIZE BITMAP, see section below
+//                bitmap = BitmapScaler.scaleToFitWidth(original_bitmap, 250);
+//                // Configure byte output stream
+//                ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+//                // Compress the image further
+//                bitmap.compress(Bitmap.CompressFormat.JPEG, 40, bytes);
+//                // Create a new file for the resized bitmap (`getPhotoFileUri` defined above)
+//                resizedFile = getPhotoFileUri(photoFileName + "_resized");
+//                try {
+//                    resizedFile.createNewFile();
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//                FileOutputStream fos = null;
+//                try {
+//                    fos = new FileOutputStream(resizedFile);
+//                } catch (FileNotFoundException e) {
+//                    e.printStackTrace();
+//                }
+//                // Write the bytes of the bitmap to file
+//                try {
+//                    fos.write(bytes.toByteArray());
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//                try {
+//                    fos.close();
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//                // Load the taken image into a preview
                 post.setImageBitmap(bitmap);
             } else { // Result was a failure
                 Toast.makeText(getActivity(), "Picture wasn't taken!", Toast.LENGTH_SHORT).show();
@@ -844,6 +880,45 @@ public class AddFragment extends Fragment {
     // this interface is so that when a new workout is created, it can send it to the map to update it
     public interface NewMapItemListener {
         public void updateMap();
+    }
+
+    public static class BitmapScaler
+    {
+        // scale and keep aspect ratio
+        public static Bitmap scaleToFitWidth(Bitmap b, int width)
+        {
+            float factor = width / (float) b.getWidth();
+            return Bitmap.createScaledBitmap(b, width, (int) (b.getHeight() * factor), true);
+        }
+
+
+        // scale and keep aspect ratio
+        public static Bitmap scaleToFitHeight(Bitmap b, int height)
+        {
+            float factor = height / (float) b.getHeight();
+            return Bitmap.createScaledBitmap(b, (int) (b.getWidth() * factor), height, true);
+        }
+
+
+        // scale and keep aspect ratio
+        public static Bitmap scaleToFill(Bitmap b, int width, int height)
+        {
+            float factorH = height / (float) b.getWidth();
+            float factorW = width / (float) b.getWidth();
+            float factorToUse = (factorH > factorW) ? factorW : factorH;
+            return Bitmap.createScaledBitmap(b, (int) (b.getWidth() * factorToUse),
+                    (int) (b.getHeight() * factorToUse), true);
+        }
+
+
+        // scale and don't keep aspect ratio
+        public static Bitmap strechToFill(Bitmap b, int width, int height)
+        {
+            float factorH = height / (float) b.getHeight();
+            float factorW = width / (float) b.getWidth();
+            return Bitmap.createScaledBitmap(b, (int) (b.getWidth() * factorW),
+                    (int) (b.getHeight() * factorH), true);
+        }
     }
 
 }

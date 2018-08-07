@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<ScrollView android:id="@+id/svProfile"
+<ScrollView xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/svProfile"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:layout_marginBottom="8dp"
@@ -46,7 +47,8 @@
         android:layout_below="@+id/btnUpload"
         android:text="Capture Photo"
         android:textAllCaps="false"
-        android:visibility="invisible" />
+        android:visibility="invisible"
+        android:background="@color/transparent_white"/>
 
     <Button
         android:id="@+id/btnUpload"
@@ -90,7 +92,7 @@
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="20dp"
-        android:src="@android:drawable/ic_menu_camera"
+        android:src="@drawable/ic_add_a_photo_24dp"
         android:visibility="visible" />
 
     <EditText
@@ -109,7 +111,8 @@
         android:layout_height="50dp"
         android:layout_below="@+id/place_autocomplete_fragment"
         android:layout_toEndOf="@+id/tvDate"
-        app:srcCompat="@drawable/ic_access_time_black_24dp" />
+        android:background="@android:color/transparent"
+        app:srcCompat="@drawable/ic_access_time_24dp" />
 
     <ImageButton
         android:id="@+id/ibDate"
@@ -117,7 +120,8 @@
         android:layout_height="50dp"
         android:layout_alignParentStart="true"
         android:layout_below="@+id/place_autocomplete_fragment"
-        app:srcCompat="@drawable/ic_date_range_black_24dp" />
+        android:background="@android:color/transparent"
+        app:srcCompat="@drawable/ic_date_range_24dp" />
 
     <Spinner
         android:id="@+id/spTags"
@@ -143,7 +147,8 @@
         android:layout_centerHorizontal="true"
         android:layout_marginTop="20dp"
         android:text="Share your workout."
-        android:textAllCaps="false" />
+        android:textAllCaps="false"
+        android:textColor="@color/colorPrimaryDark" />
 
     <ProgressBar
         android:id="@+id/pbLoading"
