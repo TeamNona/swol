@@ -125,6 +125,7 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.ViewHold
         @BindView(R.id.tvCreatedTimeC)
         TextView tvCreatedTimeC;
 
+
         public ViewHolder(View itemView) {
             super(itemView);
 

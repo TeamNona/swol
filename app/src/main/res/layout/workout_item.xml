@@ -25,56 +25,58 @@
 
             <ImageView
                 android:id="@+id/ivWorkoutImage"
-                android:layout_width="400dp"
-                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                android:layout_height="300dp"
                 android:scaleType="fitXY"
                 card_view:srcCompat="@drawable/ic_directions_run_black_24dp" />
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@color/colorAccent"
+                android:background="#f4f1ee"
                 android:orientation="vertical"
                 android:padding="16dp">
 
-                <TextView
-                    android:id="@+id/tvWorkoutTitle"
+                <RelativeLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="8dp"
-                    android:text="Workout Title"
-                    android:textColor="#000"
-                    android:textSize="18sp" />
+                    android:layout_height="match_parent">
 
-                <TextView
-                    android:id="@+id/tvDescription"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="12dp"
-                    android:text="Workout Description"
-                    android:textColor="#555" />
+                    <TextView
+                        android:id="@+id/tvCategory"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentStart="true"
+                        android:layout_alignParentTop="true"
+                        android:background="@drawable/drawable_rectangle_red"
+                        android:text="Category" />
+
+                    <TextView
+                        android:id="@+id/tvWorkoutTitle"
+                        android:layout_width="252dp"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:layout_alignParentTop="true"
+                        android:layout_alignRight="@+id/tvCategory"
+                        android:layout_centerHorizontal="false"
+                        android:layout_centerInParent="false"
+                        android:layout_centerVertical="false"
+                        android:layout_marginLeft="5dp"
+                        android:layout_marginTop="7dp"
+                        android:layout_toEndOf="@+id/tvCategory"
+                        android:text="Workout Title"
+                        android:textColor="#000"
+                        android:textSize="18sp" />
+                </RelativeLayout>
 
                 <TableLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="5dp">
 
                     <TableRow
                         android:layout_width="match_parent"
                         android:layout_height="match_parent">
 
-                        <ImageView
-                            android:id="@+id/imageView4"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            card_view:srcCompat="@drawable/ic_face_black_24dp" />
-
-                        <TextView
-                            android:id="@+id/tvCreatedBy"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginLeft="5dp"
-                            android:text="Created By"
-                            android:textColor="#555" />
                     </TableRow>
 
                     <TableRow
@@ -119,19 +121,6 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent">
 
-                        <ImageView
-                            android:id="@+id/imageView3"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            card_view:srcCompat="@drawable/ic_people_black_24dp" />
-
-                        <TextView
-                            android:id="@+id/tvParticipants"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginLeft="5dp"
-                            android:text="Participants"
-                            android:textColor="#555" />
                     </TableRow>
                 </TableLayout>
 
@@ -139,15 +128,6 @@
             </LinearLayout>
 
         </LinearLayout>
-
-        <ImageView
-            android:id="@+id/ivDetail"
-            android:layout_width="90dp"
-            android:layout_height="73dp"
-            android:layout_below="@+id/LlTextViews"
-            android:layout_centerHorizontal="true"
-            android:clickable="true"
-            card_view:srcCompat="@drawable/ic_keyboard_arrow_down_black_24dp" />
 
 
     </RelativeLayout>
