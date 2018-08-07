@@ -147,7 +147,7 @@ public class MainActivity extends AppCompatActivity implements AddFragment.NewMa
 
         // sets the profile pic in the drawer
         // final ImageView ivAvatar = hView.findViewById(R.id.ivAvatar);
-        ivAvatar = hView.findViewById(R.id.ivDetailImage);
+        ivAvatar = hView.findViewById(R.id.ivAvatar);
 
 
         try {

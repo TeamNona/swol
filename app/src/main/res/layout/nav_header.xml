@@ -13,7 +13,7 @@
     android:theme="@style/ThemeOverlay.AppCompat.Dark">
 
     <ImageView
-        android:id="@+id/ivDetailImage"
+        android:id="@+id/ivAvatar"
         android:layout_width="172dp"
         android:layout_height="120dp"
         app:srcCompat="@drawable/ic_person" />
