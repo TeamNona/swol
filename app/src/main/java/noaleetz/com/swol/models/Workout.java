@@ -1,5 +1,6 @@
 package noaleetz.com.swol.models;
 
+import android.support.annotation.NonNull;
 import android.text.format.DateUtils;
 
 import com.google.android.gms.maps.model.LatLng;
@@ -12,10 +13,15 @@ import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
 
+import org.joda.time.DateTime;
+import org.joda.time.Hours;
 import org.json.JSONArray;
 import org.parceler.Parcel;
 
+import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
 @ParseClassName("exerciseEvent")
 public class Workout extends ParseObject implements ClusterItem {
@@ -33,6 +39,8 @@ public class Workout extends ParseObject implements ClusterItem {
     private static final String KEY_LOCATION = "eventLocation";
 
     private static final String KEY_USER = "user";
+
+
 
     private static final String KEY_PARTICIPANTS = "eventParticipants";
 
@@ -141,6 +149,14 @@ public class Workout extends ParseObject implements ClusterItem {
         return getLocation().distanceInMilesTo(other) < maxRange;
     }
 
+    public Boolean isInTimeRange(long maxTimeRange) {
+        return getHoursUntil() < maxTimeRange;
+    }
+
+    public double getDistance(ParseGeoPoint user) {
+        return getLocation().distanceInMilesTo(user);
+    }
+
     // helper methods for other functions
 
     public LatLng getLatLng() {
@@ -167,10 +183,38 @@ public class Workout extends ParseObject implements ClusterItem {
         return relativeDate;
     }
 
+    public long getHoursUntil(){
+        long current = System.currentTimeMillis();
+        long workout = getTime().getTime();
+        long diffInMillisec = workout - current;
+        long diffInHours = TimeUnit.MILLISECONDS.toHours(diffInMillisec);
+
+        return diffInHours;
+    }
+
+
+    public int compareToDistance(@NonNull Workout workoutToCompare) {
+        double otherWorkoutDistance = workoutToCompare.getDistance(ParseUser.getCurrentUser().getParseGeoPoint("currentLocation"));
+        double currentWorkoutDistance = this.getDistance(ParseUser.getCurrentUser().getParseGeoPoint("currentLocation"));
+        int difference = (int) (currentWorkoutDistance - otherWorkoutDistance);
+
+        return difference;
+    }
+
+    public int compareToTime(@NonNull Workout workoutToCompare) {
+        double otherWorkoutTime = workoutToCompare.getHoursUntil();
+        double currentWorkoutTime = this.getHoursUntil();
+        int difference = (int) (currentWorkoutTime - otherWorkoutTime);
+
+        return difference;
+    }
+
+
     public static class Query extends ParseQuery<Workout> {
         public Query() {
             super(Workout.class);
         }
+
 
         public Query getTop() {
             setLimit(20);
@@ -202,12 +246,32 @@ public class Workout extends ParseObject implements ClusterItem {
             whereWithinMiles("eventLocation", currentLocation, maxRange);
             return this;
         }
+        public Query getWithinTimeRange(long maxHours){
+//            workout.isInTimeRange(maxHours);
+            int maxHoursInt = (int) maxHours;
+            Date currentTime = Calendar.getInstance().getTime();
+            whereGreaterThan(KEY_TIME,currentTime);
+
+            Calendar currentInstance = Calendar.getInstance();
+            currentInstance.setTime(new Date());
+            currentInstance.add(Calendar.HOUR_OF_DAY,maxHoursInt);
+            Date maxDate = currentInstance.getTime();
+            whereLessThanOrEqualTo(KEY_TIME,maxDate);
+            return this;
+        }
 
         public Query getwithTags() {
             whereContains(KEY_TAGS, "High Intensity");
             return this;
         }
+        public Query orderByRange(){
+
+
+            return this;
+        }
+
     }
+
 
     // cluster item stuff
 

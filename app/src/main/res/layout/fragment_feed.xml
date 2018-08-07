@@ -1,20 +1,63 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".ui.fragments.FeedFragment">
 
-    <android.support.v4.widget.SwipeRefreshLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        android:id="@+id/swipeContainer"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
-        <android.support.v7.widget.RecyclerView
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:id="@+id/rvPosts"/>
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
 
-    </android.support.v4.widget.SwipeRefreshLayout>
+            <android.widget.SearchView
+                android:id="@+id/svSearch"
+                android:layout_width="331dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top"
+                android:layout_weight="1"
+                android:actionViewClass="android.widget.SearchView"
+                android:clickable="true"
+                android:elevation="10dp"
+                android:foregroundGravity="top"
+                android:gravity="left"
+                android:hapticFeedbackEnabled="true"
+                android:keyboardNavigationCluster="false"
+                android:queryHint="Filter available workouts"
+                android:searchIcon="@drawable/ic_search">
+
+            </android.widget.SearchView>
+
+            <ImageView
+                android:id="@+id/ivFilterOptions"
+                android:layout_width="wrap_content"
+                android:layout_height="39dp"
+                android:layout_margin="5dp"
+                android:layout_weight="2"
+                android:background="@android:drawable/toast_frame"
+                android:hapticFeedbackEnabled="true"
+                android:scaleType="fitXY"
+                app:srcCompat="@drawable/ic_arrow" />
+        </LinearLayout>
+
+        <android.support.v4.widget.SwipeRefreshLayout
+            android:id="@+id/swipeContainer"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/rvPosts"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+
+        </android.support.v4.widget.SwipeRefreshLayout>
+
+    </LinearLayout>
+
 </FrameLayout>
