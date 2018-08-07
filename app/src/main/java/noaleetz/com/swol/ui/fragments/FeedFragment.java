@@ -170,7 +170,7 @@ public class FeedFragment extends Fragment implements CategoriesDialogFragment.C
         Log.d(TAG, "Finished setting the adapter");
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext());
         rvPosts.setLayoutManager(linearLayoutManager);
-        rvPosts.setItemAnimator(new DefaultItemAnimator());
+//        rvPosts.setItemAnimator(new DefaultItemAnimator());
         rvPosts.setAdapter(adapter);
 
         rvPosts.postDelayed(new Runnable() {
@@ -181,7 +181,7 @@ public class FeedFragment extends Fragment implements CategoriesDialogFragment.C
                 }
                 adapter.notifyDataSetChanged();
             }
-        },3000);
+        },1000);
 
 
 

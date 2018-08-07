@@ -45,7 +45,6 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
     // TODO - Filter Class - perform queries here to rebuild feed based on tags
     public void filter(String charText) {
 
-
     }
 
 
@@ -60,9 +59,6 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
         mposts = posts;
     }
 
-    public FeedAdapter(AdapterCallback callback) {
-        this.mAdapterCallback = callback;
-    }
 
     @NonNull
     @Override
@@ -100,7 +96,13 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
 
         }
         else {
-
+            holder.fl_shimmer.stopShimmerAnimation();
+            holder.tvWorkoutTitle.setBackground(null);
+            holder.tvCategory.setBackground(mcontext.getResources().getDrawable(R.drawable.rect_grey));
+            holder.tvTime.setBackground(null);
+            holder.tvLocation.setBackground(null);
+            holder.tvWorkoutTitle.setBackground(null);
+            holder.ivWorkoutImage.setBackground(null);
 
 
             try {
@@ -138,7 +140,6 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
                     ((MainActivity) mcontext).changeToDetailFragment(post);
                 }
             });
-            holder.fl_shimmer.stopShimmerAnimation();
         }
 
 
