@@ -13,6 +13,7 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
+import com.facebook.shimmer.ShimmerFrameLayout;
 import com.parse.ParseException;
 import com.parse.ParseGeoPoint;
 import com.parse.ParseUser;
@@ -89,47 +90,56 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
 
         final Workout post = mposts.get(position);
 
+
+
         final RoundedCornersTransformation roundedCornersTransformation = new RoundedCornersTransformation(15, 15);
         final RequestOptions requestOptions = RequestOptions.bitmapTransform(roundedCornersTransformation);
 
-
-        try {
-            Glide.with(mcontext)
-                    .load(post.getMedia().getFile())
-                    .into(holder.ivWorkoutImage);
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-
-        holder.tvWorkoutTitle.setText(post.getName());
-
-        // TODO- set icons and text in layout
-
-        holder.tvLocation.setText(distanceFrom(post.getLocation()) + " mile(s) from you");
-
-
-        holder.tvTime.setText(post.getTimeUntil());
-        Log.d("Adapter",post.getCategory());
-
-        if(post.getCategory().equalsIgnoreCase("High Intensity Interval Training")){
-            holder.tvCategory.setText("HIIT");
+        if(post.isShowShimmer()) {
+            holder.fl_shimmer.startShimmerAnimation();
 
         }
-        else{
-        holder.tvCategory.setText(post.getCategory());
-        }
+        else {
 
-        holder.tvCategory.setBackground(getBackgroundDrawable(post.getCategory()));
 
-        // call interface
-        holder.itemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-//                mAdapterCallback.onMethodCallback(position);
-                ((MainActivity) mcontext).changeToDetailFragment(post);
 
+            try {
+                Glide.with(mcontext)
+                        .load(post.getMedia().getFile())
+                        .into(holder.ivWorkoutImage);
+            } catch (ParseException e) {
+                e.printStackTrace();
             }
-        });
+
+            holder.tvWorkoutTitle.setText(post.getName());
+
+            // TODO- set icons and text in layout
+
+            holder.tvLocation.setText(distanceFrom(post.getLocation()) + " mile(s) from you");
+
+
+            holder.tvTime.setText(post.getTimeUntil());
+            Log.d("Adapter", post.getCategory());
+
+            if (post.getCategory().equalsIgnoreCase("High Intensity Interval Training")) {
+                holder.tvCategory.setText("HIIT");
+
+            } else {
+                holder.tvCategory.setText(post.getCategory());
+            }
+
+            holder.tvCategory.setBackground(getBackgroundDrawable(post.getCategory()));
+
+            // call interface
+            holder.itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+//                mAdapterCallback.onMethodCallback(position);
+                    ((MainActivity) mcontext).changeToDetailFragment(post);
+                }
+            });
+            holder.fl_shimmer.stopShimmerAnimation();
+        }
 
 
     }
@@ -187,10 +197,11 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
         TextView tvTime;
         @BindView(R.id.tvCategory)
         TextView tvCategory;
+        @BindView(R.id.fl_shimmer)
+        ShimmerFrameLayout fl_shimmer;
 
 //        @BindView(R.id.tvCreatedBy)
 //        TextView tvCreatedBy;
-
 
 
         public ViewHolder(View itemView) {

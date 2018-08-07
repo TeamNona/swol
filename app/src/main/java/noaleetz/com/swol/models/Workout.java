@@ -54,6 +54,9 @@ public class Workout extends ParseObject implements ClusterItem {
 
     private static final String KEY_POLYLINE_BOUNDS = "polylineBounds";
 
+    // define boolean for shimmer layout
+    private boolean showShimmer;
+
     // define setters and getters
 
     public String getName() {
@@ -139,6 +142,16 @@ public class Workout extends ParseObject implements ClusterItem {
     public void setPolylineBounds(String bounds) { put(KEY_POLYLINE_BOUNDS, bounds); }
 
     public String getPolylineBounds() {return getString(KEY_POLYLINE_BOUNDS); }
+
+    // getter and setter for shimmer
+
+    public boolean isShowShimmer() {
+        return showShimmer;
+    }
+
+    public void setShowShimmer(boolean showShimmer) {
+        this.showShimmer = showShimmer;
+    }
 
     @Override
     public Date getCreatedAt() {

@@ -17,6 +17,7 @@ import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.view.menu.MenuBuilder;
 import android.support.v7.view.menu.MenuPopupHelper;
+import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -35,6 +36,7 @@ import android.widget.SimpleCursorAdapter;
 import android.widget.Toast;
 
 
+import com.facebook.shimmer.ShimmerFrameLayout;
 import com.parse.FindCallback;
 import com.parse.ParseException;
 import com.parse.ParseGeoPoint;
@@ -86,6 +88,7 @@ public class FeedFragment extends Fragment implements CategoriesDialogFragment.C
     android.widget.SearchView svSearch;
     @BindView(R.id.ivFilterOptions)
     ImageView ivFilterOptions;
+
 
 //    @BindView(R.id.search_src_text)
 //    android.support.v7.widget.SearchView.SearchAutoComplete categorySearchAutoComplete;
@@ -149,17 +152,36 @@ public class FeedFragment extends Fragment implements CategoriesDialogFragment.C
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+
+
         this.adapter = new FeedAdapter(posts); // this class implements callback
         fab = (FloatingActionButton) getActivity().findViewById(R.id.fab);
         fab.bringToFront();
 
 
+
         posts = new ArrayList<>();
+
+        for(Workout post : posts){
+            post.setShowShimmer(true);
+        }
+
         adapter = new FeedAdapter(posts);
         Log.d(TAG, "Finished setting the adapter");
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext());
         rvPosts.setLayoutManager(linearLayoutManager);
+        rvPosts.setItemAnimator(new DefaultItemAnimator());
         rvPosts.setAdapter(adapter);
+
+        rvPosts.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                for(Workout post : posts){
+                    post.setShowShimmer(false);
+                }
+                adapter.notifyDataSetChanged();
+            }
+        },3000);
 
 
 
@@ -313,11 +335,11 @@ public class FeedFragment extends Fragment implements CategoriesDialogFragment.C
                 svSearch.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
                     @Override
                     public boolean onQueryTextSubmit(String s) {
-                        if(maxHourString.isEmpty()) {
+                        if(s.isEmpty()) {
                             NullHourAlert();
                         }
                         else {
-                            long maxHourLong = Long.parseLong(maxHourString);
+                            long maxHourLong = Long.parseLong(s);
                             QueryByTime(maxHourLong);
                         }
                         return true;

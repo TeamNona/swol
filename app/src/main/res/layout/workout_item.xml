@@ -12,6 +12,13 @@
     card_view:cardCornerRadius="20dp"
     card_view:cardElevation="24dp">
 
+    <com.facebook.shimmer.ShimmerFrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/fl_shimmer"
+        >
+
+
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -131,5 +138,8 @@
 
 
     </RelativeLayout>
+
+    </com.facebook.shimmer.ShimmerFrameLayout>
+
 
 </android.support.v7.widget.CardView>
