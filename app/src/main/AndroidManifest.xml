@@ -25,12 +25,12 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.AppCompat.NoActionBar">
+        android:theme="@style/AppTheme">
         <activity android:name=".ui.activities.MainActivity" />
 
         <activity
             android:name="com.parse.ui.login.ParseLoginActivity"
-            android:theme="@style/Theme.AppCompat"
+            android:theme="@style/Theme.AppCompat.NoActionBar"
             android:label="@string/app_name"
             android:launchMode="singleTop">
             <meta-data
