@@ -600,10 +600,8 @@ public class AddFragment extends Fragment implements AdapterView.OnItemSelectedL
 
                     queue.add(polylineRequest);
 
-
-//                FragmentManager fm = getActivity().getSupportFragmentManager();
-//                fab.show();
-//                fm.popBackStackImmediate();
+                } else {
+                    createNewWorkout(category, name, description, date, location, media, participants, tags, null, null);
                 }
 
             }
@@ -629,8 +627,10 @@ public class AddFragment extends Fragment implements AdapterView.OnItemSelectedL
         workout.setTime(time);
         workout.setTags(tags);
         workout.setUser(currentUser);
-        workout.setPolyline(polyline);
-        workout.setPolylineBounds(boundsString);
+        if (polyline != null) {
+            workout.setPolyline(polyline);
+            workout.setPolylineBounds(boundsString);
+        }
 
         workout.saveInBackground(new SaveCallback() {
             @Override
@@ -789,6 +789,7 @@ public class AddFragment extends Fragment implements AdapterView.OnItemSelectedL
 
             try {
                 bitmap = MediaStore.Images.Media.getBitmap(getActivity().getApplicationContext().getContentResolver(), selectedImage);
+                bitmap = getResizedBitmap(bitmap, MapFragment.convertDpToPixel(350), MapFragment.convertDpToPixel(350));
                 post.setImageBitmap(bitmap);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -802,6 +803,7 @@ public class AddFragment extends Fragment implements AdapterView.OnItemSelectedL
                 bitmap = rotateBitmapOrientation(photoFile.getPath());
                 // RESIZE BITMAP, see section below
                 // Load the taken image into a preview
+                bitmap = getResizedBitmap(bitmap, MapFragment.convertDpToPixel(350), MapFragment.convertDpToPixel(350));
                 post.setImageBitmap(bitmap);
             } else { // Result was a failure
                 Toast.makeText(getActivity(), "Picture wasn't taken!", Toast.LENGTH_SHORT).show();
@@ -958,6 +960,21 @@ public class AddFragment extends Fragment implements AdapterView.OnItemSelectedL
     // this interface is so that when a new workout is created, it can send it to the map to update it
     public interface NewMapItemListener {
         public void updateMap();
+    }
+
+    public Bitmap getResizedBitmap(Bitmap bm, int newWidth, int newHeight) {
+        int width = bm.getWidth();
+        int height = bm.getHeight();
+        float scaleWidth = ((float) newWidth) / width;
+        float scaleHeight = ((float) newHeight) / height;
+        // CREATE A MATRIX FOR THE MANIPULATION
+        Matrix matrix = new Matrix();
+        // RESIZE THE BIT MAP
+        matrix.postScale(scaleWidth, scaleHeight);
+
+        // "RECREATE" THE NEW BITMAP
+        Bitmap resizedBitmap = Bitmap.createBitmap(bm, 0, 0, width, height, matrix, false);
+        return resizedBitmap;
     }
 
 }

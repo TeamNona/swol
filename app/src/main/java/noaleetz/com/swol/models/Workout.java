@@ -13,8 +13,6 @@ import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
 
-import org.joda.time.DateTime;
-import org.joda.time.Hours;
 import org.json.JSONArray;
 import org.parceler.Parcel;
 
