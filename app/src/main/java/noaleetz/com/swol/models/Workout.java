@@ -1,8 +1,10 @@
 package noaleetz.com.swol.models;
 
+import android.support.annotation.NonNull;
 import android.text.format.DateUtils;
 
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.maps.android.clustering.ClusterItem;
 import com.parse.ParseClassName;
 import com.parse.ParseFile;
@@ -14,7 +16,10 @@ import com.parse.ParseUser;
 import org.json.JSONArray;
 import org.parceler.Parcel;
 
+import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
 @ParseClassName("exerciseEvent")
 public class Workout extends ParseObject implements ClusterItem {
@@ -33,6 +38,8 @@ public class Workout extends ParseObject implements ClusterItem {
 
     private static final String KEY_USER = "user";
 
+
+
     private static final String KEY_PARTICIPANTS = "eventParticipants";
 
     private static final String KEY_TAGS = "tags";
@@ -40,6 +47,10 @@ public class Workout extends ParseObject implements ClusterItem {
     private static final String KEY_ID = "objectId";
 
     private static final String KEY_CATEGORY = "eventCategory";
+
+    private static final String KEY_POLYLINE = "polyline";
+
+    private static final String KEY_POLYLINE_BOUNDS = "polylineBounds";
 
     // define setters and getters
 
@@ -119,6 +130,14 @@ public class Workout extends ParseObject implements ClusterItem {
         return (String) get(KEY_ID);
     }
 
+    public void setPolyline(String polyline) { put(KEY_POLYLINE, polyline); }
+
+    public String getPolyline() {return getString(KEY_POLYLINE); }
+
+    public void setPolylineBounds(String bounds) { put(KEY_POLYLINE_BOUNDS, bounds); }
+
+    public String getPolylineBounds() {return getString(KEY_POLYLINE_BOUNDS); }
+
     @Override
     public Date getCreatedAt() {
         return super.getCreatedAt();
@@ -128,11 +147,31 @@ public class Workout extends ParseObject implements ClusterItem {
         return getLocation().distanceInMilesTo(other) < maxRange;
     }
 
+    public Boolean isInTimeRange(long maxTimeRange) {
+        return getHoursUntil() < maxTimeRange;
+    }
+
+    public double getDistance(ParseGeoPoint user) {
+        return getLocation().distanceInMilesTo(user);
+    }
+
     // helper methods for other functions
 
     public LatLng getLatLng() {
         final ParseGeoPoint loc = getLocation();
         return new LatLng(loc.getLatitude(), loc.getLongitude());
+    }
+
+    public LatLngBounds getPolylineLatLngBounds () {
+        if (getPolyline() == null) return null;
+        LatLngBounds.Builder builder = new LatLngBounds.Builder();
+        String[] stringNums = getPolylineBounds().split(",");
+        double[] nums = new double[4];
+        for (int i = 0; i < 4; i ++) nums[i] = Double.parseDouble(stringNums[i]);
+        LatLng southwest = new LatLng(nums[0], nums[1]);
+        LatLng northeast = new LatLng(nums[2], nums[3]);
+        builder.include(southwest).include(northeast);
+        return builder.build();
     }
 
     public String getTimeUntil() {
@@ -142,10 +181,38 @@ public class Workout extends ParseObject implements ClusterItem {
         return relativeDate;
     }
 
+    public long getHoursUntil(){
+        long current = System.currentTimeMillis();
+        long workout = getTime().getTime();
+        long diffInMillisec = workout - current;
+        long diffInHours = TimeUnit.MILLISECONDS.toHours(diffInMillisec);
+
+        return diffInHours;
+    }
+
+
+    public int compareToDistance(@NonNull Workout workoutToCompare) {
+        double otherWorkoutDistance = workoutToCompare.getDistance(ParseUser.getCurrentUser().getParseGeoPoint("currentLocation"));
+        double currentWorkoutDistance = this.getDistance(ParseUser.getCurrentUser().getParseGeoPoint("currentLocation"));
+        int difference = (int) (currentWorkoutDistance - otherWorkoutDistance);
+
+        return difference;
+    }
+
+    public int compareToTime(@NonNull Workout workoutToCompare) {
+        double otherWorkoutTime = workoutToCompare.getHoursUntil();
+        double currentWorkoutTime = this.getHoursUntil();
+        int difference = (int) (currentWorkoutTime - otherWorkoutTime);
+
+        return difference;
+    }
+
+
     public static class Query extends ParseQuery<Workout> {
         public Query() {
             super(Workout.class);
         }
+
 
         public Query getTop() {
             setLimit(20);
@@ -177,12 +244,32 @@ public class Workout extends ParseObject implements ClusterItem {
             whereWithinMiles("eventLocation", currentLocation, maxRange);
             return this;
         }
+        public Query getWithinTimeRange(long maxHours){
+//            workout.isInTimeRange(maxHours);
+            int maxHoursInt = (int) maxHours;
+            Date currentTime = Calendar.getInstance().getTime();
+            whereGreaterThan(KEY_TIME,currentTime);
+
+            Calendar currentInstance = Calendar.getInstance();
+            currentInstance.setTime(new Date());
+            currentInstance.add(Calendar.HOUR_OF_DAY,maxHoursInt);
+            Date maxDate = currentInstance.getTime();
+            whereLessThanOrEqualTo(KEY_TIME,maxDate);
+            return this;
+        }
 
         public Query getwithTags() {
             whereContains(KEY_TAGS, "High Intensity");
             return this;
         }
+        public Query orderByRange(){
+
+
+            return this;
+        }
+
     }
+
 
     // cluster item stuff
 

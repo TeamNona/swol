@@ -1,8 +1,10 @@
 package noaleetz.com.swol.ui.adapters;
 
 import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,6 +17,9 @@ import com.parse.ParseException;
 import com.parse.ParseGeoPoint;
 import com.parse.ParseUser;
 
+import org.joda.time.Interval;
+
+import java.util.Arrays;
 import java.util.List;
 
 import butterknife.BindView;
@@ -30,8 +35,19 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
 
     public List<Workout> mposts;
     private Context mcontext;
+    public String[] red = new String[]{"Class","Game","Gym","High Intensity Interval Training","Weight"};
+    public String[] purple = new String[]{"Dance","Meditation"};
+    public String[] blue = new String[]{"Bike","Cardio","Run","Hike","Swim"};
 
     private AdapterCallback mAdapterCallback;
+
+    // TODO - Filter Class - perform queries here to rebuild feed based on tags
+    public void filter(String charText) {
+
+
+    }
+
+
 
     // implements interface that we have in adapter- called upon when user clicks on item in rv
     public interface AdapterCallback {
@@ -91,14 +107,19 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
 
         holder.tvLocation.setText(distanceFrom(post.getLocation()) + " mile(s) from you");
 
-        holder.tvDescription.setText(post.getDescription());
-//        holder.tvParticipants.setText(post.getParticipants());
-        try {
-            holder.tvCreatedBy.setText("Created By " + post.getUser().fetchIfNeeded().getUsername());
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
+
         holder.tvTime.setText(post.getTimeUntil());
+        Log.d("Adapter",post.getCategory());
+
+        if(post.getCategory().equalsIgnoreCase("High Intensity Interval Training")){
+            holder.tvCategory.setText("HIIT");
+
+        }
+        else{
+        holder.tvCategory.setText(post.getCategory());
+        }
+
+        holder.tvCategory.setBackground(getBackgroundDrawable(post.getCategory()));
 
         // call interface
         holder.itemView.setOnClickListener(new View.OnClickListener() {
@@ -111,6 +132,24 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
         });
 
 
+    }
+
+    private Drawable getBackgroundDrawable(String category) {
+
+
+        if(Arrays.asList(red).contains(category)){
+          return mcontext.getResources().getDrawable(R.drawable.drawable_rectangle_red);
+        }
+        if(Arrays.asList(purple).contains(category)){
+            return mcontext.getResources().getDrawable(R.drawable.drawable_rectangle_purple);
+        }
+        if(Arrays.asList(blue).contains(category)){
+            return mcontext.getResources().getDrawable(R.drawable.drawable_rectangle_blue);
+        }
+        else{
+            Log.d("Adapter","error getting category color");
+            return mcontext.getResources().getDrawable(R.drawable.rect_grey);
+        }
     }
 
     // TODO- Configure current location accuracy
@@ -134,22 +173,24 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         // define and reference all the Views defined in our workout_item.xml file
-        @BindView(R.id.ivDetail)
-        ImageView ivDetail;
+//        @BindView(R.id.ivDetail)
+//        ImageView ivDetail;
         @BindView(R.id.ivWorkoutImage)
         ImageView ivWorkoutImage;
         @BindView(R.id.tvWorkoutTitle)
         TextView tvWorkoutTitle;
-        @BindView(R.id.tvDescription)
-        TextView tvDescription;
+//        @BindView(R.id.tvDescription)
+//        TextView tvDescription;
         @BindView(R.id.tvLocation)
         TextView tvLocation;
         @BindView(R.id.tvTime)
         TextView tvTime;
-        @BindView(R.id.tvCreatedBy)
-        TextView tvCreatedBy;
-        @BindView(R.id.tvParticipants)
-        TextView tvParticipants;
+        @BindView(R.id.tvCategory)
+        TextView tvCategory;
+
+//        @BindView(R.id.tvCreatedBy)
+//        TextView tvCreatedBy;
+
 
 
         public ViewHolder(View itemView) {

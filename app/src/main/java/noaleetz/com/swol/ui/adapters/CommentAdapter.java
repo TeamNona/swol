@@ -116,7 +116,7 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.ViewHold
 
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
-        @BindView(R.id.ivAvatar)
+        @BindView(R.id.ivDetailImage)
         ImageView ivAvatar;
         @BindView(R.id.tvCommentUsername)
         TextView tvCommentUsername;
@@ -124,6 +124,7 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.ViewHold
         TextView tvComment;
         @BindView(R.id.tvCreatedTimeC)
         TextView tvCreatedTimeC;
+
 
         public ViewHolder(View itemView) {
             super(itemView);

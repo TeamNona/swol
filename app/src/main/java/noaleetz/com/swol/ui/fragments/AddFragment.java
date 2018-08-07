@@ -1,15 +1,11 @@
 package noaleetz.com.swol.ui.fragments;
 
 
-import android.Manifest;
-import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -25,15 +21,14 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.DatePicker;
@@ -46,6 +41,12 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.ui.PlaceSelectionListener;
@@ -58,6 +59,8 @@ import com.parse.ParseUser;
 import com.parse.SaveCallback;
 
 import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
@@ -86,7 +89,7 @@ import static android.view.View.VISIBLE;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class AddFragment extends Fragment {
+public class AddFragment extends Fragment implements AdapterView.OnItemSelectedListener {
 
     // Bind variables
     @BindView(R.id.btnPost)
@@ -119,6 +122,8 @@ public class AddFragment extends Fragment {
     Spinner workoutCategory;
     @BindView(R.id.pbLoading)
     ProgressBar pbPost;
+    SupportPlaceAutocompleteFragment pafBegin;
+    SupportPlaceAutocompleteFragment pafEnd;
 
     // keep track of who is logged on
     private ParseUser currentUser = ParseUser.getCurrentUser();
@@ -126,6 +131,7 @@ public class AddFragment extends Fragment {
     // workout variables
     Date Date;
     ParseGeoPoint postLocation;
+    ParseGeoPoint endLocation;
 
     // initialize time to midnight of current date
     int postYear = Calendar.getInstance().get(Calendar.YEAR);
@@ -157,6 +163,10 @@ public class AddFragment extends Fragment {
     // variables for spinners
     String workoutCategoryPrompt = "Choose a Workout Category";
     String tagsPrompt = "Choose a tag";
+
+    // maps api request stuff
+    String modeOfTransit = "walking";
+    String polyline;
 
     private Unbinder unbinder;
 
@@ -207,6 +217,27 @@ public class AddFragment extends Fragment {
         return view;
     }
 
+    @Override
+    public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+        String category = (String) adapterView.getItemAtPosition(i);
+        String[] distanceCategories = getResources().getStringArray(R.array.distance_categories);
+        endLocationShower:
+        for (String item : distanceCategories) {
+            Log.d("ItemSelector", "item: " + item + "\tcategory: " + category);
+            if (item.equals(category)) {
+                if (item.equals("bike")) modeOfTransit = "bicycling";
+                pafEnd.getView().setVisibility(View.VISIBLE);
+                break endLocationShower;
+            } else {
+                pafEnd.getView().setVisibility(View.GONE);
+            }
+        }
+    }
+
+    @Override
+    public void onNothingSelected(AdapterView<?> adapterView) {
+
+    }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
@@ -214,6 +245,12 @@ public class AddFragment extends Fragment {
 
 
         fab = (FloatingActionButton) getActivity().findViewById(R.id.fab);
+
+        // show the post button
+        postButton.setVisibility(View.VISIBLE);
+
+        // hide the end places input
+
 
         // create Array of workout categories
         final String[] workoutCategories;
@@ -253,7 +290,6 @@ public class AddFragment extends Fragment {
         categoryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         // Apply the adapter to the spinner
         workoutCategory.setAdapter(categoryAdapter);
-
 
 
         // create Array of tag categories
@@ -316,13 +352,13 @@ public class AddFragment extends Fragment {
 
 
         // utilize the Google Places API to autocomplete the location for the workout
-        SupportPlaceAutocompleteFragment autocompleteFragment = (SupportPlaceAutocompleteFragment)
-                getChildFragmentManager().findFragmentById(R.id.place_autocomplete_fragment);
+        pafBegin = (SupportPlaceAutocompleteFragment)
+                getChildFragmentManager().findFragmentById(R.id.pafBegin);
 
-        ((EditText) autocompleteFragment.getView().findViewById(R.id.place_autocomplete_search_input)).setHint("Choose Location");
-        ((EditText) autocompleteFragment.getView().findViewById(R.id.place_autocomplete_search_input)).setTextSize(18.0f);
+        ((EditText) pafBegin.getView().findViewById(R.id.place_autocomplete_search_input)).setHint("Choose Location");
+        ((EditText) pafBegin.getView().findViewById(R.id.place_autocomplete_search_input)).setTextSize(18.0f);
 
-        autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
+        pafBegin.setOnPlaceSelectedListener(new PlaceSelectionListener() {
             @Override
             public void onPlaceSelected(Place place) {
                 LatLng latlng = place.getLatLng();
@@ -330,7 +366,32 @@ public class AddFragment extends Fragment {
                 postLocation.setLatitude(latlng.latitude);
                 postLocation.setLongitude(latlng.longitude);
 
-                Log.i(TAG, "Place: " + place.getName());
+                Log.i(TAG, "startLocation: " + place.getName());
+            }
+
+            @Override
+            public void onError(Status status) {
+                // TODO: Handle the error.
+                Log.i(TAG, "An error occurred: " + status);
+            }
+        });
+
+        // utilize the Google Places API to autocomplete the location for the workout
+        pafEnd = (SupportPlaceAutocompleteFragment)
+                getChildFragmentManager().findFragmentById(R.id.pafEnd);
+
+        ((EditText) pafEnd.getView().findViewById(R.id.place_autocomplete_search_input)).setHint("Choose Ending Location");
+        ((EditText) pafEnd.getView().findViewById(R.id.place_autocomplete_search_input)).setTextSize(18.0f);
+
+        pafEnd.setOnPlaceSelectedListener(new PlaceSelectionListener() {
+            @Override
+            public void onPlaceSelected(Place place) {
+                LatLng latlng = place.getLatLng();
+                endLocation = new ParseGeoPoint();
+                endLocation.setLatitude(latlng.latitude);
+                endLocation.setLongitude(latlng.longitude);
+
+                Log.i(TAG, "endLocation: " + place.getName());
             }
 
             @Override
@@ -419,6 +480,9 @@ public class AddFragment extends Fragment {
         });
         */
 
+
+        workoutCategory.setOnItemSelectedListener(this);
+
         // send new workout info to Parse
         postButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -449,6 +513,9 @@ public class AddFragment extends Fragment {
                     category = (String) workoutCategory.getSelectedItem();
                 }
 
+                // on some click or some loading we need to wait for...
+                pbPost.setVisibility(ProgressBar.VISIBLE);
+                postButton.setVisibility(View.GONE);
 
                 // get the final tags
                 final JSONArray tags = new JSONArray();
@@ -486,7 +553,7 @@ public class AddFragment extends Fragment {
 
                 if (bitmap == null) {
                     Drawable drawable = getResources().getDrawable(R.drawable.ic_directions_run_black_24dp);
-                    bitmap = convertToBitmap(drawable, 1000, 1000);
+                    bitmap = convertToBitmap(drawable, 10, 10);
                 }
 
                 final ParseFile media;
@@ -496,14 +563,52 @@ public class AddFragment extends Fragment {
                     public void done(ParseException e) {
                         if (null == e) {
                             Toast.makeText(getActivity(), "Picture post saved", Toast.LENGTH_SHORT).show();
-                        } else  {
+                        } else {
                             Toast.makeText(getActivity(), "Picture post not saved", Toast.LENGTH_SHORT).show();
                         }
                     }
                 });
 
+                if (endLocation != null && pafEnd.getView().getVisibility() == View.VISIBLE) {
+                    RequestQueue queue = Volley.newRequestQueue(getContext());
+                    String url = "https://maps.googleapis.com/maps/api/directions/json?origin=" +
+                            postLocation.getLatitude() + "," + postLocation.getLongitude() + "&destination=" +
+                            endLocation.getLatitude() + "," + endLocation.getLongitude() + "&mode=" + modeOfTransit +
+                            "&key=" + getResources().getString(R.string.api_key);
 
-                createNewWorkout(category, name, description, date, location, media, participants, tags);
+                    Log.d("API Hit", "url: " + url);
+
+                    JsonObjectRequest polylineRequest = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
+                        @Override
+                        public void onResponse(JSONObject response) {
+                            JSONObject southwest;
+                            JSONObject northeast;
+                            String boundsString = null;
+                            try {
+                                polyline = response.getJSONArray("routes").getJSONObject(0).getJSONObject("overview_polyline").getString("points");
+                                southwest = response.getJSONArray("routes").getJSONObject(0).getJSONObject("bounds").getJSONObject("southwest");
+                                northeast = response.getJSONArray("routes").getJSONObject(0).getJSONObject("bounds").getJSONObject("northeast");
+                                boundsString = southwest.getDouble("lat") + "," + southwest.getDouble("lng") + "," + northeast.getDouble("lat") + "," + northeast.getDouble("lng");
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                            Log.d("PolylineRequest", "Polyline: " + polyline);
+                            createNewWorkout(category, name, description, date, location, media, participants, tags, polyline, boundsString);
+                        }
+                    }, new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+                            error.printStackTrace();
+                            Log.d("PolylineRequest", "Request failed :(");
+                            createNewWorkout(category, name, description, date, location, media, participants, tags, null, null);
+                        }
+                    });
+
+                    queue.add(polylineRequest);
+
+                } else {
+                    createNewWorkout(category, name, description, date, location, media, participants, tags, null, null);
+                }
 
             }
         });
@@ -512,7 +617,7 @@ public class AddFragment extends Fragment {
     }
 
 
-    private void createNewWorkout(String category, String name, String description, Date time, ParseGeoPoint location, ParseFile media, JSONArray participants, JSONArray tags) {
+    private void createNewWorkout(String category, String name, String description, Date time, ParseGeoPoint location, ParseFile media, JSONArray participants, JSONArray tags, String polyline, String boundsString) {
 
 
         // create a new event
@@ -528,6 +633,10 @@ public class AddFragment extends Fragment {
         workout.setTime(time);
         workout.setTags(tags);
         workout.setUser(currentUser);
+        if (polyline != null) {
+            workout.setPolyline(polyline);
+            workout.setPolylineBounds(boundsString);
+        }
 
         workout.saveInBackground(new SaveCallback() {
             @Override
@@ -542,9 +651,14 @@ public class AddFragment extends Fragment {
                         fm.popBackStackImmediate();
                         listener.updateMap();
                     } else fm.popBackStackImmediate();
+                    fab.show();
+                    ;
 
                 } else {
                     e.printStackTrace();
+                    // show the button on failure
+                    postButton.setVisibility(View.VISIBLE);
+                    pbPost.setVisibility(View.GONE);
                     Log.e("AddFragment", "Create post was not successful");
                 }
             }
@@ -603,7 +717,7 @@ public class AddFragment extends Fragment {
             if (hour > 12) {
                 hour = hour - 12;
                 hourofday = "PM";
-            } else if (hour == 0)  {
+            } else if (hour == 0) {
                 hour = 12;
             }
             if (minute < 10) {
@@ -682,6 +796,7 @@ public class AddFragment extends Fragment {
 
             try {
                 bitmap = MediaStore.Images.Media.getBitmap(getActivity().getApplicationContext().getContentResolver(), selectedImage);
+                bitmap = getResizedBitmap(bitmap, MapFragment.convertDpToPixel(350), MapFragment.convertDpToPixel(350));
                 post.setImageBitmap(bitmap);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -724,6 +839,9 @@ public class AddFragment extends Fragment {
 //                    e.printStackTrace();
 //                }
 //                // Load the taken image into a preview
+                // RESIZE BITMAP, see section below
+                // Load the taken image into a preview
+                bitmap = getResizedBitmap(bitmap, MapFragment.convertDpToPixel(350), MapFragment.convertDpToPixel(350));
                 post.setImageBitmap(bitmap);
             } else { // Result was a failure
                 Toast.makeText(getActivity(), "Picture wasn't taken!", Toast.LENGTH_SHORT).show();
@@ -882,27 +1000,23 @@ public class AddFragment extends Fragment {
         public void updateMap();
     }
 
-    public static class BitmapScaler
-    {
+    public static class BitmapScaler {
         // scale and keep aspect ratio
-        public static Bitmap scaleToFitWidth(Bitmap b, int width)
-        {
+        public static Bitmap scaleToFitWidth(Bitmap b, int width) {
             float factor = width / (float) b.getWidth();
             return Bitmap.createScaledBitmap(b, width, (int) (b.getHeight() * factor), true);
         }
 
 
         // scale and keep aspect ratio
-        public static Bitmap scaleToFitHeight(Bitmap b, int height)
-        {
+        public static Bitmap scaleToFitHeight(Bitmap b, int height) {
             float factor = height / (float) b.getHeight();
             return Bitmap.createScaledBitmap(b, (int) (b.getWidth() * factor), height, true);
         }
 
 
         // scale and keep aspect ratio
-        public static Bitmap scaleToFill(Bitmap b, int width, int height)
-        {
+        public static Bitmap scaleToFill(Bitmap b, int width, int height) {
             float factorH = height / (float) b.getWidth();
             float factorW = width / (float) b.getWidth();
             float factorToUse = (factorH > factorW) ? factorW : factorH;
@@ -912,13 +1026,28 @@ public class AddFragment extends Fragment {
 
 
         // scale and don't keep aspect ratio
-        public static Bitmap strechToFill(Bitmap b, int width, int height)
-        {
+        public static Bitmap strechToFill(Bitmap b, int width, int height) {
             float factorH = height / (float) b.getHeight();
             float factorW = width / (float) b.getWidth();
             return Bitmap.createScaledBitmap(b, (int) (b.getWidth() * factorW),
                     (int) (b.getHeight() * factorH), true);
         }
+
     }
+
+        public Bitmap getResizedBitmap(Bitmap bm, int newWidth, int newHeight) {
+            int width = bm.getWidth();
+            int height = bm.getHeight();
+            float scaleWidth = ((float) newWidth) / width;
+            float scaleHeight = ((float) newHeight) / height;
+            // CREATE A MATRIX FOR THE MANIPULATION
+            Matrix matrix = new Matrix();
+            // RESIZE THE BIT MAP
+            matrix.postScale(scaleWidth, scaleHeight);
+
+            // "RECREATE" THE NEW BITMAP
+            Bitmap resizedBitmap = Bitmap.createBitmap(bm, 0, 0, width, height, matrix, false);
+            return resizedBitmap;
+        }
 
 }
