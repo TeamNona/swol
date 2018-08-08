@@ -1,4 +1,5 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_height="wrap_content"
     android:layout_width="match_parent"
     android:orientation="vertical"
@@ -8,12 +9,11 @@
 
     <EditText
         android:id="@+id/login_username_input"
+        style="@style/Widget.AppCompat.EditText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:drawableRight="@drawable/ic_person_outline_black_24dp"
-        style="@style/ParseLoginUI.EditText"
-        android:hint="@string/com_parse_ui_username_input_hint"
-        />
+        android:hint="@string/com_parse_ui_username_input_hint" />
 
     <EditText
         android:id="@+id/login_password_input"

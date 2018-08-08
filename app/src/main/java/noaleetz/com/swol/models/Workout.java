@@ -38,8 +38,6 @@ public class Workout extends ParseObject implements ClusterItem {
 
     private static final String KEY_USER = "user";
 
-
-
     private static final String KEY_PARTICIPANTS = "eventParticipants";
 
     private static final String KEY_TAGS = "tags";
@@ -51,6 +49,10 @@ public class Workout extends ParseObject implements ClusterItem {
     private static final String KEY_POLYLINE = "polyline";
 
     private static final String KEY_POLYLINE_BOUNDS = "polylineBounds";
+
+    private static final String KEY_ADDRESS = "eventAddress";
+
+    private static final String KEY_LOCATION_NAME = "eventLocationName";
 
     // define setters and getters
 
@@ -137,6 +139,22 @@ public class Workout extends ParseObject implements ClusterItem {
     public void setPolylineBounds(String bounds) { put(KEY_POLYLINE_BOUNDS, bounds); }
 
     public String getPolylineBounds() {return getString(KEY_POLYLINE_BOUNDS); }
+
+    public String getAddress() {
+        return getString(KEY_ADDRESS);
+    }
+
+    public void setAddress(String address) {
+        put(KEY_ADDRESS, address);
+    }
+
+    public String getLocationName() {
+        return getString(KEY_LOCATION_NAME);
+    }
+
+    public void setLocationName(String locationName) {
+        put(KEY_LOCATION_NAME, locationName);
+    }
 
     @Override
     public Date getCreatedAt() {
