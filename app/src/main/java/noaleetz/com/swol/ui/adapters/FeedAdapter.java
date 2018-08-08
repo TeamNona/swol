@@ -17,7 +17,6 @@ import com.parse.ParseException;
 import com.parse.ParseGeoPoint;
 import com.parse.ParseUser;
 
-import org.joda.time.Interval;
 
 import java.util.Arrays;
 import java.util.List;

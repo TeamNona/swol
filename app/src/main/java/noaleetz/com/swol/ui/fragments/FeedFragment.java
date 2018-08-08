@@ -287,7 +287,7 @@ public class FeedFragment extends Fragment implements CategoriesDialogFragment.C
                         // check if category exists
                         if(Arrays.asList(categories).contains(tagString)){
                             // user has searched an existing category
-                            QueryByCategory(tagString);
+                            filter(Arrays.asList(new String[]{tagString}), null, null, null);
                         }
                         else{
                             CategoryNullOrDoesNotExist();
@@ -313,12 +313,12 @@ public class FeedFragment extends Fragment implements CategoriesDialogFragment.C
                 svSearch.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
                     @Override
                     public boolean onQueryTextSubmit(String s) {
-                        if(maxHourString.isEmpty()) {
+                        if(s.isEmpty()) {
                             NullHourAlert();
                         }
                         else {
-                            long maxHourLong = Long.parseLong(maxHourString);
-                            QueryByTime(maxHourLong);
+                            int maxHour = Integer.parseInt(s);
+                            filter(null, null, maxHour, "time");
                         }
                         return true;
                     }
@@ -340,8 +340,10 @@ public class FeedFragment extends Fragment implements CategoriesDialogFragment.C
                         if(maxMileString.isEmpty()){
                             maxMileString = "30";
                         }
-                        else{double maxMileDouble = Double.parseDouble(maxMileString);
-                            QueryByDistance(maxMileDouble);}
+                        else{
+                            double maxMileDouble = Double.parseDouble(maxMileString);
+                            filter(null, maxMileDouble, null, "distance");
+                        }
                         return true;
                     }
 
@@ -367,10 +369,6 @@ public class FeedFragment extends Fragment implements CategoriesDialogFragment.C
                         if(creatorUsername.isEmpty()){
                             NullUserAlert();
                         }
-                        else{
-                            QueryByUserCreated(creatorUsername);
-
-                        }
                         return true;
                     }
 
@@ -393,94 +391,68 @@ public class FeedFragment extends Fragment implements CategoriesDialogFragment.C
     }
 
 
-    private void QueryByTime(long maxHourLong) {
-        final Workout.Query postTimeQuery = new Workout.Query();
-        postTimeQuery.withUser().getWithinTimeRange(maxHourLong);
-        postTimeQuery.findInBackground(new FindCallback<Workout>() {
-            @Override
-            public void done(List<Workout> objects, ParseException e) {
-                if(e==null){
 
-                // order objects in time order
-                Collections.sort(objects, new Comparator<Workout>() {
+    /**
+     * This function does all of the filtering/sorting for you. This should be run when you click the "apply" wherever you have the filters to apply them.
+     * @param categories This is an ArrayList of Strings that represents all of the categories
+     *                   that the user would like to see. If the user does not want to filter
+     *                   by category, simply pass in null for this value.
+     * @param milesAway This is a double that represents the distance radius that should be
+     *                  included in the filter. If the user does not want to filter by miles
+     *                  away, simply pass in null for this value.
+     * @param timeAway This is an integer that represents the time frame that you would like
+     *                 the workouts to be filtered by. If the user does not want to filter by
+     *                 time, simply pass in null for this value.
+     * @param sortBy This is a string that represents how the user wants the information to be
+     *               sorted. Only accepted values: "time", "distance". If it is anything else
+     *               (including null), the list will not be sorted.
+     */
+    public void filter(List<String> categories, Double milesAway, Integer timeAway, final String sortBy) {
+
+        final Workout.Query query = new Workout.Query().withUser();
+
+        currentGeoPoint = ParseUser.getCurrentUser().getParseGeoPoint("currentLocation");
+
+        if (categories != null) for (String category : categories) query.whereEqualTo("eventCategory", category);
+
+        if (milesAway != null) query.getWithinRange(currentGeoPoint, milesAway);
+
+        if (timeAway != null) query.getWithinTimeRange(timeAway);
+
+        final Comparator<Workout> comparator;
+
+        switch (sortBy) {
+            case "time":
+                comparator = new Comparator<Workout>() {
                     @Override
                     public int compare(Workout o1, Workout o2) {
                         return o1.compareToTime(o2);
                     }
-                });
-
-                posts.clear();
-                posts.addAll(objects);
-                adapter.notifyDataSetChanged();
-                rvPosts.scrollToPosition(0);
-                InputMethodManager mgr = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-                assert mgr != null;
-                mgr.hideSoftInputFromWindow(svSearch.getWindowToken(), 0);
-
-                // TODO- scroll to bottom option
-            } else {
-                e.printStackTrace();
-            }
-            }
-        });
-
-
-    }
-
-    private void QueryByCategory(String tagString) {
-        final Workout.Query categoryQuery = new Workout.Query();
-        categoryQuery.getTop().orderByLastCreated().whereEqualTo("eventCategory",tagString).findInBackground(new FindCallback<Workout>() {
-            @Override
-            public void done(List<Workout> objects, ParseException e) {
-                posts.clear();
-
-                posts.addAll(objects);
-                adapter.notifyDataSetChanged();
-
-                rvPosts.scrollToPosition(0);
-                InputMethodManager mgr = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-                assert mgr != null;
-                mgr.hideSoftInputFromWindow(svSearch.getWindowToken(), 0);
-            }
-        });
-
-
-    }
-
-
-    public void QueryByUserCreated(String creatorUsername) {
-//        final Workout.Query creatorQuery = new Workout.Query();
-//
-//
-//        ParseUser userObject;
-//        creatorQuery.withUser().createdBy(userObject);
-
-    }
-    public void QueryByDistance(double maxMileNumber) {
-
-        final Workout.Query postDistanceQuery = new Workout.Query();
-
-        currentGeoPoint = ParseUser.getCurrentUser().getParseGeoPoint("currentLocation");
-
-//        postDistanceQuery.withUser().orderByLastCreated().getWithinRange(currentLocation,maxMileNumber);
-
-        postDistanceQuery.withUser().getWithinRange(currentGeoPoint, maxMileNumber).findInBackground(new FindCallback<Workout>() {
-            @Override
-            public void done(List<Workout> objects, ParseException e) {
-                if (e == null) {
-                    Log.d(TAG, Integer.toString(objects.size()));
-                    for (int i = 0; i < objects.size(); i++) {
-//                        Log.d(TAG, "Post [" + i + "] = " + objects.get(i).getDescription()
-//                                + "\nusername: " + objects.get(i).getUser().getUsername());
+                };
+                break;
+            case "distance":
+                comparator = new Comparator<Workout>() {
+                    @Override
+                    public int compare(Workout o1, Workout o2) {
+                        return o1.compareToDistance(o2);
                     }
+                };
+                break;
+            default:
+                comparator = new Comparator<Workout>() {
+                    @Override
+                    public int compare(Workout o1, Workout o2) {
+                        return 0;
+                    }
+                };
+        }
 
-                    // order objects in distance order
-                    Collections.sort(objects, new Comparator<Workout>() {
-                        @Override
-                        public int compare(Workout o1, Workout o2) {
-                            return o1.compareToDistance(o2);
-                        }
-                    });
+        query.findInBackground(new FindCallback<Workout>() {
+            @Override
+            public void done(List<Workout> objects, ParseException e) {
+
+                if (e == null) {
+                    Collections.sort(objects, comparator);
 
                     posts.clear();
 
@@ -491,17 +463,13 @@ public class FeedFragment extends Fragment implements CategoriesDialogFragment.C
                     assert mgr != null;
                     mgr.hideSoftInputFromWindow(svSearch.getWindowToken(), 0);
 
-                    // TODO- scroll to bottom option
                 } else {
                     e.printStackTrace();
                 }
             }
         });
 
-
     }
-
-
 
     public void loadTopPosts() {
 

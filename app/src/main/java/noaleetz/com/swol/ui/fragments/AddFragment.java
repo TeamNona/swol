@@ -789,7 +789,7 @@ public class AddFragment extends Fragment implements AdapterView.OnItemSelectedL
 
             try {
                 bitmap = MediaStore.Images.Media.getBitmap(getActivity().getApplicationContext().getContentResolver(), selectedImage);
-                bitmap = getResizedBitmap(bitmap, MapFragment.convertDpToPixel(350), MapFragment.convertDpToPixel(350));
+                bitmap = getResizedBitmap(bitmap, MapFragment.convertDpToPixel(100), MapFragment.convertDpToPixel(100));
                 post.setImageBitmap(bitmap);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -803,7 +803,7 @@ public class AddFragment extends Fragment implements AdapterView.OnItemSelectedL
                 bitmap = rotateBitmapOrientation(photoFile.getPath());
                 // RESIZE BITMAP, see section below
                 // Load the taken image into a preview
-                bitmap = getResizedBitmap(bitmap, MapFragment.convertDpToPixel(350), MapFragment.convertDpToPixel(350));
+                bitmap = getResizedBitmap(bitmap, MapFragment.convertDpToPixel(100), MapFragment.convertDpToPixel(100));
                 post.setImageBitmap(bitmap);
             } else { // Result was a failure
                 Toast.makeText(getActivity(), "Picture wasn't taken!", Toast.LENGTH_SHORT).show();
