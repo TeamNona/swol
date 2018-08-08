@@ -66,12 +66,12 @@ import static android.support.v4.content.ContextCompat.getSystemService;
 public class FeedFragment extends Fragment implements CategoriesDialogFragment.CategoryDialogListener{
 
     private static final String TAG = "FeedFragmentTAG";
-    CategoriesDialogFragment.CategoryDialogListener listener = new CategoriesDialogFragment.CategoryDialogListener() {
-        @Override
-        public void onFinishCategoryDialog(String inputText) {
-            svSearch.setQuery(inputText,false);
-        }
-    };
+//    CategoriesDialogFragment.CategoryDialogListener listener = new CategoriesDialogFragment.CategoryDialogListener() {
+//        @Override
+//        public void onFinishCategoryDialog(String inputText) {
+//            svSearch.setQuery(inputText,false);
+//        }
+//    };
 
 
 
@@ -82,10 +82,10 @@ public class FeedFragment extends Fragment implements CategoriesDialogFragment.C
     RecyclerView rvPosts;
     @BindView(R.id.swipeContainer)
     SwipeRefreshLayout swipeContainer;
-    @BindView(R.id.svSearch)
-    android.widget.SearchView svSearch;
-    @BindView(R.id.ivFilterOptions)
-    ImageView ivFilterOptions;
+//    @BindView(R.id.svSearch)
+//    android.widget.SearchView svSearch;
+//    @BindView(R.id.ivFilterOptions)
+//    ImageView ivFilterOptions;
 
 //    @BindView(R.id.search_src_text)
 //    android.support.v7.widget.SearchView.SearchAutoComplete categorySearchAutoComplete;
@@ -178,8 +178,8 @@ public class FeedFragment extends Fragment implements CategoriesDialogFragment.C
                 // Make sure you call swipeContainer.setRefreshing(false)
                 // once the network request has completed successfully.
                 fetchTimelineAsync(0);
-                svSearch.setQuery("",false);
-                ivFilterOptions.setImageResource(R.drawable.ic_arrow);
+//                svSearch.setQuery("",false);
+//                ivFilterOptions.setImageResource(R.drawable.ic_arrow);
 
 
 
@@ -192,40 +192,40 @@ public class FeedFragment extends Fragment implements CategoriesDialogFragment.C
 
 
         });
-        ivFilterOptions.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-                //Creating the instance of PopupMenu
-                final PopupMenu popup = new PopupMenu(view.getContext(), ivFilterOptions);
-                setForceShowIcon(popup);
-                //Inflating the Popup using xml file
-                popup.getMenuInflater()
-                        .inflate(R.menu.popup_icon, popup.getMenu());
-
-
-                //registering popup with OnMenuItemClickListener
-
-                popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-                    public boolean onMenuItemClick(MenuItem item) {
-                        // toast on item click
-//                        Toast.makeText(
-//                                getContext(),
-//                                "You Clicked : " + item.getTitle(),
-//                                Toast.LENGTH_SHORT
-//                        ).show();
-                        // select icon
-                        selectPopupItem(item);
-                        popup.dismiss();
-                        return true;
-                    }
-                });
-
-                popup.show(); //showing popup menu
-            }
-
-
-        });
+//        ivFilterOptions.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//
+//                //Creating the instance of PopupMenu
+//                final PopupMenu popup = new PopupMenu(view.getContext(), ivFilterOptions);
+//                setForceShowIcon(popup);
+//                //Inflating the Popup using xml file
+//                popup.getMenuInflater()
+//                        .inflate(R.menu.popup_icon, popup.getMenu());
+//
+//
+//                //registering popup with OnMenuItemClickListener
+//
+//                popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+//                    public boolean onMenuItemClick(MenuItem item) {
+//                        // toast on item click
+////                        Toast.makeText(
+////                                getContext(),
+////                                "You Clicked : " + item.getTitle(),
+////                                Toast.LENGTH_SHORT
+////                        ).show();
+//                        // select icon
+//                        selectPopupItem(item);
+//                        popup.dismiss();
+//                        return true;
+//                    }
+//                });
+//
+//                popup.show(); //showing popup menu
+//            }
+//
+//
+//        });
 
 
     }
@@ -256,7 +256,7 @@ public class FeedFragment extends Fragment implements CategoriesDialogFragment.C
 
         CategoriesDialogFragment dialog = new CategoriesDialogFragment();
 //        CategoriesDialogFragment.setTargetFragment(FeedFragment.this, 300);
-        dialog.setCallBack(listener);
+//        dialog.setCallBack(listener);
 
         dialog.show(manager,"dialog");
 
@@ -268,239 +268,239 @@ public class FeedFragment extends Fragment implements CategoriesDialogFragment.C
 
 
 
-    public void selectPopupItem(MenuItem menuItem) {
-        ivFilterOptions.setImageDrawable(menuItem.getIcon());
-        svSearch.setSubmitButtonEnabled(true);
-
-
-        switch (menuItem.getItemId()) {
-            case R.id.filterByTag:
-
-                svSearch.setQueryHint("filter by Category");
-                showDialog(getView());
-                svSearch.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-                    @Override
-                    public boolean onQueryTextSubmit(String s) {
-//                        tagString = svSearch.getQuery().toString();
-                        tagString = s;
-
-                        // check if category exists
-                        if(Arrays.asList(categories).contains(tagString)){
-                            // user has searched an existing category
-                            QueryByCategory(tagString);
-                        }
-                        else{
-                            CategoryNullOrDoesNotExist();
-                        }
-                        return false;
-                    }
-
-                    @Override
-                    public boolean onQueryTextChange(String s) {
-                        return false;
-                    }
-                });
-
-
-
-                break;
-            case R.id.filterByTime:
-
-                svSearch.setQueryHint("filter by hours away");
-                maxHourString = svSearch.getQuery().toString();
-
-
-                svSearch.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-                    @Override
-                    public boolean onQueryTextSubmit(String s) {
-                        if(maxHourString.isEmpty()) {
-                            NullHourAlert();
-                        }
-                        else {
-                            long maxHourLong = Long.parseLong(maxHourString);
-                            QueryByTime(maxHourLong);
-                        }
-                        return true;
-                    }
-
-                    @Override
-                    public boolean onQueryTextChange(String s) {
-                        return false;
-                    }
-                });
-
-
-                break;
-            case R.id.filterByDistance:
-                svSearch.setQueryHint("filter by number of miles");
-                svSearch.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-                    @Override
-                    public boolean onQueryTextSubmit(String s) {
-                        maxMileString = s;
-                        if(maxMileString.isEmpty()){
-                            maxMileString = "30";
-                        }
-                        else{double maxMileDouble = Double.parseDouble(maxMileString);
-                            QueryByDistance(maxMileDouble);}
-                        return true;
-                    }
-
-                    @Override
-                    public boolean onQueryTextChange(String s) {
-                        return false;
-                    }
-                });
-
-
-                break;
-            case R.id.filterByTitle:
-                svSearch.setQueryHint("filter by Workout Title");
-
-                break;
-            case R.id.filterByUser:
-                svSearch.setQueryHint("filter by Creator");
-
-                svSearch.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-                    @Override
-                    public boolean onQueryTextSubmit(String s) {
-                        creatorUsername = String.valueOf(svSearch.getQuery());
-                        if(creatorUsername.isEmpty()){
-                            NullUserAlert();
-                        }
-                        else{
-                            QueryByUserCreated(creatorUsername);
-
-                        }
-                        return true;
-                    }
-
-                    @Override
-                    public boolean onQueryTextChange(String s) {
-                        return false;
-                    }
-                });
-
-                break;
-            default:
-                return;
-        }
-
-        // Highlight the selected item has been done by NavigationView
-        menuItem.setChecked(true);
-
-        // Close the navigation drawer
-
-    }
-
-
-    private void QueryByTime(long maxHourLong) {
-        final Workout.Query postTimeQuery = new Workout.Query();
-        postTimeQuery.withUser().getWithinTimeRange(maxHourLong);
-        postTimeQuery.findInBackground(new FindCallback<Workout>() {
-            @Override
-            public void done(List<Workout> objects, ParseException e) {
-                if(e==null){
-
-                // order objects in time order
-                Collections.sort(objects, new Comparator<Workout>() {
-                    @Override
-                    public int compare(Workout o1, Workout o2) {
-                        return o1.compareToTime(o2);
-                    }
-                });
-
-                posts.clear();
-                posts.addAll(objects);
-                adapter.notifyDataSetChanged();
-                rvPosts.scrollToPosition(0);
-                InputMethodManager mgr = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-                assert mgr != null;
-                mgr.hideSoftInputFromWindow(svSearch.getWindowToken(), 0);
-
-                // TODO- scroll to bottom option
-            } else {
-                e.printStackTrace();
-            }
-            }
-        });
-
-
-    }
-
-    private void QueryByCategory(String tagString) {
-        final Workout.Query categoryQuery = new Workout.Query();
-        categoryQuery.getTop().orderByLastCreated().whereEqualTo("eventCategory",tagString).findInBackground(new FindCallback<Workout>() {
-            @Override
-            public void done(List<Workout> objects, ParseException e) {
-                posts.clear();
-
-                posts.addAll(objects);
-                adapter.notifyDataSetChanged();
-
-                rvPosts.scrollToPosition(0);
-                InputMethodManager mgr = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-                assert mgr != null;
-                mgr.hideSoftInputFromWindow(svSearch.getWindowToken(), 0);
-            }
-        });
-
-
-    }
-
-
-    public void QueryByUserCreated(String creatorUsername) {
-//        final Workout.Query creatorQuery = new Workout.Query();
+//    public void selectPopupItem(MenuItem menuItem) {
+//        ivFilterOptions.setImageDrawable(menuItem.getIcon());
+//        svSearch.setSubmitButtonEnabled(true);
 //
 //
-//        ParseUser userObject;
-//        creatorQuery.withUser().createdBy(userObject);
+//        switch (menuItem.getItemId()) {
+//            case R.id.filterByTag:
+//
+//                svSearch.setQueryHint("filter by Category");
+//                showDialog(getView());
+//                svSearch.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+//                    @Override
+//                    public boolean onQueryTextSubmit(String s) {
+////                        tagString = svSearch.getQuery().toString();
+//                        tagString = s;
+//
+//                        // check if category exists
+//                        if(Arrays.asList(categories).contains(tagString)){
+//                            // user has searched an existing category
+//                            QueryByCategory(tagString);
+//                        }
+//                        else{
+//                            CategoryNullOrDoesNotExist();
+//                        }
+//                        return false;
+//                    }
+//
+//                    @Override
+//                    public boolean onQueryTextChange(String s) {
+//                        return false;
+//                    }
+//                });
+//
+//
+//
+//                break;
+//            case R.id.filterByTime:
+//
+//                svSearch.setQueryHint("filter by hours away");
+//                maxHourString = svSearch.getQuery().toString();
+//
+//
+//                svSearch.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+//                    @Override
+//                    public boolean onQueryTextSubmit(String s) {
+//                        if(maxHourString.isEmpty()) {
+//                            NullHourAlert();
+//                        }
+//                        else {
+//                            long maxHourLong = Long.parseLong(maxHourString);
+//                            QueryByTime(maxHourLong);
+//                        }
+//                        return true;
+//                    }
+//
+//                    @Override
+//                    public boolean onQueryTextChange(String s) {
+//                        return false;
+//                    }
+//                });
+//
+//
+//                break;
+//            case R.id.filterByDistance:
+//                svSearch.setQueryHint("filter by number of miles");
+//                svSearch.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+//                    @Override
+//                    public boolean onQueryTextSubmit(String s) {
+//                        maxMileString = s;
+//                        if(maxMileString.isEmpty()){
+//                            maxMileString = "30";
+//                        }
+//                        else{double maxMileDouble = Double.parseDouble(maxMileString);
+//                            QueryByDistance(maxMileDouble);}
+//                        return true;
+//                    }
+//
+//                    @Override
+//                    public boolean onQueryTextChange(String s) {
+//                        return false;
+//                    }
+//                });
+//
+//
+//                break;
+//            case R.id.filterByTitle:
+//                svSearch.setQueryHint("filter by Workout Title");
+//
+//                break;
+//            case R.id.filterByUser:
+//                svSearch.setQueryHint("filter by Creator");
+//
+//                svSearch.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+//                    @Override
+//                    public boolean onQueryTextSubmit(String s) {
+//                        creatorUsername = String.valueOf(svSearch.getQuery());
+//                        if(creatorUsername.isEmpty()){
+//                            NullUserAlert();
+//                        }
+//                        else{
+//                            QueryByUserCreated(creatorUsername);
+//
+//                        }
+//                        return true;
+//                    }
+//
+//                    @Override
+//                    public boolean onQueryTextChange(String s) {
+//                        return false;
+//                    }
+//                });
+//
+//                break;
+//            default:
+//                return;
+//        }
+//
+//        // Highlight the selected item has been done by NavigationView
+//        menuItem.setChecked(true);
+//
+//        // Close the navigation drawer
+//
+//    }
 
-    }
-    public void QueryByDistance(double maxMileNumber) {
 
-        final Workout.Query postDistanceQuery = new Workout.Query();
-
-        currentGeoPoint = ParseUser.getCurrentUser().getParseGeoPoint("currentLocation");
-
-//        postDistanceQuery.withUser().orderByLastCreated().getWithinRange(currentLocation,maxMileNumber);
-
-        postDistanceQuery.withUser().getWithinRange(currentGeoPoint, maxMileNumber).findInBackground(new FindCallback<Workout>() {
-            @Override
-            public void done(List<Workout> objects, ParseException e) {
-                if (e == null) {
-                    Log.d(TAG, Integer.toString(objects.size()));
-                    for (int i = 0; i < objects.size(); i++) {
-//                        Log.d(TAG, "Post [" + i + "] = " + objects.get(i).getDescription()
-//                                + "\nusername: " + objects.get(i).getUser().getUsername());
-                    }
-
-                    // order objects in distance order
-                    Collections.sort(objects, new Comparator<Workout>() {
-                        @Override
-                        public int compare(Workout o1, Workout o2) {
-                            return o1.compareToDistance(o2);
-                        }
-                    });
-
-                    posts.clear();
-
-                    posts.addAll(objects);
-                    adapter.notifyDataSetChanged();
-                    rvPosts.scrollToPosition(0);
-                    InputMethodManager mgr = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-                    assert mgr != null;
-                    mgr.hideSoftInputFromWindow(svSearch.getWindowToken(), 0);
-
-                    // TODO- scroll to bottom option
-                } else {
-                    e.printStackTrace();
-                }
-            }
-        });
-
-
-    }
-
+//    private void QueryByTime(long maxHourLong) {
+//        final Workout.Query postTimeQuery = new Workout.Query();
+//        postTimeQuery.withUser().getWithinTimeRange(maxHourLong);
+//        postTimeQuery.findInBackground(new FindCallback<Workout>() {
+//            @Override
+//            public void done(List<Workout> objects, ParseException e) {
+//                if(e==null){
+//
+//                // order objects in time order
+//                Collections.sort(objects, new Comparator<Workout>() {
+//                    @Override
+//                    public int compare(Workout o1, Workout o2) {
+//                        return o1.compareToTime(o2);
+//                    }
+//                });
+//
+//                posts.clear();
+//                posts.addAll(objects);
+//                adapter.notifyDataSetChanged();
+//                rvPosts.scrollToPosition(0);
+//                InputMethodManager mgr = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+//                assert mgr != null;
+//                mgr.hideSoftInputFromWindow(svSearch.getWindowToken(), 0);
+//
+//                // TODO- scroll to bottom option
+//            } else {
+//                e.printStackTrace();
+//            }
+//            }
+//        });
+//
+//
+//    }
+//
+//    private void QueryByCategory(String tagString) {
+//        final Workout.Query categoryQuery = new Workout.Query();
+//        categoryQuery.getTop().orderByLastCreated().whereEqualTo("eventCategory",tagString).findInBackground(new FindCallback<Workout>() {
+//            @Override
+//            public void done(List<Workout> objects, ParseException e) {
+//                posts.clear();
+//
+//                posts.addAll(objects);
+//                adapter.notifyDataSetChanged();
+//
+//                rvPosts.scrollToPosition(0);
+//                InputMethodManager mgr = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+//                assert mgr != null;
+//                mgr.hideSoftInputFromWindow(svSearch.getWindowToken(), 0);
+//            }
+//        });
+//
+//
+//    }
+//
+//
+//    public void QueryByUserCreated(String creatorUsername) {
+////        final Workout.Query creatorQuery = new Workout.Query();
+////
+////
+////        ParseUser userObject;
+////        creatorQuery.withUser().createdBy(userObject);
+//
+//    }
+//    public void QueryByDistance(double maxMileNumber) {
+//
+//        final Workout.Query postDistanceQuery = new Workout.Query();
+//
+//        currentGeoPoint = ParseUser.getCurrentUser().getParseGeoPoint("currentLocation");
+//
+////        postDistanceQuery.withUser().orderByLastCreated().getWithinRange(currentLocation,maxMileNumber);
+//
+//        postDistanceQuery.withUser().getWithinRange(currentGeoPoint, maxMileNumber).findInBackground(new FindCallback<Workout>() {
+//            @Override
+//            public void done(List<Workout> objects, ParseException e) {
+//                if (e == null) {
+//                    Log.d(TAG, Integer.toString(objects.size()));
+//                    for (int i = 0; i < objects.size(); i++) {
+////                        Log.d(TAG, "Post [" + i + "] = " + objects.get(i).getDescription()
+////                                + "\nusername: " + objects.get(i).getUser().getUsername());
+//                    }
+//
+//                    // order objects in distance order
+//                    Collections.sort(objects, new Comparator<Workout>() {
+//                        @Override
+//                        public int compare(Workout o1, Workout o2) {
+//                            return o1.compareToDistance(o2);
+//                        }
+//                    });
+//
+//                    posts.clear();
+//
+//                    posts.addAll(objects);
+//                    adapter.notifyDataSetChanged();
+//                    rvPosts.scrollToPosition(0);
+//                    InputMethodManager mgr = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+//                    assert mgr != null;
+//                    mgr.hideSoftInputFromWindow(svSearch.getWindowToken(), 0);
+//
+//                    // TODO- scroll to bottom option
+//                } else {
+//                    e.printStackTrace();
+//                }
+//            }
+//        });
+//
+//
+//    }
+//
 
 
     public void loadTopPosts() {
