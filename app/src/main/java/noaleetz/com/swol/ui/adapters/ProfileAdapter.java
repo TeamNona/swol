@@ -15,6 +15,7 @@ import com.parse.ParseException;
 import com.parse.ParseGeoPoint;
 import com.parse.ParseUser;
 
+import java.util.Date;
 import java.util.List;
 
 import butterknife.BindView;
@@ -73,8 +74,8 @@ public class ProfileAdapter extends RecyclerView.Adapter<ProfileAdapter.ViewHold
 
         final Workout post = mposts.get(position);
 
-        final RoundedCornersTransformation roundedCornersTransformation = new RoundedCornersTransformation(15, 15);
-        final RequestOptions requestOptions = RequestOptions.bitmapTransform(roundedCornersTransformation);
+//        final RoundedCornersTransformation roundedCornersTransformation = new RoundedCornersTransformation(15, 15);
+//        final RequestOptions requestOptions = RequestOptions.bitmapTransform(roundedCornersTransformation);
 
         try {
             Glide.with(mcontext)
@@ -88,12 +89,21 @@ public class ProfileAdapter extends RecyclerView.Adapter<ProfileAdapter.ViewHold
 
         // TODO- set icons and text in layout
         String distText = Double.parseDouble(distanceFrom(post.getLocation())) == 1 ? " mile from you" : " miles from you";
-        holder.tvLocation.setText(distanceFrom(post.getLocation()) + distText);
+//        holder.tvLocation.setText(distanceFrom(post.getLocation()) + distText);
         holder.tvTime.setText(post.getTimeUntil());
-        try {
-            holder.tvCreatedBy.setText(post.getUser().fetchIfNeeded().getUsername());
-        } catch (ParseException e) {
-            e.printStackTrace();
+
+//        try {
+//            holder.tvCreatedBy.setText(post.getUser().fetchIfNeeded().getUsername());
+//        } catch (ParseException e) {
+//            e.printStackTrace();
+//        }
+
+        if(post.getCategory().equalsIgnoreCase("High Intensity Interval Training")){
+            holder.tvCategory.setText("HIIT");
+
+        }
+        else{
+            holder.tvCategory.setText(post.getCategory());
         }
 
         // call interface
@@ -134,12 +144,14 @@ public class ProfileAdapter extends RecyclerView.Adapter<ProfileAdapter.ViewHold
         ImageView ivWorkoutImage;
         @BindView(R.id.tvWorkoutTitle)
         TextView tvWorkoutTitle;
-        @BindView(R.id.tvLocation)
-        TextView tvLocation;
+//        @BindView(R.id.tvLocation)
+//        TextView tvLocation;
         @BindView(R.id.tvTime)
         TextView tvTime;
-        @BindView(R.id.tvCreatedBy)
-        TextView tvCreatedBy;
+//        @BindView(R.id.tvCreatedBy)
+//        TextView tvCreatedBy;
+        @BindView(R.id.tvCategory)
+        TextView tvCategory;
 
 
         public ViewHolder(View itemView) {
