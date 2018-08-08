@@ -104,9 +104,9 @@
             android:id="@+id/tvDate"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
             android:layout_marginStart="8dp"
             android:textAlignment="textStart"
+            android:textColor="@android:color/black"
             android:textSize="18sp"
             app:layout_constraintBottom_toBottomOf="@+id/ibDate"
             app:layout_constraintStart_toEndOf="@+id/ibDate"
@@ -117,8 +117,7 @@
             android:id="@+id/tvTime"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:layout_marginStart="8dp"
+            android:layout_marginStart="12dp"
             android:textAlignment="textStart"
             android:textSize="18sp"
             app:layout_constraintBottom_toBottomOf="@+id/ibTime"
@@ -134,7 +133,7 @@
             android:layout_marginEnd="8dp"
             android:layout_marginStart="8dp"
             android:layout_marginTop="20dp"
-            android:src="@android:drawable/ic_menu_camera"
+            android:src="@drawable/ic_add_a_photo_24dp"
             android:visibility="visible"
             app:layout_constraintBottom_toTopOf="@+id/btnPost"
             app:layout_constraintEnd_toEndOf="parent"
@@ -167,10 +166,11 @@
             android:layout_marginEnd="8dp"
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
+            android:background="@color/transparent_white"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/pafEnd"
-            app:srcCompat="@drawable/ic_access_time_black_24dp"
+            app:srcCompat="@drawable/ic_access_time_24dp"
             tools:layout_conversion_absoluteHeight="50dp"
             tools:layout_conversion_absoluteWidth="50dp" />
 
@@ -181,29 +181,32 @@
             android:layout_marginEnd="8dp"
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
+            android:background="@color/transparent_white"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/pafEnd"
-            app:srcCompat="@drawable/ic_date_range_black_24dp"
+            app:srcCompat="@drawable/ic_date_range_24dp"
             tools:layout_conversion_absoluteHeight="50dp"
             tools:layout_conversion_absoluteWidth="50dp" />
 
         <Spinner
             android:id="@+id/spTags"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
             android:spinnerMode="dialog"
-            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="@id/spCategory"
+            app:layout_constraintHorizontal_bias="1.0"
+            app:layout_constraintStart_toStartOf="@id/spCategory"
             app:layout_constraintTop_toBottomOf="@+id/spCategory"
             tools:layout_conversion_absoluteHeight="47dp"
             tools:layout_conversion_absoluteWidth="368dp" />
 
         <Spinner
             android:id="@+id/spCategory"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
@@ -226,7 +229,8 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/spTags"
             tools:layout_conversion_absoluteHeight="48dp"
-            tools:layout_conversion_absoluteWidth="153dp" />
+            tools:layout_conversion_absoluteWidth="368dp"
+            android:textColor="@color/colorPrimaryDark" />
 
         <ProgressBar
             android:id="@+id/pbLoading"
