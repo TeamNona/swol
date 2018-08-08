@@ -7,7 +7,9 @@ import android.app.SearchManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
@@ -35,6 +37,7 @@ import android.widget.SimpleCursorAdapter;
 import android.widget.Toast;
 
 
+import com.facebook.shimmer.ShimmerFrameLayout;
 import com.parse.FindCallback;
 import com.parse.ParseException;
 import com.parse.ParseGeoPoint;
@@ -86,6 +89,8 @@ public class FeedFragment extends Fragment implements CategoriesDialogFragment.C
     android.widget.SearchView svSearch;
     @BindView(R.id.ivFilterOptions)
     ImageView ivFilterOptions;
+    @BindView(R.id.shimmer_view_container)
+    ShimmerFrameLayout mShimmerViewContainer;
 
 //    @BindView(R.id.search_src_text)
 //    android.support.v7.widget.SearchView.SearchAutoComplete categorySearchAutoComplete;
@@ -131,18 +136,6 @@ public class FeedFragment extends Fragment implements CategoriesDialogFragment.C
         return view;
     }
 
-    public void fetchTimelineAsync(int page) {
-
-        loadTopPosts();
-
-        // TODO - refresh stops early
-
-        if (swipeContainer.isRefreshing()) {
-            swipeContainer.setRefreshing(false);
-        }
-
-
-    }
 
 
     @Override
@@ -177,7 +170,11 @@ public class FeedFragment extends Fragment implements CategoriesDialogFragment.C
                 // Your code to refresh the list here.
                 // Make sure you call swipeContainer.setRefreshing(false)
                 // once the network request has completed successfully.
-                fetchTimelineAsync(0);
+                mShimmerViewContainer.setVisibility(View.VISIBLE);
+
+                mShimmerViewContainer.startShimmerAnimation();
+
+                loadTopPosts();
                 svSearch.setQuery("",false);
                 ivFilterOptions.setImageResource(R.drawable.ic_arrow);
 
@@ -511,7 +508,7 @@ public class FeedFragment extends Fragment implements CategoriesDialogFragment.C
 
         postQuery.findInBackground(new FindCallback<Workout>() {
             @Override
-            public void done(List<Workout> objects, ParseException e) {
+            public void done(final List<Workout> objects, ParseException e) {
                 if (e == null) {
                     Log.d(TAG, Integer.toString(objects.size()));
                     for (int i = 0; i < objects.size(); i++) {
@@ -519,8 +516,29 @@ public class FeedFragment extends Fragment implements CategoriesDialogFragment.C
 //                                + "\nusername: " + objects.get(i).getUser().getUsername());
                     }
                     posts.clear();
+
+                    // Stopping Shimmer Effect's animation after data is loaded to ListView
+
+                    final Handler handler = new Handler();
+                    handler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            // Do something after 5s = 5000ms
+                            mShimmerViewContainer.stopShimmerAnimation();
+                            mShimmerViewContainer.setVisibility(View.GONE);
+
+//                            posts.addAll(objects);
+//                            adapter.notifyDataSetChanged();
+                        }
+                    }, 3000);
+
+
                     posts.addAll(objects);
                     adapter.notifyDataSetChanged();
+
+                    if (swipeContainer.isRefreshing()) {
+                        swipeContainer.setRefreshing(false);
+                    }
                 } else {
                     e.printStackTrace();
                 }
@@ -593,6 +611,13 @@ public class FeedFragment extends Fragment implements CategoriesDialogFragment.C
     @Override
     public void onFinishCategoryDialog(String inputText) {
         return;
+    }
+    @Override
+    public void onResume() {
+        super.onResume();
+        mShimmerViewContainer.setVisibility(View.VISIBLE);
+
+        mShimmerViewContainer.startShimmerAnimation();
     }
 
 //    @Override
