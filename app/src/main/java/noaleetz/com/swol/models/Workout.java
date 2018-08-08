@@ -16,6 +16,7 @@ import com.parse.ParseUser;
 import org.json.JSONArray;
 import org.parceler.Parcel;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
@@ -53,6 +54,8 @@ public class Workout extends ParseObject implements ClusterItem {
     private static final String KEY_ADDRESS = "eventAddress";
 
     private static final String KEY_LOCATION_NAME = "eventLocationName";
+    
+    public static enum SortBy { DISTANCE, TIME};
 
     // define setters and getters
 
@@ -280,6 +283,7 @@ public class Workout extends ParseObject implements ClusterItem {
             whereContains(KEY_TAGS, "High Intensity");
             return this;
         }
+
         public Query orderByRange(){
 
 
