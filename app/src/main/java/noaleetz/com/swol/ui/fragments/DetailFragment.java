@@ -159,21 +159,44 @@ public class DetailFragment extends Fragment {
 
         Log.d(TAG, "Tag 1" + workout.get("eventParticipants").toString());
 
-        // Load user avatar
-        try {
-            url = workout.getUser()
-                    .fetchIfNeeded()
-                    .getParseFile("profilePicture")
-                    .getUrl();
-        } catch (ParseException e) {
-            e.printStackTrace();
-            Log.d(TAG, "AvatarImage did not load");
-        }
 
-        Glide.with(DetailFragment.this)
-                .load(url)
-                .apply(requestOptions)
-                .into(ivAvatar);
+
+
+        if (workout.getUser().getParseFile("profilePicture") == null) {
+            Glide.with(DetailFragment.this).load(R.drawable.ic_person)
+                    .apply(RequestOptions.circleCropTransform()
+                            .placeholder(R.drawable.ic_person)
+                            .error(R.drawable.ic_person))
+                    .into(ivAvatar);
+
+
+            Glide.with(DetailFragment.this).load(R.drawable.ic_person)
+                    .apply(RequestOptions.circleCropTransform()
+                            .placeholder(R.drawable.ic_person)
+                            .error(R.drawable.ic_person))
+                    .into(ivAddCommentAvatar);
+        } else {
+            // Load user avatar
+            try {
+                url = workout.getUser()
+                        .fetchIfNeeded()
+                        .getParseFile("profilePicture")
+                        .getUrl();
+            } catch (ParseException e) {
+                e.printStackTrace();
+                Log.d(TAG, "AvatarImage did not load");
+            }
+
+            Glide.with(DetailFragment.this)
+                    .load(url)
+                    .apply(requestOptions)
+                    .into(ivAvatar);
+
+            Glide.with(DetailFragment.this)
+                    .load(url)
+                    .into(ivAddCommentAvatar);
+
+        }
 
         // load workout image
 
@@ -191,22 +214,6 @@ public class DetailFragment extends Fragment {
                 .load(url_post)
                 .apply(requestOptions)
                 .into(ivImage);
-
-        // load AddComment Item avatar and username
-
-        try {
-            url_addComment = ParseUser.getCurrentUser()
-                    .fetchIfNeeded()
-                    .getParseFile("profilePicture")
-                    .getUrl();
-        } catch (ParseException e) {
-            e.printStackTrace();
-            Log.d(TAG, "AvatarImage of current user did not load");
-        }
-
-        Glide.with(DetailFragment.this)
-                .load(url_addComment)
-                .into(ivAddCommentAvatar);
 
         String username = ParseUser.getCurrentUser().getUsername();
         tvUsername.setText(username);
