@@ -32,7 +32,6 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
-import noaleetz.com.swol.CategoriesDialogFragment;
 import noaleetz.com.swol.ui.adapters.FeedAdapter;
 import noaleetz.com.swol.R;
 import noaleetz.com.swol.models.Workout;
@@ -41,7 +40,9 @@ import noaleetz.com.swol.models.Workout;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class FeedFragment extends Fragment implements CategoriesDialogFragment.CategoryDialogListener,View.OnClickListener{
+public class FeedFragment extends Fragment implements View.OnClickListener{
+
+    public static final String ARG_REVEAL_SETTINGS = "arg_reveal_settings";
 
     private static final String TAG = "FeedFragmentTAG";
 //    CategoriesDialogFragment.CategoryDialogListener listener = new CategoriesDialogFragment.CategoryDialogListener() {
@@ -109,9 +110,8 @@ public class FeedFragment extends Fragment implements CategoriesDialogFragment.C
     private String creatorUsername;
     String[] categoryItems;
     boolean[] checkedItems;
-    boolean[] checkedSorts;
+//    boolean[] checkedSorts;
     ArrayList<Integer> mUserItems = new ArrayList<>();
-    public static int Max;
 
 
 
@@ -132,6 +132,9 @@ public class FeedFragment extends Fragment implements CategoriesDialogFragment.C
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_feed, container, false);
+
+
+
         unbinder = ButterKnife.bind(this, view);
 
 
@@ -210,6 +213,7 @@ public class FeedFragment extends Fragment implements CategoriesDialogFragment.C
 
 
 
+
         swipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
@@ -277,6 +281,8 @@ public class FeedFragment extends Fragment implements CategoriesDialogFragment.C
     @Override
     public void onClick(View view) {
 
+
+
         switch(view.getId()){
 
             case R.id.tvDistanceFilter:
@@ -343,6 +349,7 @@ public class FeedFragment extends Fragment implements CategoriesDialogFragment.C
                                     }
                                 });
                 AlertDialog alertDialog = alertDialogBuilder.create();
+                alertDialog.getWindow().getAttributes().windowAnimations = R.style.DialogAnimation_2;
                 alertDialog.show();
 
 
@@ -417,6 +424,8 @@ public class FeedFragment extends Fragment implements CategoriesDialogFragment.C
                                     }
                                 });
                 AlertDialog TalertDialog = TalertDialogBuilder.create();
+                TalertDialog.getWindow().getAttributes().windowAnimations = R.style.DialogAnimation_2;
+
                 TalertDialog.show();
 
                 break;
@@ -479,6 +488,8 @@ public class FeedFragment extends Fragment implements CategoriesDialogFragment.C
                 });
 
                 AlertDialog mSortDialog = sortBuilder.create();
+                mSortDialog.getWindow().getAttributes().windowAnimations = R.style.DialogAnimation_2;
+
                 mSortDialog.show();
 
 
@@ -509,6 +520,7 @@ public class FeedFragment extends Fragment implements CategoriesDialogFragment.C
                     public void onClick(DialogInterface dialogInterface, int which) {
                         String item = "";
                         for(int i=0;i<mUserItems.size();i++){
+                            TypesToQueryBy = new ArrayList<>();
                             TypesToQueryBy.add(categoryItems[mUserItems.get(i)]);
 
                             Log.d(TAG,"added to type query array:" + categoryItems[mUserItems.get(i)]);
@@ -557,6 +569,8 @@ public class FeedFragment extends Fragment implements CategoriesDialogFragment.C
                     }
                 });
                 AlertDialog mDialog = mTypeBuilder.create();
+                mDialog.getWindow().getAttributes().windowAnimations = R.style.DialogAnimation_2;
+
                 mDialog.show();
 
                 break;
@@ -873,98 +887,6 @@ public class FeedFragment extends Fragment implements CategoriesDialogFragment.C
         unbinder.unbind();
     }
 
-    public void CategoryNullOrDoesNotExist(){
-        AlertDialog alertDialog = new AlertDialog.Builder(
-                this.getContext()).create();
 
-        if(tagString.isEmpty()){
-            alertDialog.setTitle("Please Enter a Category!");
-            alertDialog.setIcon(R.drawable.ic_pencil);
-        }
-        else{
-            // category entered but doesn't exist
-            alertDialog.setTitle("Oops!");
-            alertDialog.setMessage("This workout category doesn't exist yet");
-            alertDialog.setIcon(R.drawable.ic_fitness_center_black_24dp);
-        }
-
-        // Setting OK Button
-        alertDialog.setButton("OK", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int which) {
-                // code here to execute after dialog closed
-            }
-        });
-        alertDialog.show();
-
-    }
-    public void NullHourAlert(){
-        AlertDialog alertDialog = new AlertDialog.Builder(
-                this.getContext()).create();
-        alertDialog.setTitle("Wait a second!");
-        alertDialog.setMessage("Please enter a limit for how many hours away your available workouts should be");
-        alertDialog.setIcon(R.drawable.ic_pencil);
-        alertDialog.setButton("OK", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int which) {
-                // Write your code here to execute after dialog closed
-//                            Toast.makeText(getApplicationContext(), "You clicked on OK", Toast.LENGTH_SHORT).show();
-            }
-        });
-        // Showing Alert Message
-        alertDialog.show();
-    }
-    public void NullUserAlert(){
-        AlertDialog alertDialog = new AlertDialog.Builder(
-                this.getContext()).create();
-        alertDialog.setTitle("Wait a second!");
-        alertDialog.setMessage("Please enter a user to filter available workouts");
-        alertDialog.setIcon(R.drawable.ic_pencil);
-        alertDialog.setButton("OK", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int which) {
-                // Write your code here to execute after dialog closed
-//                            Toast.makeText(getApplicationContext(), "You clicked on OK", Toast.LENGTH_SHORT).show();
-            }
-        });
-        // Showing Alert Message
-        alertDialog.show();
-    }
-
-    @Override
-    public void onFinishCategoryDialog(String inputText) {
-        return;
-    }
-
-
-
-//    @Override
-//    public void onFinishCategoryDialog(String inputText) {
-//
-//
-//    }
-//    @Override
-//    public void onResume() {
-//        super.onResume();
-////        MainActivity mainActivity = (MainActivity) getActivity();
-////        mainActivity.getLocation();
-
-
-
-//    }
-
-
-
-
-
-
-
-//    @Override
-//    public void onMethodCallback(int position) {
-//        // TODO- define actions to occur upon callback
-//        // Now, switch fragments via regular listener process
-//
-//
-//
-//
-//
-//    }
 }
 

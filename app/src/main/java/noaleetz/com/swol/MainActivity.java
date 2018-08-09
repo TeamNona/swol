@@ -285,7 +285,7 @@ public class MainActivity extends AppCompatActivity implements AddFragment.NewMa
             case R.id.nav_feed_fragment:
                 fab.show();
 
-                fragmentManager.beginTransaction().replace(R.id.flContent, new FeedFragment()).addToBackStack(null).commit();
+                fragmentManager.beginTransaction().setCustomAnimations(R.anim.enter_from_left, R.anim.exit_to_right, R.anim.enter_from_right, R.anim.exit_to_left).replace(R.id.flContent, new FeedFragment()).addToBackStack(null).commit();
                 break;
             case R.id.nav_map_fragment:
                 fab.show();
@@ -295,7 +295,7 @@ public class MainActivity extends AppCompatActivity implements AddFragment.NewMa
                     throw new IllegalStateException("You forgot to supply a Google Maps API key");
                 }
                 // TODO: pass through the current location here so we don't have to find it twice
-                fragmentManager.beginTransaction().replace(R.id.flContent, mapFragment).addToBackStack("map").commit();
+                fragmentManager.beginTransaction().setCustomAnimations(R.anim.enter_from_left, R.anim.exit_to_right, R.anim.enter_from_right, R.anim.exit_to_left).replace(R.id.flContent, mapFragment).addToBackStack("map").commit();
                 break;
             case R.id.nav_profile_fragment:
                 fab.hide();
@@ -357,6 +357,8 @@ public class MainActivity extends AppCompatActivity implements AddFragment.NewMa
         bundle.putParcelable("workout",workout);
         detailFragment.setArguments(bundle);
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.setCustomAnimations(R.anim.enter_from_left, R.anim.exit_to_right, R.anim.enter_from_right, R.anim.exit_to_left);
+
         transaction.replace(R.id.flContent,detailFragment).addToBackStack(null);
         transaction.commit();
     }
@@ -368,11 +370,12 @@ public class MainActivity extends AppCompatActivity implements AddFragment.NewMa
         bundle.putParcelable("user", user);
         profileFragment.setArguments(bundle);
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.setCustomAnimations(R.anim.enter_from_left, R.anim.exit_to_right, R.anim.enter_from_right, R.anim.exit_to_left);
+
         transaction.replace(R.id.flContent, profileFragment).addToBackStack(null);
         transaction.commit();
     }
 
-// TODO - BEFORE PUSHING- ran an error when not static- should change back to static?
 
     public static boolean isFacebookUser(ParseUser user) {
         if (user.get("authData") == null) return false;

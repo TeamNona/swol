@@ -706,6 +706,7 @@ public class AddFragment extends Fragment implements AdapterView.OnItemSelectedL
         time.setArguments(args);
 
         time.setCallBack(ontime);
+
         time.show(getChildFragmentManager(), "Time Picker");
     }
 
