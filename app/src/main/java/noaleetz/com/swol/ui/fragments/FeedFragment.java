@@ -16,6 +16,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ImageView;
 import android.widget.NumberPicker;
 import android.widget.RelativeLayout;
@@ -153,7 +154,7 @@ public class FeedFragment extends Fragment implements View.OnClickListener{
         milesAway=null;
         timeAwayNumber=null;
         timeAwayUnit=null;
-        sortBy=null;
+        sortBy="";
 
         ivApply.setVisibility(View.INVISIBLE);
 
@@ -196,6 +197,7 @@ public class FeedFragment extends Fragment implements View.OnClickListener{
             @Override
             public void onClick(View view) {
                 // apply the filters selected by user
+
                 filter(TypesToQueryBy,milesAway,timeAwayNumber,sortBy);
 
             }
@@ -480,7 +482,7 @@ public class FeedFragment extends Fragment implements View.OnClickListener{
                         sortBy = selectedSort;
                         dialogInterface.dismiss();
 
-                        if(sortBy == null) {
+                        if(sortBy.equals("")) {
                             sortBy = "Time";
 
                         }
@@ -506,7 +508,7 @@ public class FeedFragment extends Fragment implements View.OnClickListener{
                 sortBuilder.setNegativeButton("Clear", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                            sortBy = null;
+                            sortBy = "";
                             dialogInterface.dismiss();
 
                         tvSortByFilter.setText("Sort By");
@@ -663,6 +665,7 @@ public class FeedFragment extends Fragment implements View.OnClickListener{
                         return 0;
                     }
                 };
+
         }
 
         query.findInBackground(new FindCallback<Workout>() {
@@ -671,6 +674,13 @@ public class FeedFragment extends Fragment implements View.OnClickListener{
 
                 if (e == null) {
                     Collections.sort(objects, comparator);
+
+                    posts.clear();
+
+                    posts.addAll(objects);
+                    adapter.notifyDataSetChanged();
+                    rvPosts.scrollToPosition(0);
+
 
 
 

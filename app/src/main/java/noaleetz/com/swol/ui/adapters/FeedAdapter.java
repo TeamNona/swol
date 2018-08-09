@@ -118,7 +118,7 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
         holder.tvCategory.setText(post.getCategory());
         }
 
-        holder.tvCategory.setBackground(getBackgroundDrawable(post.getCategory()));
+//        holder.tvCategory.setBackground(getBackgroundDrawable(post.getCategory()));
 
         // call interface
         holder.itemView.setOnClickListener(new View.OnClickListener() {
