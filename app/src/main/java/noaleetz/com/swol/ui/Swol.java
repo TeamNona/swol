@@ -39,9 +39,9 @@ public class Swol extends Application {
         // clientKey is not needed unless explicitly configured
         // any network interceptors must be added with the Configuration Builder given this syntax
         final Parse.Configuration configuration = new Parse.Configuration.Builder(this)
-                .applicationId("swol-master")
-                .clientKey("PupPupPuppies")
-                .server("http://teamnona-swol.herokuapp.com/parse")
+                .applicationId("swol")
+                .clientKey("TeamNonaRules")
+                .server("http://swol-teamnona.herokuapp.com/parse")
                 .build();
         ParseObject.registerSubclass(Workout.class);
         ParseObject.registerSubclass(Comments.class);

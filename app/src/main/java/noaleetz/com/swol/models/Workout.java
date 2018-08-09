@@ -13,11 +13,10 @@ import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
 
-import org.joda.time.DateTime;
-import org.joda.time.Hours;
 import org.json.JSONArray;
 import org.parceler.Parcel;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
@@ -40,8 +39,6 @@ public class Workout extends ParseObject implements ClusterItem {
 
     private static final String KEY_USER = "user";
 
-
-
     private static final String KEY_PARTICIPANTS = "eventParticipants";
 
     private static final String KEY_TAGS = "tags";
@@ -53,6 +50,12 @@ public class Workout extends ParseObject implements ClusterItem {
     private static final String KEY_POLYLINE = "polyline";
 
     private static final String KEY_POLYLINE_BOUNDS = "polylineBounds";
+
+    private static final String KEY_ADDRESS = "eventAddress";
+
+    private static final String KEY_LOCATION_NAME = "eventLocationName";
+    
+    public static enum SortBy { DISTANCE, TIME};
 
     // define setters and getters
 
@@ -139,6 +142,22 @@ public class Workout extends ParseObject implements ClusterItem {
     public void setPolylineBounds(String bounds) { put(KEY_POLYLINE_BOUNDS, bounds); }
 
     public String getPolylineBounds() {return getString(KEY_POLYLINE_BOUNDS); }
+
+    public String getAddress() {
+        return getString(KEY_ADDRESS);
+    }
+
+    public void setAddress(String address) {
+        put(KEY_ADDRESS, address);
+    }
+
+    public String getLocationName() {
+        return getString(KEY_LOCATION_NAME);
+    }
+
+    public void setLocationName(String locationName) {
+        put(KEY_LOCATION_NAME, locationName);
+    }
 
     @Override
     public Date getCreatedAt() {
@@ -264,6 +283,7 @@ public class Workout extends ParseObject implements ClusterItem {
             whereContains(KEY_TAGS, "High Intensity");
             return this;
         }
+
         public Query orderByRange(){
 
 

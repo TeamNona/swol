@@ -30,7 +30,7 @@
 
         <activity
             android:name="com.parse.ui.login.ParseLoginActivity"
-            android:theme="@style/Theme.AppCompat"
+            android:theme="@style/Theme.AppCompat.NoActionBar"
             android:label="@string/app_name"
             android:launchMode="singleTop">
             <meta-data
@@ -67,7 +67,9 @@
              You can define the keys for the debug and release targets in src/debug/ and src/release/. 
         -->
 
-        <activity android:name=".ui.activities.DispatchActivity"/>
+        <activity
+            android:name=".ui.activities.DispatchActivity"
+            android:theme="@style/Theme.AppCompat.NoActionBar"/>
 
         <activity android:name=".ui.activities.SplashActivity">
             <intent-filter>

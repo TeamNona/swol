@@ -25,8 +25,11 @@ import android.widget.TextView;
 import com.parse.FindCallback;
 import com.parse.ParseException;
 import com.parse.ParseGeoPoint;
+import com.parse.ParseUser;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import butterknife.BindView;
@@ -45,16 +48,7 @@ public class FeedFragment extends Fragment implements View.OnClickListener{
     public static final String ARG_REVEAL_SETTINGS = "arg_reveal_settings";
 
     private static final String TAG = "FeedFragmentTAG";
-//    CategoriesDialogFragment.CategoryDialogListener listener = new CategoriesDialogFragment.CategoryDialogListener() {
-//        @Override
-//        public void onFinishCategoryDialog(String inputText) {
-//            svSearch.setQuery(inputText,false);
-//        }
-//    };
 
-
-
-//    private AdapterView.OnItemSelectedListener listener;
 
 
     @BindView(R.id.rvPosts)
@@ -73,15 +67,6 @@ public class FeedFragment extends Fragment implements View.OnClickListener{
     ImageView ivApply;
 
 
-
-
-//    @BindView(R.id.svSearch)
-//    android.widget.SearchView svSearch;
-//    @BindView(R.id.ivFilterOptions)
-//    ImageView ivFilterOptions;
-
-//    @BindView(R.id.search_src_text)
-//    android.support.v7.widget.SearchView.SearchAutoComplete categorySearchAutoComplete;
     private FeedAdapter adapter;
     private List<Workout> posts;
     private Unbinder unbinder;
@@ -107,10 +92,8 @@ public class FeedFragment extends Fragment implements View.OnClickListener{
 
 
     String[] categories;
-    private String creatorUsername;
     String[] categoryItems;
     boolean[] checkedItems;
-//    boolean[] checkedSorts;
     ArrayList<Integer> mUserItems = new ArrayList<>();
 
 
@@ -313,6 +296,7 @@ public class FeedFragment extends Fragment implements View.OnClickListener{
                 alertDialogBuilder.setView(relative);
                 alertDialogBuilder
 
+
                         .setPositiveButton("Ok",
                                 new DialogInterface.OnClickListener() {
                                     public void onClick(DialogInterface dialog,
@@ -352,7 +336,26 @@ public class FeedFragment extends Fragment implements View.OnClickListener{
                 alertDialog.getWindow().getAttributes().windowAnimations = R.style.DialogAnimation_2;
                 alertDialog.show();
 
-
+//                svSearch.setQueryHint("filter by Category");
+//                showDialog(getView());
+//                svSearch.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+//                    @Override
+//                    public boolean onQueryTextSubmit(String s) {
+////                        tagString = svSearch.getQuery().toString();
+//                        tagString = s;
+//
+//                        // check if category exists
+//                        if(Arrays.asList(categories).contains(tagString)){
+//                            // user has searched an existing category
+//                            filter(Arrays.asList(new String[]{tagString}), null, null, null);
+//                        }
+//                        else{
+//                            CategoryNullOrDoesNotExist();
+//                        }
+//                        return false;
+//                    }
+//
+//
 
 
                 break;
@@ -400,7 +403,18 @@ public class FeedFragment extends Fragment implements View.OnClickListener{
                                         timeAwayUnit = unitTypePicker.getDisplayedValues()[unitTypePicker.getValue() - 1];
                                         timeAwayNumber = timeValuePicker.getValue();
                                         ivApply.setVisibility(View.VISIBLE);
-
+//                svSearch.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+//                    @Override
+//                    public boolean onQueryTextSubmit(String s) {
+//                        if(s.isEmpty()) {
+//                            NullHourAlert();
+//                        }
+//                        else {
+//                            int maxHour = Integer.parseInt(s);
+//                            filter(null, null, maxHour, "time");
+//                        }
+//                        return true;
+//                    }
 
 
 
@@ -429,6 +443,22 @@ public class FeedFragment extends Fragment implements View.OnClickListener{
                 TalertDialog.show();
 
                 break;
+
+//            case R.id.filterByDistance:
+//                svSearch.setQueryHint("filter by number of miles");
+//                svSearch.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+//                    @Override
+//                    public boolean onQueryTextSubmit(String s) {
+//                        maxMileString = s;
+//                        if(maxMileString.isEmpty()){
+//                            maxMileString = "30";
+//                        }
+//                        else{
+//                            double maxMileDouble = Double.parseDouble(maxMileString);
+//                            filter(null, maxMileDouble, null, "distance");
+//                        }
+//                        return true;
+//                    }
 
 
             case R.id.tvSortByFilter:
@@ -469,6 +499,15 @@ public class FeedFragment extends Fragment implements View.OnClickListener{
                         ivApply.setVisibility(View.VISIBLE);
 
 
+//                svSearch.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+//                    @Override
+//                    public boolean onQueryTextSubmit(String s) {
+//                        creatorUsername = String.valueOf(svSearch.getQuery());
+//                        if(creatorUsername.isEmpty()){
+//                            NullUserAlert();
+//                        }
+//                        return true;
+//                    }
 
 
 
@@ -579,46 +618,69 @@ public class FeedFragment extends Fragment implements View.OnClickListener{
 
     }
 
-//    public static void setForceShowIcon(PopupMenu popupMenu) {
-//        try {
-//            Field[] fields = popupMenu.getClass().getDeclaredFields();
-//            for (Field field : fields) {
-//                if ("mPopup".equals(field.getName())) {
-//                    field.setAccessible(true);
-//                    Object menuPopupHelper = field.get(popupMenu);
-//                    Class<?> classPopupHelper = Class.forName(menuPopupHelper
-//                            .getClass().getName());
-//                    Method setForceIcons = classPopupHelper.getMethod(
-//                            "setForceShowIcon", boolean.class);
-//                    setForceIcons.invoke(menuPopupHelper, true);
-//                    break;
-//                }
-//            }
-//        } catch (Throwable e) {
-//            e.printStackTrace();
-//        }
-//    }
-
-//    public void showTypeDialog(View view) {
-//
-//        FragmentManager manager = getFragmentManager();
-//
-//
-//        CategoriesDialogFragment dialog = new CategoriesDialogFragment();
-////        CategoriesDialogFragment.setTargetFragment(FeedFragment.this, 300);
-////        dialog.setCallBack(listener);
-//
-//        dialog.show(manager,"dialog");
-//
-//    }
 
 
+    /**
+     * This function does all of the filtering/sorting for you. This should be run when you click the "apply" wherever you have the filters to apply them.
+     * @param categories This is an ArrayList of Strings that represents all of the categories
+     *                   that the user would like to see. If the user does not want to filter
+     *                   by category, simply pass in null for this value.
+     * @param milesAway This is a double that represents the distance radius that should be
+     *                  included in the filter. If the user does not want to filter by miles
+     *                  away, simply pass in null for this value.
+     * @param timeAway This is an integer that represents the time frame that you would like
+     *                 the workouts to be filtered by. If the user does not want to filter by
+     *                 time, simply pass in null for this value.
+     * @param sortBy This is a string that represents how the user wants the information to be
+     *               sorted. Only accepted values: "time", "distance". If it is anything else
+     *               (including null), the list will not be sorted.
+     */
+    public void filter(List<String> categories, Double milesAway, Integer timeAway, final String sortBy) {
 
+        final Workout.Query query = new Workout.Query().withUser();
 
+        currentGeoPoint = ParseUser.getCurrentUser().getParseGeoPoint("currentLocation");
 
+        if (categories != null) for (String category : categories) query.whereEqualTo("eventCategory", category);
 
+        if (milesAway != null) query.getWithinRange(currentGeoPoint, milesAway);
 
+        if (timeAway != null) query.getWithinTimeRange(timeAway);
 
+        final Comparator<Workout> comparator;
+
+        switch (sortBy) {
+            case "time":
+                comparator = new Comparator<Workout>() {
+                    @Override
+                    public int compare(Workout o1, Workout o2) {
+                        return o1.compareToTime(o2);
+                    }
+                };
+                break;
+            case "distance":
+                comparator = new Comparator<Workout>() {
+                    @Override
+                    public int compare(Workout o1, Workout o2) {
+                        return o1.compareToDistance(o2);
+                    }
+                };
+                break;
+            default:
+                comparator = new Comparator<Workout>() {
+                    @Override
+                    public int compare(Workout o1, Workout o2) {
+                        return 0;
+                    }
+                };
+        }
+
+        query.findInBackground(new FindCallback<Workout>() {
+            @Override
+            public void done(List<Workout> objects, ParseException e) {
+
+                if (e == null) {
+                    Collections.sort(objects, comparator);
 
 //    public void selectPopupItem(MenuItem menuItem) {
 //        ivFilterOptions.setImageDrawable(menuItem.getIcon());
@@ -854,6 +916,13 @@ public class FeedFragment extends Fragment implements View.OnClickListener{
 //    }
 //
 
+                } else {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+    }
 
     public void loadTopPosts() {
 

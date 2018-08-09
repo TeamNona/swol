@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<ScrollView android:id="@+id/svProfile"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/svProfile"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:layout_marginBottom="8dp"
@@ -8,11 +11,9 @@
     android:layout_marginStart="8dp"
     app:layout_constraintBottom_toBottomOf="parent"
     app:layout_constraintEnd_toEndOf="parent"
-    app:layout_constraintStart_toStartOf="parent"
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    app:layout_constraintStart_toStartOf="parent">
 
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
@@ -20,142 +21,205 @@
         tools:context=".ui.fragments.AddFragment">
 
 
-    <EditText
-        android:id="@+id/etName"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
-        android:layout_below="@+id/ivMedia"
-        android:ems="10"
-        android:hint="Workout Name"
-        android:inputType="textPersonName" />
-
-    <fragment
-        android:id="@+id/pafEnd"
-        android:name="com.google.android.gms.location.places.ui.SupportPlaceAutocompleteFragment"
-        android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:layout_alignParentStart="true"
-        android:layout_below="@+id/etDescription" />
-
-    <Button
-        android:id="@+id/btnCapture"
-        android:layout_width="75dp"
-        android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
-        android:layout_below="@+id/btnUpload"
-        android:text="Capture Photo"
-        android:textAllCaps="false"
-        android:visibility="invisible" />
-
-    <Button
-        android:id="@+id/btnUpload"
-        android:layout_width="73dp"
-        android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentTop="true"
-        android:layout_marginTop="75dp"
-        android:text="Upload Photo"
-        android:textAllCaps="false"
-        android:visibility="invisible" />
-
-
-        <LinearLayout
+        <EditText
+            android:id="@+id/etName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical" />
+            android:layout_marginEnd="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:ems="10"
+            android:hint="Workout Name"
+            android:inputType="textPersonName"
+            android:maxLength="64"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/ivMedia"
+            tools:layout_conversion_absoluteHeight="46dp"
+            tools:layout_conversion_absoluteWidth="368dp" />
 
-    <TextView
-        android:id="@+id/tvDate"
-        android:layout_width="125dp"
-        android:layout_height="wrap_content"
-        android:layout_alignTop="@+id/tvTime"
-        android:layout_toEndOf="@+id/ibDate"
-        android:textAlignment="textStart"
-        android:textSize="18sp" />
+        <fragment
+            android:id="@+id/pafEnd"
+            android:name="com.google.android.gms.location.places.ui.SupportPlaceAutocompleteFragment"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/pafBegin"
+            tools:layout_conversion_absoluteHeight="60dp"
+            tools:layout_conversion_absoluteWidth="368dp"
+            android:visibility="gone" />
 
-    <TextView
-        android:id="@+id/tvTime"
-        android:layout_width="126dp"
-        android:layout_height="wrap_content"
-        android:layout_alignBottom="@+id/ibTime"
-        android:layout_toEndOf="@+id/ibTime"
-        android:textAlignment="textStart"
-        android:textSize="18sp" />
-
-    <ImageView
-        android:id="@+id/ivMedia"
-        android:layout_width="200dp"
-        android:layout_height="200dp"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="20dp"
-        android:src="@android:drawable/ic_menu_camera"
-        android:visibility="visible" />
-
-    <EditText
-        android:id="@+id/etDescription"
-        android:layout_width="match_parent"
-        android:layout_height="78dp"
-        android:layout_alignParentStart="true"
-        android:layout_below="@+id/etName"
-        android:ems="10"
-        android:hint="Describe your workout. Target audience? Intensity evels?"
-        android:inputType="textMultiLine" />
-
-    <ImageButton
-        android:id="@+id/ibTime"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:layout_below="@+id/pafEnd"
-        android:layout_toEndOf="@+id/tvDate"
-        app:srcCompat="@drawable/ic_access_time_black_24dp" />
-
-    <ImageButton
-        android:id="@+id/ibDate"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:layout_alignParentStart="true"
-        android:layout_below="@+id/pafEnd"
-        app:srcCompat="@drawable/ic_date_range_black_24dp" />
-
-    <Spinner
-        android:id="@+id/spTags"
-        android:layout_width="match_parent"
-        android:layout_height="47dp"
-        android:layout_alignParentStart="true"
-        android:layout_below="@+id/spCategory"
-        android:spinnerMode="dialog" />
-
-    <Spinner
-        android:id="@+id/spCategory"
-        android:layout_width="match_parent"
-        android:layout_height="44dp"
-        android:layout_alignParentStart="true"
-        android:layout_below="@+id/tvDate"
-        android:spinnerMode="dialog" />
-
-    <Button
-        android:id="@+id/btnPost"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/spTags"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="20dp"
-        android:text="Share your workout."
-        android:textAllCaps="false" />
-
-    <ProgressBar
-        android:id="@+id/pbLoading"
-        style="@style/Widget.AppCompat.ProgressBar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_below="@+id/btnPost"
-        android:layout_centerHorizontal="true"
-        android:indeterminate="true"
-        android:visibility="invisible" />
+        <fragment
+            android:id="@+id/pafBegin"
+            android:name="com.google.android.gms.location.places.ui.SupportPlaceAutocompleteFragment"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/etDescription"
+            tools:layout_conversion_absoluteHeight="60dp"
+            tools:layout_conversion_absoluteWidth="368dp" />
 
 
-</RelativeLayout>
+        <TextView
+            android:id="@+id/tvDate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:textAlignment="textStart"
+            android:textColor="@android:color/black"
+            android:textSize="18sp"
+            app:layout_constraintBottom_toBottomOf="@+id/ibDate"
+            app:layout_constraintStart_toEndOf="@+id/ibDate"
+            tools:layout_conversion_absoluteHeight="25dp"
+            tools:layout_conversion_absoluteWidth="125dp" />
+
+        <TextView
+            android:id="@+id/tvTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:textAlignment="textStart"
+            android:textColor="@android:color/black"
+            android:textSize="18sp"
+            app:layout_constraintBottom_toBottomOf="@+id/ibTime"
+            app:layout_constraintStart_toEndOf="@+id/ibTime"
+            tools:layout_conversion_absoluteHeight="25dp"
+            tools:layout_conversion_absoluteWidth="126dp" />
+
+        <ImageView
+            android:id="@+id/ivMedia"
+            android:layout_width="200dp"
+            android:layout_height="200dp"
+            android:layout_marginBottom="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="20dp"
+            android:src="@drawable/ic_add_a_photo_24dp"
+            android:visibility="visible"
+            app:layout_constraintBottom_toTopOf="@+id/btnPost"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.0"
+            tools:layout_conversion_absoluteHeight="200dp"
+            tools:layout_conversion_absoluteWidth="200dp" />
+
+        <EditText
+            android:id="@+id/etDescription"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:ems="10"
+            android:hint="Describe your workout. Target audience? Intensity evels?"
+            android:inputType="textMultiLine"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/etName"
+            tools:layout_conversion_absoluteHeight="78dp"
+            tools:layout_conversion_absoluteWidth="368dp" />
+
+        <ImageButton
+            android:id="@+id/ibTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:background="@color/transparent_white"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/pafEnd"
+            app:srcCompat="@drawable/ic_access_time_24dp"
+            tools:layout_conversion_absoluteHeight="50dp"
+            tools:layout_conversion_absoluteWidth="50dp" />
+
+        <ImageButton
+            android:id="@+id/ibDate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:background="@color/transparent_white"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/pafEnd"
+            app:srcCompat="@drawable/ic_date_range_24dp"
+            tools:layout_conversion_absoluteHeight="50dp"
+            tools:layout_conversion_absoluteWidth="50dp" />
+
+        <Spinner
+            android:id="@+id/spTags"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:spinnerMode="dialog"
+            app:layout_constraintEnd_toEndOf="@id/spCategory"
+            app:layout_constraintHorizontal_bias="1.0"
+            app:layout_constraintStart_toStartOf="@id/spCategory"
+            app:layout_constraintTop_toBottomOf="@+id/spCategory"
+            tools:layout_conversion_absoluteHeight="47dp"
+            tools:layout_conversion_absoluteWidth="368dp" />
+
+        <Spinner
+            android:id="@+id/spCategory"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:spinnerMode="dialog"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/ibDate"
+            tools:layout_conversion_absoluteHeight="44dp"
+            tools:layout_conversion_absoluteWidth="368dp" />
+
+        <Button
+            android:id="@+id/btnPost"
+            style="@style/ParseLoginUI.Button.ThirdPartyLogin"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:background="@color/colorPrimaryDark"
+            android:text="Share your workout."
+            android:textAllCaps="false"
+            android:textColor="@android:color/black"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/spTags"
+            tools:layout_conversion_absoluteHeight="48dp"
+            tools:layout_conversion_absoluteWidth="368dp" />
+
+        <ProgressBar
+            android:id="@+id/pbLoading"
+            style="@style/Widget.AppCompat.ProgressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="56dp"
+            android:indeterminate="true"
+            android:visibility="invisible"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/spTags"
+            tools:layout_conversion_absoluteHeight="48dp"
+            tools:layout_conversion_absoluteWidth="48dp" />
+
+
+    </android.support.constraint.ConstraintLayout>
 </ScrollView>

@@ -8,7 +8,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -22,7 +21,6 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
-import com.parse.CountCallback;
 import com.parse.FindCallback;
 import com.parse.GetCallback;
 import com.parse.ParseException;
@@ -59,21 +57,19 @@ public class DetailFragment extends Fragment {
 
 
     private static final String TAG = "TAGDetailFragment";
-    @BindView(R.id.btBack)
-    ImageView btBack;
     @BindView(R.id.tvWorkoutTitle)
     TextView tvWorkoutTitle;
     @BindView(R.id.tvBeginsIn)
     TextView tvBeginsIn;
     @BindView(R.id.ivTimeIcon)
     ImageView ivTimeIcon;
-    @BindView(R.id.ivAvatar)
+    @BindView(R.id.ivDetailAvatar)
     ImageView ivAvatar;
     @BindView(R.id.tvFullName)
     TextView tvFullName;
     @BindView(R.id.tvUsername)
     TextView tvUsername;
-    @BindView(R.id.ivImage)
+    @BindView(R.id.ivDetailImage)
     ImageView ivImage;
     @BindView(R.id.rvParticipants)
     RecyclerView rvParticipants;
@@ -81,12 +77,6 @@ public class DetailFragment extends Fragment {
     RecyclerView rvComments;
     @BindView(R.id.tvDescription)
     TextView tvDescription;
-    @BindView(R.id.tvLikesCt)
-    TextView tvLikesCt;
-    @BindView(R.id.ivHeartIcon)
-    ImageView ivHeartIcon;
-    @BindView(R.id.ivCommentIcon)
-    ImageView ivCommentIcon;
     @BindView(R.id.ivJoin)
     ImageView ivJoin;
 
@@ -156,7 +146,7 @@ public class DetailFragment extends Fragment {
         tvBeginsIn.setText(workout.getTimeUntil());
         try {
             tvFullName.setText(workout.getUser().fetchIfNeeded().getString("name"));
-            tvUsername.setText(workout.getUser().fetchIfNeeded().getUsername());
+            tvUsername.setText("@" + workout.getUser().fetchIfNeeded().getUsername());
         } catch (ParseException e) {
             e.printStackTrace();
         }
@@ -218,12 +208,14 @@ public class DetailFragment extends Fragment {
                 .load(url_addComment)
                 .into(ivAddCommentAvatar);
 
-        tvUsername.setText(ParseUser.getCurrentUser().getUsername());
+        String username = ParseUser.getCurrentUser().getUsername();
+        tvUsername.setText(username);
+        tvCommentUsername.setText(username);
 
 
         // get Likes Count from Parse
 
-        getLikesCount(workout);
+//        getLikesCount(workout);
 
 
         // set up and populate data for  participant adapter
@@ -232,7 +224,7 @@ public class DetailFragment extends Fragment {
 
         this.participantAdapter = new ParticipantAdapter(participants);
         Log.d(TAG, "finished setting up participant adapter");
-        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext());
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false);
         rvParticipants.setLayoutManager(linearLayoutManager);
         rvParticipants.setAdapter(participantAdapter);
 
@@ -244,7 +236,7 @@ public class DetailFragment extends Fragment {
         comments = new ArrayList<>();
         this.commentAdapter = new CommentAdapter(comments);
         Log.d(TAG, "finished setting up comment adapter");
-        LinearLayoutManager commentLinearLayoutManager = new LinearLayoutManager(getContext());
+        LinearLayoutManager commentLinearLayoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, true);
         rvComments.setLayoutManager(commentLinearLayoutManager);
         rvComments.setAdapter(commentAdapter);
 
@@ -254,20 +246,6 @@ public class DetailFragment extends Fragment {
             public void onClick(View view) {
                 addComment();
             }
-        });
-
-
-        btBack.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-                FragmentManager fm = getActivity().getSupportFragmentManager();
-                fab.show();
-                fm.popBackStackImmediate();
-
-            }
-
-
         });
 
         ivJoin.setOnClickListener(new View.OnClickListener() {
@@ -358,27 +336,27 @@ public class DetailFragment extends Fragment {
         return false;
     }
 
-    public void getLikesCount(Workout workout_event) {
-        String workoutId = workout_event.getObjectId();
-
-        ParseQuery<ParseObject> query = ParseQuery.getQuery("Likes");
-
-        query.whereEqualTo("likedPost", workout_event).countInBackground(new CountCallback() {
-            @Override
-            public void done(int count, ParseException e) {
-                if (e == null) {
-                    // no error
-                    Log.d(TAG, "like count:" + String.valueOf(count));
-                    tvLikesCt.setText(String.valueOf(count));
-
-                } else {
-                    // something went wrong
-                    Log.d(TAG, "unable to find like count");
-                    tvLikesCt.setText(String.valueOf(0));
-                }
-            }
-        });
-    }
+//    public void getLikesCount(Workout workout_event) {
+//        String workoutId = workout_event.getObjectId();
+//
+//        ParseQuery<ParseObject> query = ParseQuery.getQuery("Likes");
+//
+//        query.whereEqualTo("likedPost", workout_event).countInBackground(new CountCallback() {
+//            @Override
+//            public void done(int count, ParseException e) {
+//                if (e == null) {
+//                    // no error
+//                    Log.d(TAG, "like count:" + String.valueOf(count));
+//                    tvLikesCt.setText(String.valueOf(count));
+//
+//                } else {
+//                    // something went wrong
+//                    Log.d(TAG, "unable to find like count");
+//                    tvLikesCt.setText(String.valueOf(0));
+//                }
+//            }
+//        });
+//    }
 
     // get comment data
 
@@ -451,7 +429,7 @@ public class DetailFragment extends Fragment {
             public void done(ParseException e) {
                 comments.clear();
                 loadComments(workout);
-                rvComments.scrollToPosition(0);
+                rvComments.scrollToPosition(comments.size() - 1);
                 tvComment.setText("");
 
             }
