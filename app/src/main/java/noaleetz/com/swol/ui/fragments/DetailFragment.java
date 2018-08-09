@@ -281,6 +281,8 @@ public class DetailFragment extends Fragment {
                         }
                     });
                     // Showing Alert Message
+                    alertDialog.getWindow().getAttributes().windowAnimations = R.style.DialogAnimation_2;
+
                     alertDialog.show();
 
                 } else {
