@@ -27,6 +27,7 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ScrollView;
+import android.widget.TableLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -51,6 +52,7 @@ import butterknife.ButterKnife;
 import butterknife.Unbinder;
 import noaleetz.com.swol.models.User;
 import noaleetz.com.swol.ui.activities.MainActivity;
+import noaleetz.com.swol.ui.adapters.CommentAdapter;
 import noaleetz.com.swol.ui.adapters.ProfileAdapter;
 import noaleetz.com.swol.R;
 import noaleetz.com.swol.models.Workout;
@@ -91,6 +93,9 @@ public class ProfileFragment extends Fragment{
 
     @BindView(R.id.svProfile)
     ScrollView svProfile;
+
+//    @BindView(R.id.tbWorkout)
+//    TableLayout tbWorkout;
 
     ParseUser user;
 
@@ -153,10 +158,11 @@ public class ProfileFragment extends Fragment{
 
 
         // now the recycler view stuff
+        rvPosts.setNestedScrollingEnabled(false);
         posts = new ArrayList<>();
-        adapter = new ProfileAdapter(posts);
+        this.adapter = new ProfileAdapter(posts);
         Log.d("ProfileFragment", "Finished setting the adapter");
-        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false);
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false);
         rvPosts.setLayoutManager(linearLayoutManager);
         rvPosts.setAdapter(adapter);
         loadTopPosts();

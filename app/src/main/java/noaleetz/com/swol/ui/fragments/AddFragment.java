@@ -1,9 +1,11 @@
 package noaleetz.com.swol.ui.fragments;
 
 
+import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -94,10 +96,6 @@ public class AddFragment extends Fragment implements AdapterView.OnItemSelectedL
     // Bind variables
     @BindView(R.id.btnPost)
     Button postButton;
-    @BindView(R.id.btnUpload)
-    Button upload;
-    @BindView(R.id.btnCapture)
-    Button capture;
     /*@BindView(R.id.btnUploadVideo)
     Button uploadVideo;
     @BindView(R.id.btnCaptureVideo)
@@ -171,6 +169,10 @@ public class AddFragment extends Fragment implements AdapterView.OnItemSelectedL
     private Unbinder unbinder;
 
     File resizedFile;
+
+    // event location variables
+    String locationName;
+    String locationAddress;
 
 
     public AddFragment() {
@@ -366,6 +368,9 @@ public class AddFragment extends Fragment implements AdapterView.OnItemSelectedL
                 postLocation.setLatitude(latlng.latitude);
                 postLocation.setLongitude(latlng.longitude);
 
+                locationAddress = place.getAddress().toString();
+                locationName = place.getName().toString();
+
                 Log.i(TAG, "startLocation: " + place.getName());
             }
 
@@ -406,36 +411,71 @@ public class AddFragment extends Fragment implements AdapterView.OnItemSelectedL
         post.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                upload.setVisibility(VISIBLE);
-                capture.setVisibility(VISIBLE);
+//                upload.setVisibility(VISIBLE);
+//                capture.setVisibility(VISIBLE);
+                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+
+                //builder.setTitle("Change Profile Photo");
+
+
+                // Set up the buttons
+                builder.setNeutralButton("Upload", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                        if (ActivityCompat.checkSelfPermission(getActivity(), READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+
+                            // Permission is not granted, so request permission
+                            ActivityCompat.requestPermissions(getActivity(),
+                                    new String[]{READ_EXTERNAL_STORAGE},
+                                    AddFragment.MY_PERMISSIONS_REQUEST_GALLERY);
+                        } else {
+                            // Permission has already been granted
+                            Intent i = new Intent(
+                                    Intent.ACTION_PICK,
+                                    android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+
+                            startActivityForResult(i, AddFragment.RESULT_LOAD_IMAGE);
+                        }
+
+                    }
+                });
+                builder.setNegativeButton("Capture", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        if (ActivityCompat.checkSelfPermission(getActivity(), CAMERA) != PackageManager.PERMISSION_GRANTED) {
+
+                            // Permission is not granted, so request permission
+                            ActivityCompat.requestPermissions(getActivity(),
+                                    new String[]{CAMERA},
+                                    AddFragment.MY_PERMISSIONS_REQUEST_CAMERA);
+                        } else {
+                            // Permission has already been granted
+                            onLaunchCamera();
+                        }
+                    }
+                });
+
+                builder.show();
             }
         });
 
-        // allow user to upload and post a photo for the workout
-        upload.setOnClickListener(new View.OnClickListener() {
+        post.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
-            public void onClick(View view) {
-                upload.setVisibility(INVISIBLE);
-                capture.setVisibility(INVISIBLE);
-
-                if (ActivityCompat.checkSelfPermission(getActivity(), READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-
-                    // Permission is not granted, so request permission
-                    ActivityCompat.requestPermissions(getActivity(),
-                            new String[]{READ_EXTERNAL_STORAGE},
-                            MY_PERMISSIONS_REQUEST_GALLERY);
-                } else {
-                    // Permission has already been granted
-                    Intent i = new Intent(
-                            Intent.ACTION_PICK,
-                            android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-
-                    startActivityForResult(i, RESULT_LOAD_IMAGE);
-                }
-
-
+            public boolean onLongClick(View view) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                builder.setNegativeButton("Rotate", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        rotateNneka(bitmap, 90);
+                        post.setImageBitmap(bitmap);
+                    }
+                });
+                builder.show();
+                return true;
             }
         });
+
 
         /*
         // allow user to upload a video for the workout
@@ -450,26 +490,6 @@ public class AddFragment extends Fragment implements AdapterView.OnItemSelectedL
             }
         });
         */
-
-        // allow user to take a photo for the workout directly from the app
-        capture.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                upload.setVisibility(INVISIBLE);
-                capture.setVisibility(INVISIBLE);
-                if (ActivityCompat.checkSelfPermission(getActivity(), CAMERA) != PackageManager.PERMISSION_GRANTED) {
-
-                    // Permission is not granted, so request permission
-                    ActivityCompat.requestPermissions(getActivity(),
-                            new String[]{CAMERA},
-                            MY_PERMISSIONS_REQUEST_CAMERA);
-                } else {
-                    // Permission has already been granted
-                    onLaunchCamera();
-                }
-
-            }
-        });
 
         /*
         captureVideo.setOnClickListener(new View.OnClickListener() {
@@ -504,7 +524,7 @@ public class AddFragment extends Fragment implements AdapterView.OnItemSelectedL
 
                 final String category;
                 if (workoutCategoryPrompt.equals((String) workoutCategory.getSelectedItem())) {
-                    Toast.makeText(getActivity(), "Please categorize your workout", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getActivity(), "Please categorize your workout.", Toast.LENGTH_SHORT).show();
 
                     // hide the progress bar
                     pbPost.setVisibility(ProgressBar.INVISIBLE);
@@ -543,6 +563,9 @@ public class AddFragment extends Fragment implements AdapterView.OnItemSelectedL
                 // get final location, with default location as current location
                 if (postLocation == null) {
                     postLocation = currentUser.getParseGeoPoint("currentLocation");
+
+                    locationAddress = "Facebook Dexter";
+                    locationName = "1101 Dexter Ave N, Seattle, WA 98109";
                 }
                 final ParseGeoPoint location = postLocation;
 
@@ -593,21 +616,21 @@ public class AddFragment extends Fragment implements AdapterView.OnItemSelectedL
                                 e.printStackTrace();
                             }
                             Log.d("PolylineRequest", "Polyline: " + polyline);
-                            createNewWorkout(category, name, description, date, location, media, participants, tags, polyline, boundsString);
+                            createNewWorkout(category, name, description, date, location, locationAddress, locationName, media, participants, tags, polyline, boundsString);
                         }
                     }, new Response.ErrorListener() {
                         @Override
                         public void onErrorResponse(VolleyError error) {
                             error.printStackTrace();
                             Log.d("PolylineRequest", "Request failed :(");
-                            createNewWorkout(category, name, description, date, location, media, participants, tags, null, null);
+                            createNewWorkout(category, name, description, date, location, locationAddress, locationName, media, participants, tags, null, null);
                         }
                     });
 
                     queue.add(polylineRequest);
 
                 } else {
-                    createNewWorkout(category, name, description, date, location, media, participants, tags, null, null);
+                    createNewWorkout(category, name, description, date, location, locationAddress, locationName, media, participants, tags, null, null);
                 }
 
             }
@@ -617,7 +640,7 @@ public class AddFragment extends Fragment implements AdapterView.OnItemSelectedL
     }
 
 
-    private void createNewWorkout(String category, String name, String description, Date time, ParseGeoPoint location, ParseFile media, JSONArray participants, JSONArray tags, String polyline, String boundsString) {
+    private void createNewWorkout(String category, String name, String description, Date time, ParseGeoPoint location, String address, String addressName, ParseFile media, JSONArray participants, JSONArray tags, String polyline, String boundsString) {
 
 
         // create a new event
@@ -628,7 +651,9 @@ public class AddFragment extends Fragment implements AdapterView.OnItemSelectedL
         workout.setName(name);
         workout.setDescription(description);
         workout.setLocation(location);
-        workout.setMedia(media);
+        workout.setAddress(address);
+        workout.setLocationName(locationName);
+        //workout.setMedia(media);
         workout.setParticipants(participants);
         workout.setTime(time);
         workout.setTags(tags);
@@ -993,6 +1018,31 @@ public class AddFragment extends Fragment implements AdapterView.OnItemSelectedL
         mtx.postRotate(degree);
 
         return Bitmap.createBitmap(bitmap, 0, 0, w, h, mtx, true);
+    }
+
+    public static Bitmap rotateNneka(Bitmap bitmap, int degree) {
+        // Rotate Bitmap
+        Matrix matrix = new Matrix();
+        matrix.setRotate(180);
+        //matrix.setRotate(degree, (float) bitmap.getWidth() / 2, (float) bitmap.getHeight() / 2);
+        Bitmap rotatedBitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+
+        return rotatedBitmap;
+    }
+
+
+    public Bitmap rotateBitmap(Bitmap original, float degrees) {
+        int width = original.getWidth();
+        int height = original.getHeight();
+
+        Matrix matrix = new Matrix();
+        matrix.preRotate(degrees);
+
+        Bitmap rotatedBitmap = Bitmap.createBitmap(original, 0, 0, width, height, matrix, true);
+        Canvas canvas = new Canvas(rotatedBitmap);
+        canvas.drawBitmap(original, 5.0f, 0.0f, null);
+
+        return rotatedBitmap;
     }
 
     // this interface is so that when a new workout is created, it can send it to the map to update it
