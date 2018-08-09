@@ -208,26 +208,6 @@ public class DetailFragment extends Fragment {
                 .apply(requestOptions)
                 .into(ivImage);
 
-<<<<<<< HEAD
-        // load AddComment Item avatar and username
-
-        try {
-            url_addComment = ParseUser.getCurrentUser()
-                    .fetchIfNeeded()
-                    .getParseFile("profilePicture")
-                    .getUrl();
-        } catch (ParseException e) {
-            e.printStackTrace();
-            Log.d(TAG, "AvatarImage of current user did not load");
-        }
-
-        Glide.with(DetailFragment.this)
-                .load(url_addComment)
-                .into(ivAddCommentAvatar);
-        String username = ParseUser.getCurrentUser().getUsername();
-        tvUsername.setText(username);
-        tvCommentUsername.setText(username);
-
 
         // get Likes Count from Parse
 
@@ -318,17 +298,6 @@ public class DetailFragment extends Fragment {
                                     }
                                 }
                             });
-                    // Setting OK Button
-                    alertDialog.setButton("OK", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            // Write your code here to execute after dialog closed
-//                            Toast.makeText(getApplicationContext(), "You clicked on OK", Toast.LENGTH_SHORT).show();
-                        }
-                    });
-                    // Showing Alert Message
-                    alertDialog.getWindow().getAttributes().windowAnimations = R.style.DialogAnimation_2;
-
-                    alertDialog.show();
 
                 } else {
                     participant_list.put(UserIdToAdd);
