@@ -54,10 +54,12 @@ import noaleetz.com.swol.R;
 import noaleetz.com.swol.models.Workout;
 import noaleetz.com.swol.ui.adapters.ClusterWindowAdapter;
 import noaleetz.com.swol.ui.fragments.AddFragment;
+import noaleetz.com.swol.ui.fragments.CompletedWorkoutsFragment;
 import noaleetz.com.swol.ui.fragments.DetailFragment;
 import noaleetz.com.swol.ui.fragments.FeedFragment;
 import noaleetz.com.swol.ui.fragments.MapFragment;
 import noaleetz.com.swol.ui.fragments.ProfileFragment;
+import noaleetz.com.swol.ui.fragments.UpcomingWorkoutsFragment;
 
 public class MainActivity extends AppCompatActivity implements AddFragment.NewMapItemListener, ClusterWindowAdapter.itemClickListener {
 
@@ -460,9 +462,17 @@ public class MainActivity extends AppCompatActivity implements AddFragment.NewMa
 
     public void changeToProfileFragment(ParseUser user) {
         ProfileFragment profileFragment = new ProfileFragment();
+        UpcomingWorkoutsFragment upcomingWorkoutsFragment = new UpcomingWorkoutsFragment();
+        CompletedWorkoutsFragment completedWorkoutsFragment = new CompletedWorkoutsFragment();
         Bundle bundle = new Bundle();
         bundle.putParcelable("user", user);
+//        Bundle bundle1 = new Bundle();
+//        bundle1.putParcelable("user", user);
+//        Bundle bundle2 = new Bundle();
+//        bundle2.putParcelable("user", user);
         profileFragment.setArguments(bundle);
+//        upcomingWorkoutsFragment.setArguments(bundle1);
+//        completedWorkoutsFragment.setArguments(bundle2);
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.flContent, profileFragment).addToBackStack(null);
         transaction.commit();

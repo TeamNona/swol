@@ -653,7 +653,7 @@ public class AddFragment extends Fragment implements AdapterView.OnItemSelectedL
         workout.setLocation(location);
         workout.setAddress(address);
         workout.setLocationName(locationName);
-        //workout.setMedia(media);
+        workout.setMedia(media);
         workout.setParticipants(participants);
         workout.setTime(time);
         workout.setTags(tags);
