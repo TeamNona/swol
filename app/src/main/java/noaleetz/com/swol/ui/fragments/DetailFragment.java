@@ -2,12 +2,15 @@ package noaleetz.com.swol.ui.fragments;
 
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
+import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -61,12 +64,10 @@ public class DetailFragment extends Fragment {
     TextView tvWorkoutTitle;
     @BindView(R.id.tvBeginsIn)
     TextView tvBeginsIn;
-    @BindView(R.id.ivTimeIcon)
-    ImageView ivTimeIcon;
+    @BindView(R.id.tvDetailLocation)
+    TextView tvDetailLocation;
     @BindView(R.id.ivDetailAvatar)
     ImageView ivAvatar;
-    @BindView(R.id.tvFullName)
-    TextView tvFullName;
     @BindView(R.id.tvUsername)
     TextView tvUsername;
     @BindView(R.id.ivDetailImage)
@@ -77,9 +78,10 @@ public class DetailFragment extends Fragment {
     RecyclerView rvComments;
     @BindView(R.id.tvDescription)
     TextView tvDescription;
-    @BindView(R.id.ivJoin)
-    ImageView ivJoin;
-
+    @BindView(R.id.cvJoin)
+    CardView cvJoin;
+    @BindView(R.id.tvJoin)
+    TextView tvJoin;
     // Add Comment holders
     @BindView(R.id.tvCommentUsername)
     TextView tvCommentUsername;
@@ -108,6 +110,9 @@ public class DetailFragment extends Fragment {
     public JSONArray participant_list;
     public JSONArray comment_list;
 
+    private GoToMapListener listener;
+    private Context context;
+
 
     public DetailFragment() {
         // Required empty public constructor
@@ -122,6 +127,12 @@ public class DetailFragment extends Fragment {
 
         View view = inflater.inflate(R.layout.fragment_detail, container, false);
         unbinder = ButterKnife.bind(this, view);
+        context = getContext();
+        if (context instanceof GoToMapListener) {
+            listener = (GoToMapListener) context;
+        } else {
+            throw new ClassCastException(context.toString() + " must implement DetailFragment.GoToMapListener");
+        }
 
 
         // Inflate the layout for this fragment
@@ -145,7 +156,6 @@ public class DetailFragment extends Fragment {
         tvWorkoutTitle.setText(workout.getName());
         tvBeginsIn.setText(workout.getTimeUntil());
         try {
-            tvFullName.setText(workout.getUser().fetchIfNeeded().getString("name"));
             tvUsername.setText("@" + workout.getUser().fetchIfNeeded().getUsername());
         } catch (ParseException e) {
             e.printStackTrace();
@@ -165,15 +175,21 @@ public class DetailFragment extends Fragment {
                     .fetchIfNeeded()
                     .getParseFile("profilePicture")
                     .getUrl();
+
+            Glide.with(DetailFragment.this)
+                    .load(url)
+                    .apply(requestOptions)
+                    .into(ivAvatar);
+
+            Glide.with(DetailFragment.this)
+                    .load(url)
+                    .into(ivAddCommentAvatar);
         } catch (ParseException e) {
             e.printStackTrace();
             Log.d(TAG, "AvatarImage did not load");
+        } catch (NullPointerException e) {
+            Log.d(TAG, "there is no profile picture in the parse server, using the temp one");
         }
-
-        Glide.with(DetailFragment.this)
-                .load(url)
-                .apply(requestOptions)
-                .into(ivAvatar);
 
         // load workout image
 
@@ -191,26 +207,6 @@ public class DetailFragment extends Fragment {
                 .load(url_post)
                 .apply(requestOptions)
                 .into(ivImage);
-
-        // load AddComment Item avatar and username
-
-        try {
-            url_addComment = ParseUser.getCurrentUser()
-                    .fetchIfNeeded()
-                    .getParseFile("profilePicture")
-                    .getUrl();
-        } catch (ParseException e) {
-            e.printStackTrace();
-            Log.d(TAG, "AvatarImage of current user did not load");
-        }
-
-        Glide.with(DetailFragment.this)
-                .load(url_addComment)
-                .into(ivAddCommentAvatar);
-
-        String username = ParseUser.getCurrentUser().getUsername();
-        tvUsername.setText(username);
-        tvCommentUsername.setText(username);
 
 
         // get Likes Count from Parse
@@ -241,6 +237,15 @@ public class DetailFragment extends Fragment {
         rvComments.setAdapter(commentAdapter);
 
 
+        if (didUserJoin(participant_list, ParseUser.getCurrentUser().getObjectId())) {
+            tvJoin.setText("Leave Workout");
+            cvJoin.setCardBackgroundColor(21);
+        } else {
+            tvJoin.setText("Join Workout");
+            cvJoin.setCardBackgroundColor(121);
+        }
+
+
         btAddComment.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -248,7 +253,11 @@ public class DetailFragment extends Fragment {
             }
         });
 
-        ivJoin.setOnClickListener(new View.OnClickListener() {
+        // if the current user created the workout then they can't leave
+        if (workout.getUser().getObjectId().equals(ParseUser.getCurrentUser().getObjectId())) cvJoin.setVisibility(View.GONE);
+        else cvJoin.setVisibility(View.VISIBLE);
+
+        cvJoin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 // user clicks join workout to add themselves to participant list
@@ -260,28 +269,35 @@ public class DetailFragment extends Fragment {
                 if (didUserJoin(participant_list, UserIdToAdd)) {
                     Log.d(TAG, "is user there?" + String.valueOf(participant_list.equals(UserIdToAdd)));
 
+                    ParseQuery<ParseObject> update_query = ParseQuery.getQuery("exerciseEvent");
 
-                    AlertDialog alertDialog = new AlertDialog.Builder(
-                            view.getContext()).create();
-
-                    //Setting Dialog Title
-                    alertDialog.setTitle("You Have Already Joined!");
-
-                    // Setting Dialog Message
-//                    alertDialog.setMessage("You Have Already Joined!");
-
-                    // Setting Icon to Dialog
-                    alertDialog.setIcon(R.drawable.ic_noun_add_group_782192);
-
-                    // Setting OK Button
-                    alertDialog.setButton("OK", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            // Write your code here to execute after dialog closed
-//                            Toast.makeText(getApplicationContext(), "You clicked on OK", Toast.LENGTH_SHORT).show();
+                    // find self
+                    int self = 0;
+                    for (int i = 0; i < participant_list.length(); i++) {
+                        try {
+                            if (participant_list.get(i).equals(ParseUser.getCurrentUser().getObjectId())) self = i;
+                        } catch (JSONException e) {
+                            e.printStackTrace();
                         }
-                    });
-                    // Showing Alert Message
-                    alertDialog.show();
+                    }
+
+                    if (self != 0) participant_list.remove(self);
+
+                            // Retrieve the object by id
+                            update_query.getInBackground(workout.getObjectId(), new GetCallback<ParseObject>() {
+                                public void done(ParseObject exerciseEvent, ParseException e) {
+                                    if (e == null) {
+                                        // Now let's update with some new data
+
+                                        exerciseEvent.put("eventParticipants", participant_list);
+                                        exerciseEvent.saveInBackground();
+                                        participantAdapter.notifyDataSetChanged();
+                                        loadParticipants(participant_list);
+                                        tvJoin.setText("Join Workout");
+
+                                    }
+                                }
+                            });
 
                 } else {
                     participant_list.put(UserIdToAdd);
@@ -300,7 +316,9 @@ public class DetailFragment extends Fragment {
                                 exerciseEvent.saveInBackground();
                                 participantAdapter.notifyDataSetChanged();
                                 loadParticipants(participant_list);
-                                Toast.makeText(getApplicationContext(), "Workout Joined", Toast.LENGTH_SHORT).show();
+
+
+                                tvJoin.setText("Leave Workout");
 
                             }
                         }
@@ -310,6 +328,13 @@ public class DetailFragment extends Fragment {
                 }
 
 
+            }
+        });
+
+        tvDetailLocation.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                listener.onLinkClicked(workout);
             }
         });
     }
@@ -433,8 +458,6 @@ public class DetailFragment extends Fragment {
             }
         });
 
-//        comments.add(0,newComment);
-//        commentAdapter.notifyItemChanged(0);
 
 
     }
@@ -485,8 +508,6 @@ public class DetailFragment extends Fragment {
         }
         Log.d(TAG, "participant list of objects" + participant_list);
 
-//        participants.clear();
-//        participants.addAll(participant_list);
     }
 
 
@@ -494,6 +515,10 @@ public class DetailFragment extends Fragment {
     public void onDestroyView() {
         super.onDestroyView();
         unbinder.unbind();
+    }
+
+    public interface GoToMapListener {
+        public void onLinkClicked(Workout workout);
     }
 
 

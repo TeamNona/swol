@@ -576,7 +576,7 @@ public class AddFragment extends Fragment implements AdapterView.OnItemSelectedL
 
                 if (bitmap == null) {
                     Drawable drawable = getResources().getDrawable(R.drawable.ic_directions_run_black_24dp);
-                    bitmap = convertToBitmap(drawable, 10, 10);
+                    bitmap = convertToBitmap(drawable, MapFragment.convertDpToPixel(100), MapFragment.convertDpToPixel(100));
                 }
 
                 final ParseFile media;
@@ -730,6 +730,7 @@ public class AddFragment extends Fragment implements AdapterView.OnItemSelectedL
         time.setArguments(args);
 
         time.setCallBack(ontime);
+
         time.show(getChildFragmentManager(), "Time Picker");
     }
 
@@ -821,7 +822,7 @@ public class AddFragment extends Fragment implements AdapterView.OnItemSelectedL
 
             try {
                 bitmap = MediaStore.Images.Media.getBitmap(getActivity().getApplicationContext().getContentResolver(), selectedImage);
-                bitmap = getResizedBitmap(bitmap, MapFragment.convertDpToPixel(100), MapFragment.convertDpToPixel(100));
+                bitmap = BitmapScaler.scaleToFitWidth(bitmap, MapFragment.convertDpToPixel(100));
                 post.setImageBitmap(bitmap);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -866,7 +867,7 @@ public class AddFragment extends Fragment implements AdapterView.OnItemSelectedL
 //                // Load the taken image into a preview
                 // RESIZE BITMAP, see section below
                 // Load the taken image into a preview
-                bitmap = getResizedBitmap(bitmap, MapFragment.convertDpToPixel(100), MapFragment.convertDpToPixel(100));
+                bitmap = BitmapScaler.scaleToFitWidth(bitmap, MapFragment.convertDpToPixel(100));
                 post.setImageBitmap(bitmap);
             } else { // Result was a failure
                 Toast.makeText(getActivity(), "Picture wasn't taken!", Toast.LENGTH_SHORT).show();

@@ -59,7 +59,7 @@ import noaleetz.com.swol.ui.fragments.FeedFragment;
 import noaleetz.com.swol.ui.fragments.MapFragment;
 import noaleetz.com.swol.ui.fragments.ProfileFragment;
 
-public class MainActivity extends AppCompatActivity implements AddFragment.NewMapItemListener, ClusterWindowAdapter.itemClickListener {
+public class MainActivity extends AppCompatActivity implements AddFragment.NewMapItemListener, ClusterWindowAdapter.itemClickListener, DetailFragment.GoToMapListener {
 
     private static final String TAG = "LOCATION";
     private ActionBarDrawerToggle drawerToggle;
@@ -586,7 +586,15 @@ public class MainActivity extends AppCompatActivity implements AddFragment.NewMa
 
     }
 
-//    public static class BitmapScaler
+    @Override
+    public void onLinkClicked(Workout workout) {
+        mapFragment.setClickedClusterItem(workout);
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.flContent, mapFragment).addToBackStack("map");
+        transaction.commit();
+    }
+
+    //    public static class BitmapScaler
 //    {
 //        // scale and keep aspect ratio
 //        public static Bitmap scaleToFitWidth(Bitmap b, int width)

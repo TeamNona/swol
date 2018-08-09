@@ -64,15 +64,17 @@ public class ParticipantAdapter extends RecyclerView.Adapter<ParticipantAdapter.
                     .fetchIfNeeded()
                     .getParseFile("profilePicture")
                     .getUrl();
+
+            Glide.with(mcontext)
+                    .load(url)
+                    .apply(requestOptions)
+                    .into(holder.ivAvatar);
         } catch (ParseException e) {
             e.printStackTrace();
             Log.d(TAG, "AvatarImage did not load");
+        } catch (NullPointerException e) {
+            Log.d(TAG, "there is no profile picture in the parse server, using the temp one");
         }
-
-        Glide.with(mcontext)
-                .load(url)
-                .apply(requestOptions)
-                .into(holder.ivAvatar);
 
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
