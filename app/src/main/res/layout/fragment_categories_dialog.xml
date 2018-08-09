@@ -20,6 +20,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="475dp"
                 android:isScrollContainer="true"
+                android:choiceMode="multipleChoice"
                 android:scrollbarAlwaysDrawVerticalTrack="true"></ListView>
         </LinearLayout>
     </ScrollView>
