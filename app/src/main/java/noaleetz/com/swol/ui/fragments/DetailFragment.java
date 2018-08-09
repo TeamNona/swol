@@ -208,26 +208,6 @@ public class DetailFragment extends Fragment {
                 .apply(requestOptions)
                 .into(ivImage);
 
-        // load AddComment Item avatar and username
-
-        try {
-            url_addComment = ParseUser.getCurrentUser()
-                    .fetchIfNeeded()
-                    .getParseFile("profilePicture")
-                    .getUrl();
-        } catch (ParseException e) {
-            e.printStackTrace();
-            Log.d(TAG, "AvatarImage of current user did not load");
-        }
-
-        Glide.with(DetailFragment.this)
-                .load(url_addComment)
-                .into(ivAddCommentAvatar);
-        String username = ParseUser.getCurrentUser().getUsername();
-        tvUsername.setText(username);
-        tvCommentUsername.setText(username);
-
-
         // get Likes Count from Parse
 
 //        getLikesCount(workout);

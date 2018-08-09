@@ -580,14 +580,13 @@ public class AddFragment extends Fragment implements AdapterView.OnItemSelectedL
                 }
 
                 final ParseFile media;
-                //media = new ParseFile(resizedFile);
                 media = conversionBitmapParseFile(bitmap);
                 media.saveInBackground(new SaveCallback() {
                     public void done(ParseException e) {
                         if (null == e) {
-                            Toast.makeText(getActivity(), "Picture post saved", Toast.LENGTH_SHORT).show();
+                            Log.i("Saving Image", "Image was saved");
                         } else {
-                            Toast.makeText(getActivity(), "Picture post not saved", Toast.LENGTH_SHORT).show();
+                            Log.i("Saving Image", "Image was not saved");
                         }
                     }
                 });
@@ -653,7 +652,7 @@ public class AddFragment extends Fragment implements AdapterView.OnItemSelectedL
         workout.setLocation(location);
         workout.setAddress(address);
         workout.setLocationName(locationName);
-        //workout.setMedia(media);
+        workout.setMedia(media);
         workout.setParticipants(participants);
         workout.setTime(time);
         workout.setTags(tags);
