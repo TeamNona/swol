@@ -1,57 +1,32 @@
 package noaleetz.com.swol.ui.fragments;
 
 
-import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.SearchManager;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
-import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.view.menu.MenuBuilder;
-import android.support.v7.view.menu.MenuPopupHelper;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.InputMethodManager;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.AutoCompleteTextView;
 import android.widget.ImageView;
 import android.widget.NumberPicker;
-import android.widget.PopupMenu;
 import android.widget.RelativeLayout;
-import android.widget.SearchView;
-import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
-import android.widget.Toast;
 
 
-import com.github.stephenvinouze.materialnumberpickercore.MaterialNumberPicker;
 import com.parse.FindCallback;
 import com.parse.ParseException;
 import com.parse.ParseGeoPoint;
-import com.parse.ParseUser;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import butterknife.BindView;
@@ -61,9 +36,6 @@ import noaleetz.com.swol.CategoriesDialogFragment;
 import noaleetz.com.swol.ui.adapters.FeedAdapter;
 import noaleetz.com.swol.R;
 import noaleetz.com.swol.models.Workout;
-
-import static android.content.Context.SEARCH_SERVICE;
-import static android.support.v4.content.ContextCompat.getSystemService;
 
 
 /**
@@ -96,6 +68,8 @@ public class FeedFragment extends Fragment implements CategoriesDialogFragment.C
     TextView tvSortByFilter;
     @BindView(R.id.tvTypeFilter)
     TextView tvTypeFilter;
+    @BindView(R.id.ivApply)
+    ImageView ivApply;
 
 
 
@@ -124,8 +98,8 @@ public class FeedFragment extends Fragment implements CategoriesDialogFragment.C
     // to pass into query
 
     ArrayList<String> TypesToQueryBy = new ArrayList<>();
-    double milesAway;
-    int timeAwayNumber;
+    Double milesAway;
+    Integer timeAwayNumber;
     String timeAwayUnit;
     String sortBy;
 
@@ -169,14 +143,36 @@ public class FeedFragment extends Fragment implements CategoriesDialogFragment.C
 
         loadTopPosts();
 
-        // TODO - refresh stops early
-
         if (swipeContainer.isRefreshing()) {
             swipeContainer.setRefreshing(false);
         }
 
 
     }
+
+    public void FilterUIDefaultState(){
+        tvDistanceFilter.setText("Distance");
+        tvDistanceFilter.setBackground(getResources().getDrawable(R.drawable.rect_grey));
+
+        tvTimeFilter.setText("Time");
+        tvTimeFilter.setBackground(getResources().getDrawable(R.drawable.rect_grey));
+
+        tvSortByFilter.setText("Sort By");
+        tvSortByFilter.setBackground(getResources().getDrawable(R.drawable.rect_grey));
+
+        tvTypeFilter.setText("Categories");
+        tvTypeFilter.setBackground(getResources().getDrawable(R.drawable.rect_grey));
+
+        TypesToQueryBy=null;
+        milesAway=null;
+        timeAwayNumber=null;
+        timeAwayUnit=null;
+        sortBy=null;
+
+        ivApply.setVisibility(View.INVISIBLE);
+
+    }
+
 
 
     @Override
@@ -210,6 +206,8 @@ public class FeedFragment extends Fragment implements CategoriesDialogFragment.C
         tvTimeFilter.setOnClickListener(this);
         tvTypeFilter.setOnClickListener(this);
 
+        FilterUIDefaultState();
+
 
 
         swipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
@@ -218,6 +216,8 @@ public class FeedFragment extends Fragment implements CategoriesDialogFragment.C
                 // Your code to refresh the list here.
                 // Make sure you call swipeContainer.setRefreshing(false)
                 // once the network request has completed successfully.
+                FilterUIDefaultState();
+
                 fetchTimelineAsync(0);
 //                svSearch.setQuery("",false);
 //                ivFilterOptions.setImageResource(R.drawable.ic_arrow);
@@ -306,13 +306,15 @@ public class FeedFragment extends Fragment implements CategoriesDialogFragment.C
 
                 alertDialogBuilder.setView(relative);
                 alertDialogBuilder
-                        .setCancelable(false)
+
                         .setPositiveButton("Ok",
                                 new DialogInterface.OnClickListener() {
                                     public void onClick(DialogInterface dialog,
                                                         int id) {
                                         tvDistanceFilter.setText((String.valueOf(aNumberPicker.getValue()) + " mile(s) away"));
                                         tvDistanceFilter.setBackground(getResources().getDrawable(R.drawable.drawable_rectangle_blue));
+                                        ivApply.setVisibility(View.VISIBLE);
+
 
                                         // store milesAway for filter function
 
@@ -328,11 +330,13 @@ public class FeedFragment extends Fragment implements CategoriesDialogFragment.C
 
                                         tvDistanceFilter.setText("Distance");
                                         tvDistanceFilter.setBackground(getResources().getDrawable(R.drawable.rect_grey));
+                                        ivApply.setVisibility(View.VISIBLE);
+
 
 
                                         // TODO- if milesAway = 0- filter function knows that no distance max is wanted
 
-                                        milesAway = 0;
+                                        milesAway = null;
 
                                         dialog.cancel();
 
@@ -388,6 +392,8 @@ public class FeedFragment extends Fragment implements CategoriesDialogFragment.C
                                         // store timeAway for filter function
                                         timeAwayUnit = unitTypePicker.getDisplayedValues()[unitTypePicker.getValue() - 1];
                                         timeAwayNumber = timeValuePicker.getValue();
+                                        ivApply.setVisibility(View.VISIBLE);
+
 
 
 
@@ -398,13 +404,15 @@ public class FeedFragment extends Fragment implements CategoriesDialogFragment.C
                                     public void onClick(DialogInterface dialog,
                                                         int id) {
 
-                                        tvDistanceFilter.setText("Time");
-                                        tvDistanceFilter.setBackground(getResources().getDrawable(R.drawable.rect_grey));
+                                        tvTimeFilter.setText("Time");
+                                        tvTimeFilter.setBackground(getResources().getDrawable(R.drawable.rect_grey));
+                                        ivApply.setVisibility(View.VISIBLE);
+
 
                                         //TODO- if timeAwayNumber = 0 - filter knows that no time filter applied
 
                                         timeAwayUnit = null;
-                                        timeAwayNumber = 0;
+                                        timeAwayNumber = null;
                                         dialog.cancel();
                                     }
                                 });
@@ -443,8 +451,14 @@ public class FeedFragment extends Fragment implements CategoriesDialogFragment.C
                         sortBy = selectedSort;
                         dialogInterface.dismiss();
 
-                        tvSortByFilter.setText("Sorted By: "+ sortBy);
+                        if(sortBy == null) {
+                            sortBy = "Time";
+
+                        }
+                        tvSortByFilter.setText("Sorted By: " + sortBy);
                         tvSortByFilter.setBackground(getResources().getDrawable(R.drawable.drawable_rectangle_orange));
+                        ivApply.setVisibility(View.VISIBLE);
+
 
 
 
@@ -459,6 +473,8 @@ public class FeedFragment extends Fragment implements CategoriesDialogFragment.C
 
                         tvSortByFilter.setText("Sort By");
                         tvSortByFilter.setBackground(getResources().getDrawable(R.drawable.rect_grey));
+                        ivApply.setVisibility(View.VISIBLE);
+
                     }
                 });
 
@@ -511,13 +527,22 @@ public class FeedFragment extends Fragment implements CategoriesDialogFragment.C
                             tvTypeFilter.setText(item);
                             tvTypeFilter.setBackground(getResources().getDrawable(R.drawable.drawable_rectangle_purple));
                         }
+                        ivApply.setVisibility(View.VISIBLE);
+
                     }
                 });
                 mTypeBuilder.setNeutralButton("Clear All", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int which) {
-                        for (int i=0;i< checkedItems.length;i++){
+                        if(mUserItems == null || TypesToQueryBy == null) {
+                                dialogInterface.dismiss();
+                        }
+                        else{
+
+                            for (int i=0;i< checkedItems.length;i++){
+
                             checkedItems[i] = false;
+
                             mUserItems.clear();
 
                             TypesToQueryBy.clear();
@@ -525,6 +550,9 @@ public class FeedFragment extends Fragment implements CategoriesDialogFragment.C
 
                             tvTypeFilter.setText("Categories");
                             tvTypeFilter.setBackground(getResources().getDrawable(R.drawable.rect_grey));
+                            ivApply.setVisibility(View.VISIBLE);
+                        }
+
                         }
                     }
                 });

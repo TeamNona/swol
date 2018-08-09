@@ -22,8 +22,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="10dp"
                 android:layout_marginTop="7dp"
-                app:flChildSpacing="20dp"
-                app:flChildSpacingForLastRow="20dp"
+                app:flChildSpacing="10dp"
+                app:flChildSpacingForLastRow="10dp"
                 app:flFlow="true"
                 app:flMaxRows="3"
                 app:flRowSpacing="5dp">
@@ -51,6 +51,7 @@
                     android:background="@drawable/rect_grey"
                     android:text="Distance" />
 
+
                 <TextView
                     android:id="@+id/tvSortByFilter"
                     android:layout_width="wrap_content"
@@ -58,6 +59,14 @@
 
                     android:background="@drawable/rect_grey"
                     android:text="Sort By" />
+
+                <ImageView
+                    android:id="@+id/ivApply"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/green_check_rect"
+                    android:text="Distance"
+                    app:srcCompat="@drawable/ic_check_black_24dp" />
 
 
                 <!--...-->
