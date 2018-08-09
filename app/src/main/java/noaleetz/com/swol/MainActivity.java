@@ -63,6 +63,8 @@ public class MainActivity extends AppCompatActivity implements AddFragment.NewMa
     Location mCurrentLocation;
     Location mLastLocation;
 
+    Integer MilesAway;
+
     private long UPDATE_INTERVAL = 60000;  /* 60 secs */
     private long FASTEST_INTERVAL = 5000; /* 5 secs */
     private final static String KEY_LOCATION = "location";
@@ -73,6 +75,8 @@ public class MainActivity extends AppCompatActivity implements AddFragment.NewMa
     ParseGeoPoint currentGeoPoint;
 
     MapFragment mapFragment = new MapFragment();
+    FeedFragment feedFragment = new FeedFragment();
+
 
     @BindView(R.id.fab)
     FloatingActionButton fab;

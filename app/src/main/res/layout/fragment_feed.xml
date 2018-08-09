@@ -13,7 +13,8 @@
 
         <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:layout_margin="6dp">
 
 
             <com.nex3z.flowlayout.FlowLayout xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -28,31 +29,35 @@
                 app:flRowSpacing="5dp">
 
                 <TextView
+                    android:id="@+id/tvTypeFilter"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:background="@drawable/rect_grey"
                     android:text="Type" />
 
                 <TextView
+                    android:id="@+id/tvTimeFilter"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/rect_grey"
 
+                    android:background="@drawable/rect_grey"
                     android:text="Time" />
 
                 <TextView
+                    android:id="@+id/tvDistanceFilter"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/rect_grey"
 
+                    android:background="@drawable/rect_grey"
                     android:text="Distance" />
 
                 <TextView
+                    android:id="@+id/tvSortByFilter"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/rect_grey"
 
-                    android:text="Sort By: Distance" />
+                    android:background="@drawable/rect_grey"
+                    android:text="Sort By" />
 
 
                 <!--...-->
