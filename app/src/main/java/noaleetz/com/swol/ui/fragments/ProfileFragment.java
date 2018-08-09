@@ -27,6 +27,7 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ScrollView;
+import android.widget.TableLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -92,6 +93,9 @@ public class ProfileFragment extends Fragment{
 
     @BindView(R.id.svProfile)
     ScrollView svProfile;
+
+//    @BindView(R.id.tbWorkout)
+//    TableLayout tbWorkout;
 
     ParseUser user;
 

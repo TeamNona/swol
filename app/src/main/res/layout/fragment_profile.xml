@@ -161,6 +161,37 @@
             android:textAlignment="center"
             android:textSize="36sp" />
 
+        <android.support.v4.view.ViewPager
+            android:id="@+id/viewpager"
+            android:layout_width="match_parent"
+            android:layout_height="45dp"
+            android:layout_weight="1"
+            android:background="@android:color/white">
+
+            <android.support.design.widget.TabLayout
+                android:id="@+id/tbWorkout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:tabSelectedTextColor="@color/LightSalmon"
+                app:tabTextColor="@color/colorPrimaryDark">
+
+                <android.support.design.widget.TabItem
+                    android:layout_width="10dp"
+                    android:layout_height="10dp"
+                    android:text="Upcoming" />
+
+                <android.support.design.widget.TabItem
+                    android:layout_width="10dp"
+                    android:layout_height="10dp"
+                    android:text="Completed" />
+
+            </android.support.design.widget.TabLayout>
+
+        </android.support.v4.view.ViewPager>
+
+
+
+
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -174,7 +205,6 @@
                 android:isScrollContainer="true" />
 
         </RelativeLayout>
-
 
     </LinearLayout>
 </android.support.constraint.ConstraintLayout>
