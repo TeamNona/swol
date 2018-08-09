@@ -159,33 +159,12 @@ public class DetailFragment extends Fragment {
 
         Log.d(TAG, "Tag 1" + workout.get("eventParticipants").toString());
 
-
-
-
-        if (workout.getUser().getParseFile("profilePicture") == null) {
-            Glide.with(DetailFragment.this).load(R.drawable.ic_person)
-                    .apply(RequestOptions.circleCropTransform()
-                            .placeholder(R.drawable.ic_person)
-                            .error(R.drawable.ic_person))
-                    .into(ivAvatar);
-
-
-            Glide.with(DetailFragment.this).load(R.drawable.ic_person)
-                    .apply(RequestOptions.circleCropTransform()
-                            .placeholder(R.drawable.ic_person)
-                            .error(R.drawable.ic_person))
-                    .into(ivAddCommentAvatar);
-        } else {
-            // Load user avatar
-            try {
-                url = workout.getUser()
-                        .fetchIfNeeded()
-                        .getParseFile("profilePicture")
-                        .getUrl();
-            } catch (ParseException e) {
-                e.printStackTrace();
-                Log.d(TAG, "AvatarImage did not load");
-            }
+        // Load user avatar
+        try {
+            url = workout.getUser()
+                    .fetchIfNeeded()
+                    .getParseFile("profilePicture")
+                    .getUrl();
 
             Glide.with(DetailFragment.this)
                     .load(url)
@@ -195,7 +174,11 @@ public class DetailFragment extends Fragment {
             Glide.with(DetailFragment.this)
                     .load(url)
                     .into(ivAddCommentAvatar);
-
+        } catch (ParseException e) {
+            e.printStackTrace();
+            Log.d(TAG, "AvatarImage did not load");
+        } catch (NullPointerException e) {
+            Log.d(TAG, "there is no profile picture in the parse server, using the temp one");
         }
 
         // load workout image
