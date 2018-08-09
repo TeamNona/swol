@@ -72,6 +72,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -112,8 +113,10 @@ public class AddFragment extends Fragment implements AdapterView.OnItemSelectedL
     TextView tvDate;
     @BindView(R.id.tvTime)
     TextView tvTime;
-    @BindView(R.id.spTags)
-    Spinner spTags;
+//    @BindView(R.id.spTags)
+//    Spinner spTags;
+    @BindView(R.id.tvTags)
+    TextView tvTags;
     @BindView(R.id.ivMedia)
     ImageView post;
     @BindView(R.id.spCategory)
@@ -174,6 +177,10 @@ public class AddFragment extends Fragment implements AdapterView.OnItemSelectedL
     String locationName;
     String locationAddress;
 
+    String[] categoryItems;
+    boolean[] checkedItems;
+    ArrayList<Integer> mUserItems = new ArrayList<>();
+    JSONArray getTags = new JSONArray();
 
     public AddFragment() {
         // Required empty public constructor
@@ -332,7 +339,86 @@ public class AddFragment extends Fragment implements AdapterView.OnItemSelectedL
         tagsAdapter.setDropDownViewResource(android.R.layout.simple_list_item_multiple_choice);
 
         // Apply the adapter to the spinner
-        spTags.setAdapter(tagsAdapter);
+//        spTags.setAdapter(tagsAdapter);
+
+        categoryItems = getResources().getStringArray(R.array.workout_types);
+        checkedItems = new boolean[categoryItems.length];
+
+        tvTags.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                AlertDialog.Builder mTypeBuilder = new AlertDialog.Builder(getActivity());
+                mTypeBuilder.setTitle("Filter by Categories");
+                mTypeBuilder.setMultiChoiceItems(categoryItems, checkedItems, new DialogInterface.OnMultiChoiceClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int position, boolean isChecked) {
+                        if(isChecked){
+                            if(!mUserItems.contains(position)){
+                                mUserItems.add(position);
+                            }
+                            else{
+                                mUserItems.remove(position);
+                            }
+                        }
+                    }
+                });
+
+
+                mTypeBuilder.setCancelable(true);
+                mTypeBuilder.setPositiveButton("Apply", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int which) {
+                        String item = "";
+                        for(int i=0;i<mUserItems.size();i++){
+
+                            getTags.put(categoryItems[mUserItems.get(i)]);
+
+                            item = item + categoryItems[mUserItems.get(i)];
+                            if(i != mUserItems.size() -1 ){
+                                item = item + ", ";
+                            }
+                        }
+
+                        if(item.isEmpty()){
+                            Toast.makeText(getActivity(), "Please add a least one tag to your workout.", Toast.LENGTH_SHORT).show();
+                        }
+
+                        tvTags.setText(item);
+
+
+                    }
+                });
+//                mTypeBuilder.setNeutralButton("Clear All", new DialogInterface.OnClickListener() {
+//                    @Override
+//                    public void onClick(DialogInterface dialogInterface, int which) {
+//                        if(mUserItems == null || tags == null) {
+//                            dialogInterface.dismiss();
+//                        }
+//                        else{
+//
+//                            for (int i=0;i< checkedItems.length;i++){
+//
+//                                checkedItems[i] = false;
+//
+//                                mUserItems.clear();
+//
+//                                // tags = new JSONArray();
+//                                Log.d(TAG,"clear all category filters");
+//                            }
+//
+//                        }
+//                    }
+//                });
+
+                AlertDialog mDialog = mTypeBuilder.create();
+                mDialog.getWindow().getAttributes().windowAnimations = R.style.DialogAnimation_2;
+
+                mDialog.show();
+
+                //mTypeBuilder.show();
+            }
+        });
 
 
         // set on click listener for user to add time
@@ -538,15 +624,16 @@ public class AddFragment extends Fragment implements AdapterView.OnItemSelectedL
                 postButton.setVisibility(View.GONE);
 
                 // get the final tags
-                final JSONArray tags = new JSONArray();
-                String help = (String) spTags.getSelectedItem();
-                if (tagsPrompt.equals((String) spTags.getSelectedItem())) {
-                    Toast.makeText(getActivity(), "Please add a least one tag to your workout.", Toast.LENGTH_SHORT).show();
+                final JSONArray tags = getTags;
+                try {
+                    Object tag = tags.get(0);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                    Toast.makeText(getActivity(), "Please add tags to your workout.", Toast.LENGTH_SHORT).show();
+
                     // hide the progress bar
                     pbPost.setVisibility(ProgressBar.INVISIBLE);
                     return;
-                } else {
-                    tags.put(spTags.getSelectedItem());
                 }
 
 
