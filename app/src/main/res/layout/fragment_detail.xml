@@ -57,7 +57,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:layout_marginTop="8dp"
-                android:text="in yo mama's back yard"
+                android:text="Show in Map"
                 android:textAlignment="center"
                 android:textSize="16dp"
                 app:layout_constraintTop_toBottomOf="@+id/tvBeginsIn"

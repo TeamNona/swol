@@ -2,6 +2,7 @@ package noaleetz.com.swol.ui.fragments;
 
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.res.ColorStateList;
 import android.os.Bundle;
@@ -109,6 +110,9 @@ public class DetailFragment extends Fragment {
     public JSONArray participant_list;
     public JSONArray comment_list;
 
+    private GoToMapListener listener;
+    private Context context;
+
 
     public DetailFragment() {
         // Required empty public constructor
@@ -123,6 +127,12 @@ public class DetailFragment extends Fragment {
 
         View view = inflater.inflate(R.layout.fragment_detail, container, false);
         unbinder = ButterKnife.bind(this, view);
+        context = getContext();
+        if (context instanceof GoToMapListener) {
+            listener = (GoToMapListener) context;
+        } else {
+            throw new ClassCastException(context.toString() + " must implement DetailFragment.GoToMapListener");
+        }
 
 
         // Inflate the layout for this fragment
@@ -331,6 +341,13 @@ public class DetailFragment extends Fragment {
 
             }
         });
+
+        tvDetailLocation.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                listener.onLinkClicked(workout);
+            }
+        });
     }
 
     public boolean didUserJoin(JSONArray participantListToCheck, String userIdToCheck) {
@@ -452,8 +469,6 @@ public class DetailFragment extends Fragment {
             }
         });
 
-//        comments.add(0,newComment);
-//        commentAdapter.notifyItemChanged(0);
 
 
     }
@@ -504,8 +519,6 @@ public class DetailFragment extends Fragment {
         }
         Log.d(TAG, "participant list of objects" + participant_list);
 
-//        participants.clear();
-//        participants.addAll(participant_list);
     }
 
 
@@ -513,6 +526,10 @@ public class DetailFragment extends Fragment {
     public void onDestroyView() {
         super.onDestroyView();
         unbinder.unbind();
+    }
+
+    public interface GoToMapListener {
+        public void onLinkClicked(Workout workout);
     }
 
 
