@@ -208,7 +208,6 @@ public class DetailFragment extends Fragment {
                 .apply(requestOptions)
                 .into(ivImage);
 
-
         // get Likes Count from Parse
 
 //        getLikesCount(workout);
