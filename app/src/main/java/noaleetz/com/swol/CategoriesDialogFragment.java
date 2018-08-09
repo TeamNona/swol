@@ -18,6 +18,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.CheckedTextView;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -82,7 +83,7 @@ public class CategoriesDialogFragment extends android.support.v4.app.DialogFragm
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(view.getContext(),android.R.layout.simple_list_item_1,categories);
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(view.getContext(),android.R.layout.simple_list_item_multiple_choice,categories);
         list.setAdapter(adapter);
         list.setOnItemClickListener(this);
 
@@ -95,12 +96,13 @@ public class CategoriesDialogFragment extends android.support.v4.app.DialogFragm
         Toast.makeText(getActivity(), catArray[i], Toast.LENGTH_SHORT)
                 .show();
 
+
 //        Intent intent = new Intent()
 //                .putExtra("category", catArray[i]);
 //        getTargetFragment().onActivityResult(getTargetRequestCode(), Activity.RESULT_OK, intent);
 
-        listener.onFinishCategoryDialog(catArray[i]);
+//        listener.onFinishCategoryDialog(catArray[i]);
 
-        dismiss();
+//        dismiss();
     }
 }
