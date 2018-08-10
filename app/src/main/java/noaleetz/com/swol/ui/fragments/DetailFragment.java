@@ -20,6 +20,18 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
+import com.google.android.gms.maps.CameraUpdate;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.GoogleMapOptions;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.maps.android.PolyUtil;
 import com.parse.FindCallback;
 import com.parse.GetCallback;
 import com.parse.ParseException;
@@ -48,7 +60,7 @@ import noaleetz.com.swol.models.Workout;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class DetailFragment extends Fragment {
+public class DetailFragment extends Fragment implements OnMapReadyCallback {
 
     FloatingActionButton fab;
 
@@ -90,6 +102,11 @@ public class DetailFragment extends Fragment {
 
     String url;
     String url_post;
+
+    // Map Stuff
+    GoogleMap map;
+    String polyString;
+    Polyline currentPolyline;
 
 
     private ParticipantAdapter participantAdapter;
@@ -135,6 +152,9 @@ public class DetailFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.google_map_fragment);
+        mapFragment.getMapAsync(this);
 
         fab = (FloatingActionButton) getActivity().findViewById(R.id.fabAdd);
         fab.hide();
@@ -332,6 +352,31 @@ public class DetailFragment extends Fragment {
                 listener.onLinkClicked(workout);
             }
         });
+    }
+
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        loadMap(googleMap);
+
+    }
+
+    protected void loadMap(GoogleMap googleMap) {
+        map = googleMap;
+        if (map != null) {
+            // make a marker for the starting location
+            LatLng workoutLatLng = workout.getLatLng();
+            map.addMarker(new MarkerOptions().position(workoutLatLng));
+            // if it's a distance workout, show the bounds
+            String polyString = workout.getPolyline();
+            if (polyString != null) {
+                List<LatLng> decodedPath = PolyUtil.decode(polyString);
+                currentPolyline = map.addPolyline(new PolylineOptions().addAll(decodedPath));
+                LatLngBounds bounds = workout.getPolylineLatLngBounds();
+                map.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, MapFragment.convertDpToPixel(42)));
+            } else {
+                map.moveCamera(CameraUpdateFactory.newLatLng(workoutLatLng));
+            }
+        }
     }
 
     public boolean didUserJoin(JSONArray participantListToCheck, String userIdToCheck) {

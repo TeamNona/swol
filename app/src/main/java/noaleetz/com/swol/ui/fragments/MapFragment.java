@@ -309,7 +309,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
                         List<LatLng> decodedPath = PolyUtil.decode(polyString);
                         currentPolyline = map.addPolyline(new PolylineOptions().addAll(decodedPath));
                         LatLngBounds bounds = workout.getPolylineLatLngBounds();
-                        map.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, convertDpToPixel(42)));
+                        map.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, convertDpToPixel(80)));
 
                         return true;
 
