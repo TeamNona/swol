@@ -17,7 +17,6 @@ import com.parse.ParseException;
 import com.parse.ParseGeoPoint;
 import com.parse.ParseUser;
 
-import org.joda.time.Interval;
 
 import java.util.Arrays;
 import java.util.List;
@@ -119,7 +118,7 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
         holder.tvCategory.setText(post.getCategory());
         }
 
-        holder.tvCategory.setBackground(getBackgroundDrawable(post.getCategory()));
+//        holder.tvCategory.setBackground(getBackgroundDrawable(post.getCategory()));
 
         // call interface
         holder.itemView.setOnClickListener(new View.OnClickListener() {

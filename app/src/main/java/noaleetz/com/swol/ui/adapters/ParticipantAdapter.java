@@ -56,7 +56,6 @@ public class ParticipantAdapter extends RecyclerView.Adapter<ParticipantAdapter.
         final RoundedCornersTransformation roundedCornersTransformation = new RoundedCornersTransformation(15, 15);
         final RequestOptions requestOptions = RequestOptions.bitmapTransform(roundedCornersTransformation);
 
-        holder.tvFullName.setText(participant.getString("name"));
         holder.tvUsername.setText(participant.getUsername());
 
         // Load user avatar
@@ -65,15 +64,17 @@ public class ParticipantAdapter extends RecyclerView.Adapter<ParticipantAdapter.
                     .fetchIfNeeded()
                     .getParseFile("profilePicture")
                     .getUrl();
+
+            Glide.with(mcontext)
+                    .load(url)
+                    .apply(requestOptions)
+                    .into(holder.ivAvatar);
         } catch (ParseException e) {
             e.printStackTrace();
             Log.d(TAG, "AvatarImage did not load");
+        } catch (NullPointerException e) {
+            Log.d(TAG, "there is no profile picture in the parse server, using the temp one");
         }
-
-        Glide.with(mcontext)
-                .load(url)
-                .apply(requestOptions)
-                .into(holder.ivAvatar);
 
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -94,10 +95,8 @@ public class ParticipantAdapter extends RecyclerView.Adapter<ParticipantAdapter.
 
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
-        @BindView(R.id.ivAvatar)
+        @BindView(R.id.ivDetailImage)
         ImageView ivAvatar;
-        @BindView(R.id.tvFullName)
-        TextView tvFullName;
         @BindView(R.id.tvUsername)
         TextView tvUsername;
 

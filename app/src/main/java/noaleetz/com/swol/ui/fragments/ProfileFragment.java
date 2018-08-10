@@ -11,12 +11,16 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
+import android.support.design.widget.TabLayout;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.FileProvider;
+import android.support.v4.view.ViewPager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.InputType;
@@ -27,6 +31,7 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ScrollView;
+import android.widget.TableLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -51,6 +56,7 @@ import butterknife.ButterKnife;
 import butterknife.Unbinder;
 import noaleetz.com.swol.models.User;
 import noaleetz.com.swol.ui.activities.MainActivity;
+import noaleetz.com.swol.ui.adapters.CommentAdapter;
 import noaleetz.com.swol.ui.adapters.ProfileAdapter;
 import noaleetz.com.swol.R;
 import noaleetz.com.swol.models.Workout;
@@ -73,9 +79,9 @@ public class ProfileFragment extends Fragment{
 
     @BindView(R.id.tvProfileUsername)
     TextView tvProfileUsername;
-
-    @BindView(R.id.rvMyPosts)
-    RecyclerView rvPosts;
+//
+//    @BindView(R.id.rvMyPosts)
+//    RecyclerView rvPosts;
 
     @BindView(R.id.tvMilesRun)
     TextView tvMilesRun;
@@ -92,6 +98,18 @@ public class ProfileFragment extends Fragment{
     @BindView(R.id.svProfile)
     ScrollView svProfile;
 
+    @BindView(R.id.tbWorkouts)
+    TabLayout tbWorkouts;
+
+    @BindView(R.id.vpWorkouts)
+    ViewPager vpWorkouts;
+
+//    private TabLayout tabLayout;
+//    public ViewPager viewPager;
+
+//    @BindView(R.id.tbWorkout)
+//    TableLayout tbWorkout;
+
     ParseUser user;
 
     private ProfileAdapter adapter;
@@ -99,6 +117,8 @@ public class ProfileFragment extends Fragment{
     private Unbinder unbinder;
 
     public File photoFile;
+
+    FloatingActionButton fabAdd;
 
 
     public ProfileFragment() {
@@ -111,7 +131,57 @@ public class ProfileFragment extends Fragment{
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_profile, container, false);
         unbinder = ButterKnife.bind(this, view);
+
+        setupViewPager(vpWorkouts);
+        tbWorkouts.setupWithViewPager(vpWorkouts);
+
         return view;
+    }
+
+    private void setupViewPager(ViewPager viewPager) {
+        ViewPagerAdapter adapter = new ViewPagerAdapter(getChildFragmentManager());
+//        UpcomingWorkoutsFragment upcomingWorkoutsFragment = new UpcomingWorkoutsFragment();
+//        CompletedWorkoutsFragment completedWorkoutsFragment = new CompletedWorkoutsFragment();
+//        Bundle bundle = new Bundle();
+//        bundle.putParcelable("user", user);
+//        upcomingWorkoutsFragment.setArguments(bundle);
+//        FragmentTransaction transaction = getChildFragmentManager().beginTransaction();
+//        transaction.replace(R.id.flContent, profileFragment).addToBackStack(null);
+//        transaction.commit();
+        adapter.addFragment(new CompletedWorkoutsFragment(), "Completed Workouts");
+        adapter.addFragment(new UpcomingWorkoutsFragment(), "Upcoming Workouts");
+        viewPager.setAdapter(adapter);
+    }
+
+    class ViewPagerAdapter extends FragmentPagerAdapter {
+        private final List<Fragment> mFragmentList = new ArrayList<>();
+        private final List<String> mFragmentTitleList = new ArrayList<>();
+
+        public ViewPagerAdapter(FragmentManager manager) {
+            super(manager);
+        }
+
+        @Override
+        public Fragment getItem(int position) {
+            return mFragmentList.get(position);
+        }
+
+        @Override
+        public int getCount() {
+            return mFragmentList.size();
+        }
+
+        public void addFragment(Fragment fragment, String title) {
+            mFragmentList.add(fragment);
+            mFragmentTitleList.add(title);
+        }
+
+        @Override
+        public CharSequence getPageTitle(int position) {
+            return mFragmentTitleList.get(position);
+        }
+
+
     }
 
 
@@ -119,6 +189,9 @@ public class ProfileFragment extends Fragment{
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        // hide the oldFabAdd
+        fabAdd = getActivity().findViewById(R.id.fabAdd);
+        fabAdd.hide();
 
         // get the user's profile
         Bundle bundle = getArguments();
@@ -149,17 +222,37 @@ public class ProfileFragment extends Fragment{
                     .into(ivProfileImage);
         }
 
-
-
-
-        // now the recycler view stuff
+        // get total number of posts
         posts = new ArrayList<>();
-        adapter = new ProfileAdapter(posts);
-        Log.d("ProfileFragment", "Finished setting the adapter");
-        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false);
-        rvPosts.setLayoutManager(linearLayoutManager);
-        rvPosts.setAdapter(adapter);
-        loadTopPosts();
+        final Workout.Query postQuery = new Workout.Query();
+        postQuery.getTop().contains(user).withUser().orderByLastCreated();
+
+        postQuery.findInBackground(new FindCallback<Workout>() {
+                                       @Override
+                                       public void done(List<Workout> objects, ParseException e) {
+                                           if (e == null) {
+                                               Log.d("ProfileFragment", Integer.toString(objects.size()));
+                                               posts.clear();
+                                               posts.addAll(objects);
+                                               tvDoneWorkouts.setText("" + posts.size());
+                                           } else {
+                                               e.printStackTrace();
+                                           }
+                                       }
+                                   });
+
+
+
+
+//        // now the recycler view stuff
+//        rvPosts.setNestedScrollingEnabled(false);
+//        posts = new ArrayList<>();
+//        this.adapter = new ProfileAdapter(posts);
+//        Log.d("ProfileFragment", "Finished setting the adapter");
+//        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false);
+//        rvPosts.setLayoutManager(linearLayoutManager);
+//        rvPosts.setAdapter(adapter);
+//        loadTopPosts();
 
 
         //TODO: extract the miles run, for now, just get a random number
@@ -317,28 +410,6 @@ public class ProfileFragment extends Fragment{
 
     }
 
-    public void loadTopPosts() {
-
-
-        final Workout.Query postQuery = new Workout.Query();
-        postQuery.getTop().contains(user).withUser().orderByLastCreated();
-
-        postQuery.findInBackground(new FindCallback<Workout>() {
-            @Override
-            public void done(List<Workout> objects, ParseException e) {
-                if (e == null) {
-                    Log.d("ProfileFragment", Integer.toString(objects.size()));
-                    posts.clear();
-                    posts.addAll(objects);
-                    tvDoneWorkouts.setText("" + posts.size());
-                    adapter.notifyDataSetChanged();
-                } else {
-                    e.printStackTrace();
-                }
-            }
-        });
-
-    }
 
     @Override
     public void onDestroy() {
@@ -475,3 +546,4 @@ public class ProfileFragment extends Fragment{
 
 
 }
+

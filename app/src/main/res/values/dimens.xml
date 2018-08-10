@@ -19,6 +19,9 @@
 
 
 
+    <dimen name="numberpicker_textsize">16sp</dimen>
+    <dimen name="fragment_appointment_width">16sp</dimen>
+    <dimen name="fragment_appointment_height">16sp</dimen>
 
 
 </resources>

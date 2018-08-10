@@ -1,6 +1,7 @@
 package noaleetz.com.swol.ui.activities;
 
 
+import android.content.Context;
 import android.content.Intent;
 import android.Manifest;
 import android.content.pm.PackageManager;
@@ -8,11 +9,8 @@ import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-import android.graphics.Matrix;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -33,6 +31,17 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.Cache;
+import com.android.volley.Network;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.BasicNetwork;
+import com.android.volley.toolbox.DiskBasedCache;
+import com.android.volley.toolbox.HurlStack;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -44,31 +53,11 @@ import com.parse.ParseGeoPoint;
 import com.parse.ParseUser;
 import com.parse.SaveCallback;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.Closeable;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URLConnection;
-import java.util.Arrays;
-import java.util.Collection;
-import java.io.ByteArrayOutputStream;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -77,12 +66,14 @@ import noaleetz.com.swol.R;
 import noaleetz.com.swol.models.Workout;
 import noaleetz.com.swol.ui.adapters.ClusterWindowAdapter;
 import noaleetz.com.swol.ui.fragments.AddFragment;
+import noaleetz.com.swol.ui.fragments.CompletedWorkoutsFragment;
 import noaleetz.com.swol.ui.fragments.DetailFragment;
 import noaleetz.com.swol.ui.fragments.FeedFragment;
 import noaleetz.com.swol.ui.fragments.MapFragment;
 import noaleetz.com.swol.ui.fragments.ProfileFragment;
+import noaleetz.com.swol.ui.fragments.UpcomingWorkoutsFragment;
 
-public class MainActivity extends AppCompatActivity implements AddFragment.NewMapItemListener, ClusterWindowAdapter.itemClickListener {
+public class MainActivity extends AppCompatActivity implements AddFragment.NewMapItemListener, ClusterWindowAdapter.itemClickListener, DetailFragment.GoToMapListener {
 
     private static final String TAG = "LOCATION";
     private ActionBarDrawerToggle drawerToggle;
@@ -102,9 +93,8 @@ public class MainActivity extends AppCompatActivity implements AddFragment.NewMa
 
     MapFragment mapFragment = new MapFragment();
 
-    @BindView(R.id.fab)
+    @BindView(R.id.fabAdd)
     FloatingActionButton fab;
-
     @BindView(R.id.drawer_layout)
     DrawerLayout mDrawer;
     @BindView(R.id.toolbar)
@@ -122,13 +112,16 @@ public class MainActivity extends AppCompatActivity implements AddFragment.NewMa
     public static final int MY_PERMISSIONS_REQUEST_CAMERA = 99;
     private static int RESULT_LOAD_IMAGE = 1;
 
+    Context context;
 
-    @OnClick(R.id.fab)
+
+
+    @OnClick(R.id.fabAdd)
     public void onClick(View view) {
         fab.hide();
-        AddFragment addfragment = new AddFragment();
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.flContent, addfragment).addToBackStack(null);
+        //TODO: update current location
+        transaction.replace(R.id.flContent, AddFragment.create(currentGeoPoint)).addToBackStack(null);
         transaction.commit();
 
     }
@@ -148,7 +141,6 @@ public class MainActivity extends AppCompatActivity implements AddFragment.NewMa
 
 
         mDrawer.addDrawerListener(drawerToggle);
-
 
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
@@ -315,6 +307,47 @@ public class MainActivity extends AppCompatActivity implements AddFragment.NewMa
                                 ParseUser.getCurrentUser().saveInBackground();
                                 Log.d(TAG, "geopoint posted to parse)");
 
+                                RequestQueue mRequestQueue;
+
+                                // Instantiate the cache
+                                Cache cache = new DiskBasedCache(getCacheDir(), 1024 * 1024); // 1MB cap
+
+                                // Set up the network to use HttpURLConnection as the HTTP client.
+                                Network network = new BasicNetwork(new HurlStack());
+
+                                // Instantiate the RequestQueue with the cache and network.
+                                mRequestQueue = new RequestQueue(cache, network);
+
+                                // Start the queue
+                                mRequestQueue.start();
+
+                                String url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=" + Double.toString(currentGeoPoint.getLatitude())
+                                        + "," + Double.toString(currentGeoPoint.getLongitude()) + "&radius=100" + "&key=" + getResources().getString(R.string.api_key);
+
+
+                                JsonObjectRequest currentLocationRequest = new JsonObjectRequest(Request.Method.GET, url, null,  new Response.Listener<JSONObject>() {
+                                    @Override
+                                    public void onResponse(JSONObject response) {
+                                        try {
+                                            ParseUser.getCurrentUser().put("currentLocationAddress",
+                                                    response.getJSONArray("results").getJSONObject(1).getString("vicinity"));
+                                            ParseUser.getCurrentUser().put("currentLocationName",
+                                                    response.getJSONArray("results").getJSONObject(1).getString("name"));
+                                            ParseUser.getCurrentUser().saveInBackground();
+
+                                        } catch (JSONException e) {
+                                            e.printStackTrace();
+                                        }
+                                    }
+                                }, new Response.ErrorListener() {
+                                    @Override
+                                    public void onErrorResponse(VolleyError error) {
+                                        error.printStackTrace();
+                                    }
+                                });
+
+                                mRequestQueue.add(currentLocationRequest);
+
 
                             } else {
 
@@ -383,7 +416,7 @@ public class MainActivity extends AppCompatActivity implements AddFragment.NewMa
     }
 
     private void setupDrawerContent(NavigationView navigationView) {
-        navigationView.getBackground().setAlpha(150);
+        // navigationView.getBackground().setAlpha(150);
         navigationView.setNavigationItemSelectedListener(
                 new NavigationView.OnNavigationItemSelectedListener() {
                     @Override
@@ -400,11 +433,9 @@ public class MainActivity extends AppCompatActivity implements AddFragment.NewMa
         FragmentManager fragmentManager = getSupportFragmentManager();
         switch (menuItem.getItemId()) {
             case R.id.nav_feed_fragment:
-                fab.show();
                 fragmentManager.beginTransaction().replace(R.id.flContent, new FeedFragment()).addToBackStack(null).commit();
                 break;
             case R.id.nav_map_fragment:
-                fab.show();
                 // if there is no api key, then throw this exception
                 if (TextUtils.isEmpty(getResources().getString(R.string.api_key))) {
                     throw new IllegalStateException("You forgot to supply a Google Maps API key");
@@ -413,7 +444,6 @@ public class MainActivity extends AppCompatActivity implements AddFragment.NewMa
                 fragmentManager.beginTransaction().replace(R.id.flContent, mapFragment).addToBackStack("map").commit();
                 break;
             case R.id.nav_profile_fragment:
-                fab.hide();
                 changeToProfileFragment(ParseUser.getCurrentUser());
                 mDrawer.closeDrawers();
                 break;
@@ -483,9 +513,17 @@ public class MainActivity extends AppCompatActivity implements AddFragment.NewMa
 
     public void changeToProfileFragment(ParseUser user) {
         ProfileFragment profileFragment = new ProfileFragment();
+        UpcomingWorkoutsFragment upcomingWorkoutsFragment = new UpcomingWorkoutsFragment();
+        CompletedWorkoutsFragment completedWorkoutsFragment = new CompletedWorkoutsFragment();
         Bundle bundle = new Bundle();
         bundle.putParcelable("user", user);
+//        Bundle bundle1 = new Bundle();
+//        bundle1.putParcelable("user", user);
+//        Bundle bundle2 = new Bundle();
+//        bundle2.putParcelable("user", user);
         profileFragment.setArguments(bundle);
+//        upcomingWorkoutsFragment.setArguments(bundle1);
+//        completedWorkoutsFragment.setArguments(bundle2);
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.flContent, profileFragment).addToBackStack(null);
         transaction.commit();
@@ -609,74 +647,12 @@ public class MainActivity extends AppCompatActivity implements AddFragment.NewMa
 
     }
 
-//    public static class BitmapScaler
-//    {
-//        // scale and keep aspect ratio
-//        public static Bitmap scaleToFitWidth(Bitmap b, int width)
-//        {
-//            float factor = width / (float) b.getWidth();
-//            return Bitmap.createScaledBitmap(b, width, (int) (b.getHeight() * factor), true);
-//        }
-//
-//
-//        // scale and keep aspect ratio
-//        public static Bitmap scaleToFitHeight(Bitmap b, int height)
-//        {
-//            float factor = height / (float) b.getHeight();
-//            return Bitmap.createScaledBitmap(b, (int) (b.getWidth() * factor), height, true);
-//        }
-//
-//
-//        // scale and keep aspect ratio
-//        public static Bitmap scaleToFill(Bitmap b, int width, int height)
-//        {
-//            float factorH = height / (float) b.getWidth();
-//            float factorW = width / (float) b.getWidth();
-//            float factorToUse = (factorH > factorW) ? factorW : factorH;
-//            return Bitmap.createScaledBitmap(b, (int) (b.getWidth() * factorToUse),
-//                    (int) (b.getHeight() * factorToUse), true);
-//        }
-//
-//
-//        // scale and don't keep aspect ratio
-//        public static Bitmap strechToFill(Bitmap b, int width, int height)
-//        {
-//            float factorH = height / (float) b.getHeight();
-//            float factorW = width / (float) b.getWidth();
-//            return Bitmap.createScaledBitmap(b, (int) (b.getWidth() * factorW),
-//                    (int) (b.getHeight() * factorH), true);
-//        }
-//    }
-
-//    public Bitmap getResizedBitmap(Bitmap image, int maxSize) {
-//        int width = image.getWidth();
-//        int height = image.getHeight();
-//
-//        float bitmapRatio = (float) width / (float) height;
-//        if (bitmapRatio > 1) {
-//            width = maxSize;
-//            height = (int) (width / bitmapRatio);
-//        } else {
-//            height = maxSize;
-//            width = (int) (height * bitmapRatio);
-//        }
-//
-//        return Bitmap.createScaledBitmap(image, width, height, true);
-//    }
-
-//    public static Bitmap getResizedBitmap(Bitmap image, int newHeight, int newWidth) {
-//        int width = image.getWidth();
-//        int height = image.getHeight();
-//        float scaleWidth = ((float) newWidth) / width;
-//        float scaleHeight = ((float) newHeight) / height;
-//        // create a matrix for the manipulation
-//        Matrix matrix = new Matrix();
-//        // resize the bit map
-//        matrix.postScale(scaleWidth, scaleHeight);
-//        // recreate the new Bitmap
-//        Bitmap resizedBitmap = Bitmap.createBitmap(image, 0, 0, width, height,
-//                matrix, false);
-//        return resizedBitmap;
-//    }
+    @Override
+    public void onLinkClicked(Workout workout) {
+        mapFragment.setClickedClusterItem(workout);
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.flContent, mapFragment).addToBackStack("map");
+        transaction.commit();
+    }
 
 }

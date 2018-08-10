@@ -13,6 +13,42 @@
         <item>photo</item>
     </string-array>
 
+    <string-array name="workout_types">
+
+        <item>Bike</item>
+        <item>Cardio</item>
+        <item>Class</item>
+        <item>Dance</item>
+        <item>Game</item>
+        <item>Gym</item>
+        <item>High Intensity Interval Training</item>
+        <item>Hike</item>
+        <item>Meditation</item>
+        <item>Run</item>
+        <item>Swim</item>
+        <item>Weight</item>
+
+    </string-array>
+
+    <string-array name="tag_types">
+        <item>Abs</item>
+        <item>Advanced</item>
+        <item>Aerobic</item>
+        <item>Anaerobic</item>
+        <item>Arms</item>
+        <item>Beginner</item>
+        <item>Calorie Burning</item>
+        <item>Chest</item>
+        <item>Fitness</item>
+        <item>Full Body</item>
+        <item>Glutes</item>
+        <item>High Intensity</item>
+        <item>Isolation</item>
+        <item>Low Impact</item>
+        <item>Quads</item>
+        <item>Stretch</item>
+    </string-array>
+
     <!--    Permissions : from https://github.com/googlemaps/android-samples/blob/master/ApiDemos/java/app/src/main/res/values/strings.xml -->
     <string name="permission_rationale_location_google">Access to the location service is required to demonstrate the \'my location\' feature, which shows your current location on the map.</string>
     <string name="location_permission_denied_google">This sample requires location permission to enable the \'my location\' layer. Please try again and grant access to use the location.\nIf the permission has been permanently denied, it can be enabled from the System Settings &gt; Apps &gt; \'Google Maps API Demos\'.</string>

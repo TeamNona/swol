@@ -12,13 +12,13 @@ import android.graphics.Bitmap;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -64,6 +64,7 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import butterknife.Unbinder;
 import noaleetz.com.swol.ui.adapters.ClusterWindowAdapter;
 
@@ -89,7 +90,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
         ClusterManager.OnClusterItemInfoWindowClickListener<Workout>,
         ClusterWindowAdapter.itemClickListener {
 
-    FloatingActionButton fab;
 
 
     ArrayList<Marker> workoutMarkers;
@@ -117,6 +117,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
     float withinHour = BitmapDescriptorFactory.HUE_RED;
     float withinToday = BitmapDescriptorFactory.HUE_YELLOW;
     float withinForever = BitmapDescriptorFactory.HUE_GREEN;
+    WorkoutRenderer wRenderer;
+    boolean showWorkout = false;
 
     @BindView(R.id.fabNearby)
     FloatingActionButton fabNearby;
@@ -129,6 +131,19 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
 
     @BindView(R.id.fab10mi)
     FloatingActionButton fab10mi;
+
+    FloatingActionButton oldFabAdd;
+    FloatingActionButton mapFabAdd;
+
+    @OnClick(R.id.mapFabAdd)
+    public void onClick(View view) {
+        mapFabAdd.hide();
+        AddFragment addfragment = new AddFragment();
+        FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.flContent, addfragment).addToBackStack(null);
+        transaction.commit();
+
+    }
 
     boolean init = true;
 
@@ -156,6 +171,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
         return view;
     }
 
+    @SuppressLint("RestrictedApi")
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -168,11 +184,15 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
 
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.google_map_fragment);
 
-        fab = getActivity().findViewById(R.id.fab);
-        fab.setTranslationY(-1200);
+        oldFabAdd = getActivity().findViewById(R.id.fabAdd);
+        oldFabAdd.setVisibility(View.GONE);
+
         mapFragment.getMapAsync(this);
 
         hideZoomButtons();
+
+        mapFabAdd = getActivity().findViewById(R.id.mapFabAdd);
+        mapFabAdd.show();
 
         fabNearby.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -266,12 +286,14 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
             clusterManager.getClusterMarkerCollection().setOnInfoWindowAdapter(adapter);
             clusterManager.getMarkerCollection().setOnInfoWindowAdapter(new CustomInfoWindowAdapter(LayoutInflater.from(getContext())));
             final WorkoutRenderer renderer = new WorkoutRenderer();
+            wRenderer = renderer;
             clusterManager.setRenderer(renderer);
             map.setOnMapClickListener(this);
             map.setOnCameraIdleListener(clusterManager);
             map.setOnMarkerClickListener(clusterManager);
             map.setOnInfoWindowClickListener(clusterManager);
             map.setInfoWindowAdapter(clusterManager.getMarkerManager());
+
             clusterManager.setOnClusterItemClickListener(new ClusterManager.OnClusterItemClickListener<Workout>() {
                 @Override
                 public boolean onClusterItemClick(Workout workout) {
@@ -280,6 +302,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
 
                     // TODO: same as the onInfoWindowClick
                     m.showInfoWindow();
+                    if (currentPolyline != null) currentPolyline.remove();
 
                     String polyString = workout.getPolyline();
                     if (polyString != null) {
@@ -305,13 +328,16 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
                     return false;
                 }
             });
+
             clusterManager.setOnClusterClickListener(new ClusterManager.OnClusterClickListener<Workout>() {
                 @Override
                 public boolean onClusterClick(Cluster<Workout> cluster) {
                     clickedCluster = cluster;
+                    if (currentPolyline != null) currentPolyline.remove();
                     return false;
                 }
             });
+
             clusterManager.setOnClusterItemInfoWindowClickListener(new ClusterManager.OnClusterItemInfoWindowClickListener<Workout>() {
                 @Override
                 public void onClusterItemInfoWindowClick(Workout workout) {
@@ -380,7 +406,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
     @Override
     public void onMapClick(LatLng latLng) {
         hideZoomButtons();
-        currentPolyline.remove();
+        if (currentPolyline != null) currentPolyline.remove();
     }
 
     public void loadTopWorkouts() {
@@ -411,6 +437,11 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
                     }
 
                     clusterManager.cluster();
+
+
+//                    if (showWorkout) viewWorkout(clickedClusterItem);
+//                    showWorkout = false;
+
                 } else {
                     e.printStackTrace();
                 }
@@ -528,9 +559,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
         super.onDestroy();
     }
 
-    @Deprecated
-    void viewWorkout(Marker marker) {
-        final Marker m = marker;
+    public void viewWorkout(Workout workout) {
+        final Marker m = wRenderer.getMarker(workout);
         Log.i("MapView", "Showing workout [" + mod + "] @ " + m.getPosition().toString());
         map.animateCamera(CameraUpdateFactory.newLatLngZoom(m.getPosition(), 17), new GoogleMap.CancelableCallback() {
             @Override
@@ -556,36 +586,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
         });
     }
 
-    void viewNextWorkout() {
-        mod = counter % workoutMarkers.size();
-        final Marker marker = workoutMarkers.get(mod);
-        Workout workout = Parcels.unwrap((Parcelable) marker.getTag());
-        Log.i("MapView", "Showing workout [" + mod + "] @ " + workout.getLatLng().toString());
-        map.animateCamera(CameraUpdateFactory.newLatLngZoom(workout.getLatLng(), 17), new GoogleMap.CancelableCallback() {
-            @Override
-            public void onFinish() {
-                // TODO: same as the onInfoWindowClick
-                marker.showInfoWindow();
-
-                final Handler handler = new Handler();
-                handler.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        marker.showInfoWindow();
-
-                    }
-                }, 200);
-
-            }
-
-            @Override
-            public void onCancel() {
-
-            }
-        });
-        counter++;
-    }
-
     void showNearbyWorkouts(LatLngBounds bounds) {
         getLocation();
         if (currentGeoPoint == null) return;
@@ -609,6 +609,11 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
 
     }
 
+    public void setClickedClusterItem(Workout clickedClusterItem) {
+        this.clickedClusterItem = clickedClusterItem;
+        showWorkout = true;
+    }
+
     // TODO: animate this
     @SuppressLint("RestrictedApi")
     void showZoomButtons() {
@@ -619,7 +624,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
 
     // TODO: animate this
     @SuppressLint("RestrictedApi")
-    void hideZoomButtons() {
+    public void hideZoomButtons() {
         fab1mi.setVisibility(View.GONE);
         fab5mi.setVisibility(View.GONE);
         fab10mi.setVisibility(View.GONE);
@@ -637,7 +642,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
     @Override public void onPause() {
         super.onPause();
 
-//        fab.setTranslationY(1200);
+//        oldFabAdd.setTranslationY(1200);
 
 
     }

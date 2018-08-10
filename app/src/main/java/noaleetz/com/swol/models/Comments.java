@@ -21,7 +21,7 @@ public class Comments extends ParseObject {
 
     private static final String KEY_DESCRIPTION = "description";
 
-    private static final String KEY_POST = "PostedTo";
+    private static final String KEY_POST = "postedTo";
 
     private static final String KEY_USER = "postedBy";
 

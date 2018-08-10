@@ -1,14 +1,13 @@
 package noaleetz.com.swol.ui.fragments;
 
 
-import android.app.AlertDialog;
-import android.content.DialogInterface;
+import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -18,11 +17,9 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
-import com.parse.CountCallback;
 import com.parse.FindCallback;
 import com.parse.GetCallback;
 import com.parse.ParseException;
@@ -47,8 +44,6 @@ import noaleetz.com.swol.R;
 import noaleetz.com.swol.models.Comments;
 import noaleetz.com.swol.models.Workout;
 
-import static com.parse.Parse.getApplicationContext;
-
 
 /**
  * A simple {@link Fragment} subclass.
@@ -59,21 +54,17 @@ public class DetailFragment extends Fragment {
 
 
     private static final String TAG = "TAGDetailFragment";
-    @BindView(R.id.btBack)
-    ImageView btBack;
     @BindView(R.id.tvWorkoutTitle)
     TextView tvWorkoutTitle;
     @BindView(R.id.tvBeginsIn)
     TextView tvBeginsIn;
-    @BindView(R.id.ivTimeIcon)
-    ImageView ivTimeIcon;
-    @BindView(R.id.ivAvatar)
+    @BindView(R.id.tvDetailLocation)
+    TextView tvDetailLocation;
+    @BindView(R.id.ivDetailAvatar)
     ImageView ivAvatar;
-    @BindView(R.id.tvFullName)
-    TextView tvFullName;
     @BindView(R.id.tvUsername)
     TextView tvUsername;
-    @BindView(R.id.ivImage)
+    @BindView(R.id.ivDetailImage)
     ImageView ivImage;
     @BindView(R.id.rvParticipants)
     RecyclerView rvParticipants;
@@ -81,15 +72,10 @@ public class DetailFragment extends Fragment {
     RecyclerView rvComments;
     @BindView(R.id.tvDescription)
     TextView tvDescription;
-    @BindView(R.id.tvLikesCt)
-    TextView tvLikesCt;
-    @BindView(R.id.ivHeartIcon)
-    ImageView ivHeartIcon;
-    @BindView(R.id.ivCommentIcon)
-    ImageView ivCommentIcon;
-    @BindView(R.id.ivJoin)
-    ImageView ivJoin;
-
+    @BindView(R.id.cvJoin)
+    CardView cvJoin;
+    @BindView(R.id.tvJoin)
+    TextView tvJoin;
     // Add Comment holders
     @BindView(R.id.tvCommentUsername)
     TextView tvCommentUsername;
@@ -104,7 +90,6 @@ public class DetailFragment extends Fragment {
 
     String url;
     String url_post;
-    String url_addComment;
 
 
     private ParticipantAdapter participantAdapter;
@@ -117,6 +102,9 @@ public class DetailFragment extends Fragment {
 
     public JSONArray participant_list;
     public JSONArray comment_list;
+
+    private GoToMapListener listener;
+    private Context context;
 
 
     public DetailFragment() {
@@ -132,6 +120,12 @@ public class DetailFragment extends Fragment {
 
         View view = inflater.inflate(R.layout.fragment_detail, container, false);
         unbinder = ButterKnife.bind(this, view);
+        context = getContext();
+        if (context instanceof GoToMapListener) {
+            listener = (GoToMapListener) context;
+        } else {
+            throw new ClassCastException(context.toString() + " must implement DetailFragment.GoToMapListener");
+        }
 
 
         // Inflate the layout for this fragment
@@ -142,7 +136,7 @@ public class DetailFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        fab = (FloatingActionButton) getActivity().findViewById(R.id.fab);
+        fab = (FloatingActionButton) getActivity().findViewById(R.id.fabAdd);
         fab.hide();
 
 
@@ -155,8 +149,7 @@ public class DetailFragment extends Fragment {
         tvWorkoutTitle.setText(workout.getName());
         tvBeginsIn.setText(workout.getTimeUntil());
         try {
-            tvFullName.setText(workout.getUser().fetchIfNeeded().getString("name"));
-            tvUsername.setText(workout.getUser().fetchIfNeeded().getUsername());
+            tvUsername.setText("@" + workout.getUser().fetchIfNeeded().getUsername());
         } catch (ParseException e) {
             e.printStackTrace();
         }
@@ -175,15 +168,21 @@ public class DetailFragment extends Fragment {
                     .fetchIfNeeded()
                     .getParseFile("profilePicture")
                     .getUrl();
+
+            Glide.with(DetailFragment.this)
+                    .load(url)
+                    .apply(requestOptions)
+                    .into(ivAvatar);
+
+            Glide.with(DetailFragment.this)
+                    .load(url)
+                    .into(ivAddCommentAvatar);
         } catch (ParseException e) {
             e.printStackTrace();
             Log.d(TAG, "AvatarImage did not load");
+        } catch (NullPointerException e) {
+            Log.d(TAG, "there is no profile picture in the parse server, using the temp one");
         }
-
-        Glide.with(DetailFragment.this)
-                .load(url)
-                .apply(requestOptions)
-                .into(ivAvatar);
 
         // load workout image
 
@@ -199,31 +198,13 @@ public class DetailFragment extends Fragment {
 
         Glide.with(DetailFragment.this)
                 .load(url_post)
-                .apply(requestOptions)
                 .into(ivImage);
 
-        // load AddComment Item avatar and username
-
-        try {
-            url_addComment = ParseUser.getCurrentUser()
-                    .fetchIfNeeded()
-                    .getParseFile("profilePicture")
-                    .getUrl();
-        } catch (ParseException e) {
-            e.printStackTrace();
-            Log.d(TAG, "AvatarImage of current user did not load");
-        }
-
-        Glide.with(DetailFragment.this)
-                .load(url_addComment)
-                .into(ivAddCommentAvatar);
-
-        tvUsername.setText(ParseUser.getCurrentUser().getUsername());
-
+        tvCommentUsername.setText(ParseUser.getCurrentUser().getUsername());
 
         // get Likes Count from Parse
 
-        getLikesCount(workout);
+//        getLikesCount(workout);
 
 
         // set up and populate data for  participant adapter
@@ -232,7 +213,7 @@ public class DetailFragment extends Fragment {
 
         this.participantAdapter = new ParticipantAdapter(participants);
         Log.d(TAG, "finished setting up participant adapter");
-        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext());
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false);
         rvParticipants.setLayoutManager(linearLayoutManager);
         rvParticipants.setAdapter(participantAdapter);
 
@@ -244,9 +225,18 @@ public class DetailFragment extends Fragment {
         comments = new ArrayList<>();
         this.commentAdapter = new CommentAdapter(comments);
         Log.d(TAG, "finished setting up comment adapter");
-        LinearLayoutManager commentLinearLayoutManager = new LinearLayoutManager(getContext());
+        LinearLayoutManager commentLinearLayoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, true);
         rvComments.setLayoutManager(commentLinearLayoutManager);
         rvComments.setAdapter(commentAdapter);
+
+
+        if (didUserJoin(participant_list, ParseUser.getCurrentUser().getObjectId())) {
+            tvJoin.setText("Leave Workout");
+            cvJoin.setCardBackgroundColor(21);
+        } else {
+            tvJoin.setText("Join Workout");
+            cvJoin.setCardBackgroundColor(121);
+        }
 
 
         btAddComment.setOnClickListener(new View.OnClickListener() {
@@ -256,21 +246,11 @@ public class DetailFragment extends Fragment {
             }
         });
 
+        // if the current user created the workout then they can't leave
+        if (workout.getUser().getObjectId().equals(ParseUser.getCurrentUser().getObjectId())) cvJoin.setVisibility(View.GONE);
+        else cvJoin.setVisibility(View.VISIBLE);
 
-        btBack.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-                FragmentManager fm = getActivity().getSupportFragmentManager();
-                fab.show();
-                fm.popBackStackImmediate();
-
-            }
-
-
-        });
-
-        ivJoin.setOnClickListener(new View.OnClickListener() {
+        cvJoin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 // user clicks join workout to add themselves to participant list
@@ -282,28 +262,35 @@ public class DetailFragment extends Fragment {
                 if (didUserJoin(participant_list, UserIdToAdd)) {
                     Log.d(TAG, "is user there?" + String.valueOf(participant_list.equals(UserIdToAdd)));
 
+                    ParseQuery<ParseObject> update_query = ParseQuery.getQuery("exerciseEvent");
 
-                    AlertDialog alertDialog = new AlertDialog.Builder(
-                            view.getContext()).create();
-
-                    //Setting Dialog Title
-                    alertDialog.setTitle("You Have Already Joined!");
-
-                    // Setting Dialog Message
-//                    alertDialog.setMessage("You Have Already Joined!");
-
-                    // Setting Icon to Dialog
-                    alertDialog.setIcon(R.drawable.ic_noun_add_group_782192);
-
-                    // Setting OK Button
-                    alertDialog.setButton("OK", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            // Write your code here to execute after dialog closed
-//                            Toast.makeText(getApplicationContext(), "You clicked on OK", Toast.LENGTH_SHORT).show();
+                    // find self
+                    int self = 0;
+                    for (int i = 0; i < participant_list.length(); i++) {
+                        try {
+                            if (participant_list.get(i).equals(ParseUser.getCurrentUser().getObjectId())) self = i;
+                        } catch (JSONException e) {
+                            e.printStackTrace();
                         }
-                    });
-                    // Showing Alert Message
-                    alertDialog.show();
+                    }
+
+                    if (self != 0) participant_list.remove(self);
+
+                            // Retrieve the object by id
+                            update_query.getInBackground(workout.getObjectId(), new GetCallback<ParseObject>() {
+                                public void done(ParseObject exerciseEvent, ParseException e) {
+                                    if (e == null) {
+                                        // Now let's update with some new data
+
+                                        exerciseEvent.put("eventParticipants", participant_list);
+                                        exerciseEvent.saveInBackground();
+                                        participantAdapter.notifyDataSetChanged();
+                                        loadParticipants(participant_list);
+                                        tvJoin.setText("Join Workout");
+
+                                    }
+                                }
+                            });
 
                 } else {
                     participant_list.put(UserIdToAdd);
@@ -322,7 +309,9 @@ public class DetailFragment extends Fragment {
                                 exerciseEvent.saveInBackground();
                                 participantAdapter.notifyDataSetChanged();
                                 loadParticipants(participant_list);
-                                Toast.makeText(getApplicationContext(), "Workout Joined", Toast.LENGTH_SHORT).show();
+
+
+                                tvJoin.setText("Leave Workout");
 
                             }
                         }
@@ -332,6 +321,13 @@ public class DetailFragment extends Fragment {
                 }
 
 
+            }
+        });
+
+        tvDetailLocation.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                listener.onLinkClicked(workout);
             }
         });
     }
@@ -356,27 +352,27 @@ public class DetailFragment extends Fragment {
         return false;
     }
 
-    public void getLikesCount(Workout workout_event) {
-        String workoutId = workout_event.getObjectId();
-
-        ParseQuery<ParseObject> query = ParseQuery.getQuery("Likes");
-
-        query.whereEqualTo("likedPost", workout_event).countInBackground(new CountCallback() {
-            @Override
-            public void done(int count, ParseException e) {
-                if (e == null) {
-                    // no error
-                    Log.d(TAG, "like count:" + String.valueOf(count));
-                    tvLikesCt.setText(String.valueOf(count));
-
-                } else {
-                    // something went wrong
-                    Log.d(TAG, "unable to find like count");
-                    tvLikesCt.setText(String.valueOf(0));
-                }
-            }
-        });
-    }
+//    public void getLikesCount(Workout workout_event) {
+//        String workoutId = workout_event.getObjectId();
+//
+//        ParseQuery<ParseObject> query = ParseQuery.getQuery("Likes");
+//
+//        query.whereEqualTo("likedPost", workout_event).countInBackground(new CountCallback() {
+//            @Override
+//            public void done(int count, ParseException e) {
+//                if (e == null) {
+//                    // no error
+//                    Log.d(TAG, "like count:" + String.valueOf(count));
+//                    tvLikesCt.setText(String.valueOf(count));
+//
+//                } else {
+//                    // something went wrong
+//                    Log.d(TAG, "unable to find like count");
+//                    tvLikesCt.setText(String.valueOf(0));
+//                }
+//            }
+//        });
+//    }
 
     // get comment data
 
@@ -388,7 +384,7 @@ public class DetailFragment extends Fragment {
 //         get list of comment object ids
         Comments.Query commentQuery = new Comments.Query();
 
-        commentQuery.getTop().whereEqualTo("PostedTo", workout_event).findInBackground(new FindCallback<Comments>() {
+        commentQuery.getTop().whereEqualTo("postedTo", workout_event).findInBackground(new FindCallback<Comments>() {
             @Override
             public void done(List<Comments> objects, ParseException e) {
                 for (int i = 0; i < objects.size(); i++) {
@@ -447,16 +443,19 @@ public class DetailFragment extends Fragment {
         newComment.saveInBackground(new SaveCallback() {
             @Override
             public void done(ParseException e) {
-                comments.clear();
-                loadComments(workout);
-                rvComments.scrollToPosition(0);
-                tvComment.setText("");
+                if (e == null) {
+                    comments.clear();
+                    loadComments(workout);
+                    rvComments.scrollToPosition(comments.size() - 1);
+                    tvComment.setText("");
+                } else {
+                    Log.d(TAG, "there was an error saving the comment to parse");
+                    e.printStackTrace();
+                }
 
             }
         });
 
-//        comments.add(0,newComment);
-//        commentAdapter.notifyItemChanged(0);
 
 
     }
@@ -507,8 +506,6 @@ public class DetailFragment extends Fragment {
         }
         Log.d(TAG, "participant list of objects" + participant_list);
 
-//        participants.clear();
-//        participants.addAll(participant_list);
     }
 
 
@@ -516,6 +513,10 @@ public class DetailFragment extends Fragment {
     public void onDestroyView() {
         super.onDestroyView();
         unbinder.unbind();
+    }
+
+    public interface GoToMapListener {
+        public void onLinkClicked(Workout workout);
     }
 
 
