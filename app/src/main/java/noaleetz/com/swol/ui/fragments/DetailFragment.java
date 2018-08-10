@@ -90,7 +90,6 @@ public class DetailFragment extends Fragment {
 
     String url;
     String url_post;
-    String url_addComment;
 
 
     private ParticipantAdapter participantAdapter;
@@ -199,9 +198,9 @@ public class DetailFragment extends Fragment {
 
         Glide.with(DetailFragment.this)
                 .load(url_post)
-                .apply(requestOptions)
                 .into(ivImage);
 
+        tvCommentUsername.setText(ParseUser.getCurrentUser().getUsername());
 
         // get Likes Count from Parse
 
@@ -385,7 +384,7 @@ public class DetailFragment extends Fragment {
 //         get list of comment object ids
         Comments.Query commentQuery = new Comments.Query();
 
-        commentQuery.getTop().whereEqualTo("PostedTo", workout_event).findInBackground(new FindCallback<Comments>() {
+        commentQuery.getTop().whereEqualTo("postedTo", workout_event).findInBackground(new FindCallback<Comments>() {
             @Override
             public void done(List<Comments> objects, ParseException e) {
                 for (int i = 0; i < objects.size(); i++) {
@@ -444,10 +443,15 @@ public class DetailFragment extends Fragment {
         newComment.saveInBackground(new SaveCallback() {
             @Override
             public void done(ParseException e) {
-                comments.clear();
-                loadComments(workout);
-                rvComments.scrollToPosition(comments.size() - 1);
-                tvComment.setText("");
+                if (e == null) {
+                    comments.clear();
+                    loadComments(workout);
+                    rvComments.scrollToPosition(comments.size() - 1);
+                    tvComment.setText("");
+                } else {
+                    Log.d(TAG, "there was an error saving the comment to parse");
+                    e.printStackTrace();
+                }
 
             }
         });
