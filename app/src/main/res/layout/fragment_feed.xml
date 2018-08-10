@@ -14,6 +14,7 @@
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_gravity="right"
             android:layout_margin="6dp">
 
 
@@ -22,6 +23,7 @@
 
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="10dp"
+                android:layout_marginLeft="5dp"
                 android:layout_marginTop="7dp"
                 app:flChildSpacing="10dp"
                 app:flChildSpacingForLastRow="10dp"
@@ -29,12 +31,6 @@
                 app:flMaxRows="3"
                 app:flRowSpacing="5dp">
 
-                <TextView
-                    android:id="@+id/tvTypeFilter"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/rect_grey"
-                    android:text="Type" />
 
                 <TextView
                     android:id="@+id/tvTimeFilter"
@@ -61,12 +57,20 @@
                     android:background="@drawable/rect_grey"
                     android:text="Sort By" />
 
+                <TextView
+                    android:id="@+id/tvTypeFilter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/rect_grey"
+                    android:text="Type" />
+
                 <ImageView
                     android:id="@+id/ivApply"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:background="@drawable/green_check_rect"
                     android:text="Distance"
+                    android:visibility="gone"
                     app:srcCompat="@drawable/ic_check_black_24dp" />
 
 

@@ -11,6 +11,7 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.ActivityCompat;
@@ -117,6 +118,8 @@ public class ProfileFragment extends Fragment{
 
     public File photoFile;
 
+    FloatingActionButton fabAdd;
+
 
     public ProfileFragment() {
         // Required empty public constructor
@@ -186,6 +189,9 @@ public class ProfileFragment extends Fragment{
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        // hide the oldFabAdd
+        fabAdd = getActivity().findViewById(R.id.fabAdd);
+        fabAdd.hide();
 
         // get the user's profile
         Bundle bundle = getArguments();

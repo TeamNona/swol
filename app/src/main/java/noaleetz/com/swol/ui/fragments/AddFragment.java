@@ -68,8 +68,6 @@ import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -85,8 +83,6 @@ import noaleetz.com.swol.models.Workout;
 import static android.Manifest.permission.CAMERA;
 import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
 import static android.support.constraint.Constraints.TAG;
-import static android.view.View.INVISIBLE;
-import static android.view.View.VISIBLE;
 
 
 /**
@@ -259,7 +255,7 @@ public class AddFragment extends Fragment implements AdapterView.OnItemSelectedL
         super.onViewCreated(view, savedInstanceState);
 
 
-        fab = (FloatingActionButton) getActivity().findViewById(R.id.fab);
+        fab = (FloatingActionButton) getActivity().findViewById(R.id.fabAdd);
 
         // show the post button
         postButton.setVisibility(View.VISIBLE);
@@ -752,14 +748,13 @@ public class AddFragment extends Fragment implements AdapterView.OnItemSelectedL
                 }
 
                 final ParseFile media;
-                //media = new ParseFile(resizedFile);
                 media = conversionBitmapParseFile(bitmap);
                 media.saveInBackground(new SaveCallback() {
                     public void done(ParseException e) {
                         if (null == e) {
-                            Toast.makeText(getActivity(), "Picture post saved", Toast.LENGTH_SHORT).show();
+                            Log.i("Saving Image", "Image was saved");
                         } else {
-                            Toast.makeText(getActivity(), "Picture post not saved", Toast.LENGTH_SHORT).show();
+                            Log.i("Saving Image", "Image was not saved");
                         }
                     }
                 });
