@@ -89,13 +89,14 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:layout_marginTop="15dp"
+            android:isScrollContainer="true"
             android:orientation="vertical"
             shimmer:duration="800">
 
             <!-- Adding 7 rows of placeholders -->
 
 
-                <include layout="@layout/data_placeholder_layout" />
+            <include layout="@layout/data_placeholder_layout" />
 
 
         </com.facebook.shimmer.ShimmerFrameLayout>
