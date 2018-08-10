@@ -138,9 +138,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
     @OnClick(R.id.mapFabAdd)
     public void onClick(View view) {
         mapFabAdd.hide();
-        AddFragment addfragment = new AddFragment();
         FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.flContent, addfragment).addToBackStack(null);
+        transaction.replace(R.id.flContent, AddFragment.create(currentGeoPoint)).addToBackStack(null);
         transaction.commit();
 
     }
