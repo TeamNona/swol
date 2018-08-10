@@ -250,6 +250,23 @@ public class Workout extends ParseObject implements ClusterItem {
             return this;
         }
 
+        public Query orderByDate() {
+            orderByDescending("KEY_TIME");
+            return this;
+        }
+
+        public Query upcoming() {
+            Date currentTime = Calendar.getInstance().getTime();
+            whereGreaterThanOrEqualTo(KEY_TIME, currentTime);
+            return this;
+        }
+
+        public Query completed() {
+            Date currentTime = Calendar.getInstance().getTime();
+            whereLessThan(KEY_TIME, currentTime);
+            return this;
+        }
+
         public Query createdBy(ParseUser user) {
             whereEqualTo(KEY_USER, user);
             return this;

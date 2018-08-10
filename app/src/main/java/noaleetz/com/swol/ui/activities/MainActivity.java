@@ -54,10 +54,12 @@ import noaleetz.com.swol.R;
 import noaleetz.com.swol.models.Workout;
 import noaleetz.com.swol.ui.adapters.ClusterWindowAdapter;
 import noaleetz.com.swol.ui.fragments.AddFragment;
+import noaleetz.com.swol.ui.fragments.CompletedWorkoutsFragment;
 import noaleetz.com.swol.ui.fragments.DetailFragment;
 import noaleetz.com.swol.ui.fragments.FeedFragment;
 import noaleetz.com.swol.ui.fragments.MapFragment;
 import noaleetz.com.swol.ui.fragments.ProfileFragment;
+import noaleetz.com.swol.ui.fragments.UpcomingWorkoutsFragment;
 
 public class MainActivity extends AppCompatActivity implements AddFragment.NewMapItemListener, ClusterWindowAdapter.itemClickListener, DetailFragment.GoToMapListener {
 
@@ -79,9 +81,8 @@ public class MainActivity extends AppCompatActivity implements AddFragment.NewMa
 
     MapFragment mapFragment = new MapFragment();
 
-    @BindView(R.id.fab)
+    @BindView(R.id.fabAdd)
     FloatingActionButton fab;
-
     @BindView(R.id.drawer_layout)
     DrawerLayout mDrawer;
     @BindView(R.id.toolbar)
@@ -100,7 +101,7 @@ public class MainActivity extends AppCompatActivity implements AddFragment.NewMa
     private static int RESULT_LOAD_IMAGE = 1;
 
 
-    @OnClick(R.id.fab)
+    @OnClick(R.id.fabAdd)
     public void onClick(View view) {
         fab.hide();
         AddFragment addfragment = new AddFragment();
@@ -125,7 +126,6 @@ public class MainActivity extends AppCompatActivity implements AddFragment.NewMa
 
 
         mDrawer.addDrawerListener(drawerToggle);
-
 
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
@@ -377,11 +377,9 @@ public class MainActivity extends AppCompatActivity implements AddFragment.NewMa
         FragmentManager fragmentManager = getSupportFragmentManager();
         switch (menuItem.getItemId()) {
             case R.id.nav_feed_fragment:
-                fab.show();
                 fragmentManager.beginTransaction().replace(R.id.flContent, new FeedFragment()).addToBackStack(null).commit();
                 break;
             case R.id.nav_map_fragment:
-                fab.show();
                 // if there is no api key, then throw this exception
                 if (TextUtils.isEmpty(getResources().getString(R.string.api_key))) {
                     throw new IllegalStateException("You forgot to supply a Google Maps API key");
@@ -390,7 +388,6 @@ public class MainActivity extends AppCompatActivity implements AddFragment.NewMa
                 fragmentManager.beginTransaction().replace(R.id.flContent, mapFragment).addToBackStack("map").commit();
                 break;
             case R.id.nav_profile_fragment:
-                fab.hide();
                 changeToProfileFragment(ParseUser.getCurrentUser());
                 mDrawer.closeDrawers();
                 break;
@@ -460,9 +457,17 @@ public class MainActivity extends AppCompatActivity implements AddFragment.NewMa
 
     public void changeToProfileFragment(ParseUser user) {
         ProfileFragment profileFragment = new ProfileFragment();
+        UpcomingWorkoutsFragment upcomingWorkoutsFragment = new UpcomingWorkoutsFragment();
+        CompletedWorkoutsFragment completedWorkoutsFragment = new CompletedWorkoutsFragment();
         Bundle bundle = new Bundle();
         bundle.putParcelable("user", user);
+//        Bundle bundle1 = new Bundle();
+//        bundle1.putParcelable("user", user);
+//        Bundle bundle2 = new Bundle();
+//        bundle2.putParcelable("user", user);
         profileFragment.setArguments(bundle);
+//        upcomingWorkoutsFragment.setArguments(bundle1);
+//        completedWorkoutsFragment.setArguments(bundle2);
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.flContent, profileFragment).addToBackStack(null);
         transaction.commit();
@@ -593,75 +598,5 @@ public class MainActivity extends AppCompatActivity implements AddFragment.NewMa
         transaction.replace(R.id.flContent, mapFragment).addToBackStack("map");
         transaction.commit();
     }
-
-    //    public static class BitmapScaler
-//    {
-//        // scale and keep aspect ratio
-//        public static Bitmap scaleToFitWidth(Bitmap b, int width)
-//        {
-//            float factor = width / (float) b.getWidth();
-//            return Bitmap.createScaledBitmap(b, width, (int) (b.getHeight() * factor), true);
-//        }
-//
-//
-//        // scale and keep aspect ratio
-//        public static Bitmap scaleToFitHeight(Bitmap b, int height)
-//        {
-//            float factor = height / (float) b.getHeight();
-//            return Bitmap.createScaledBitmap(b, (int) (b.getWidth() * factor), height, true);
-//        }
-//
-//
-//        // scale and keep aspect ratio
-//        public static Bitmap scaleToFill(Bitmap b, int width, int height)
-//        {
-//            float factorH = height / (float) b.getWidth();
-//            float factorW = width / (float) b.getWidth();
-//            float factorToUse = (factorH > factorW) ? factorW : factorH;
-//            return Bitmap.createScaledBitmap(b, (int) (b.getWidth() * factorToUse),
-//                    (int) (b.getHeight() * factorToUse), true);
-//        }
-//
-//
-//        // scale and don't keep aspect ratio
-//        public static Bitmap strechToFill(Bitmap b, int width, int height)
-//        {
-//            float factorH = height / (float) b.getHeight();
-//            float factorW = width / (float) b.getWidth();
-//            return Bitmap.createScaledBitmap(b, (int) (b.getWidth() * factorW),
-//                    (int) (b.getHeight() * factorH), true);
-//        }
-//    }
-
-//    public Bitmap getResizedBitmap(Bitmap image, int maxSize) {
-//        int width = image.getWidth();
-//        int height = image.getHeight();
-//
-//        float bitmapRatio = (float) width / (float) height;
-//        if (bitmapRatio > 1) {
-//            width = maxSize;
-//            height = (int) (width / bitmapRatio);
-//        } else {
-//            height = maxSize;
-//            width = (int) (height * bitmapRatio);
-//        }
-//
-//        return Bitmap.createScaledBitmap(image, width, height, true);
-//    }
-
-//    public static Bitmap getResizedBitmap(Bitmap image, int newHeight, int newWidth) {
-//        int width = image.getWidth();
-//        int height = image.getHeight();
-//        float scaleWidth = ((float) newWidth) / width;
-//        float scaleHeight = ((float) newHeight) / height;
-//        // create a matrix for the manipulation
-//        Matrix matrix = new Matrix();
-//        // resize the bit map
-//        matrix.postScale(scaleWidth, scaleHeight);
-//        // recreate the new Bitmap
-//        Bitmap resizedBitmap = Bitmap.createBitmap(image, 0, 0, width, height,
-//                matrix, false);
-//        return resizedBitmap;
-//    }
 
 }

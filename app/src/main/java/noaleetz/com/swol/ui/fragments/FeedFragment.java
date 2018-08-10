@@ -36,6 +36,7 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
+import noaleetz.com.swol.ui.activities.MainActivity;
 import noaleetz.com.swol.ui.adapters.FeedAdapter;
 import noaleetz.com.swol.R;
 import noaleetz.com.swol.models.Workout;
@@ -77,7 +78,7 @@ public class FeedFragment extends Fragment implements View.OnClickListener{
     String maxHourString;
     String tagString;
     ParseGeoPoint currentGeoPoint;
-    FloatingActionButton fab;
+    FloatingActionButton fabAdd;
 
     String selectedSort;
 
@@ -122,7 +123,6 @@ public class FeedFragment extends Fragment implements View.OnClickListener{
 
 
         unbinder = ButterKnife.bind(this, view);
-
 
         // Inflate the layout for this fragment
         return view;
@@ -169,8 +169,9 @@ public class FeedFragment extends Fragment implements View.OnClickListener{
         super.onViewCreated(view, savedInstanceState);
 
         this.adapter = new FeedAdapter(posts); // this class implements callback
-        fab = (FloatingActionButton) getActivity().findViewById(R.id.fab);
-        fab.bringToFront();
+
+        fabAdd = getActivity().findViewById(R.id.fabAdd);
+        fabAdd.show();
 
 
         posts = new ArrayList<>();
