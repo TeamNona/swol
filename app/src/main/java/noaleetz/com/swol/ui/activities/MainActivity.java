@@ -360,7 +360,7 @@ public class MainActivity extends AppCompatActivity implements AddFragment.NewMa
     }
 
     private void setupDrawerContent(NavigationView navigationView) {
-        navigationView.getBackground().setAlpha(150);
+        // navigationView.getBackground().setAlpha(150);
         navigationView.setNavigationItemSelectedListener(
                 new NavigationView.OnNavigationItemSelectedListener() {
                     @Override
