@@ -3,10 +3,15 @@
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <!-- Customize your theme here. -->
-        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimary">@color/background</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
+        <item name="android:textColor">@color/foreground</item>
+
     </style>
+
+    <color name="foreground">@android:color/black</color>
+    <color name="background">@android:color/white</color>
 
     <style name="PrimaryFlatButton" parent="Theme.AppCompat.Light">
         <item name="android:buttonStyle">
@@ -26,11 +31,17 @@
     </style>
     <style name="MyNumberPickerTheme" parent="@android:style/Widget.Material.NumberPicker">
         <item name="colorControlNormal ">@color/colorPrimary</item>
-        <item name="android:background">@color/colorAccent</item>
+        <item name="android:background">@color/colorPrimaryDark</item>
     </style>
     <style name="DialogAnimation_2">
         <item name="android:windowEnterAnimation">@anim/slide_up</item>
         <item name="android:windowExitAnimation">@anim/slide_bottom</item>
+    </style>
+
+    <style name="ToolBarStyle" parent="Widget.AppCompat.Toolbar">
+        <item name="android:textColorPrimary">@android:color/transparent</item>
+        <item name="android:textColorSecondary">@android:color/black</item>
+
     </style>
 
 </resources>

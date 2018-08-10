@@ -40,6 +40,8 @@ import noaleetz.com.swol.ui.adapters.FeedAdapter;
 import noaleetz.com.swol.R;
 import noaleetz.com.swol.models.Workout;
 
+import static android.view.View.GONE;
+
 
 /**
  * A simple {@link Fragment} subclass.
@@ -147,7 +149,7 @@ public class FeedFragment extends Fragment implements View.OnClickListener{
         tvSortByFilter.setText("Sort By");
         tvSortByFilter.setBackground(getResources().getDrawable(R.drawable.rect_grey));
 
-        tvTypeFilter.setText("Categories");
+        tvTypeFilter.setText("Type");
         tvTypeFilter.setBackground(getResources().getDrawable(R.drawable.rect_grey));
 
         TypesToQueryBy=null;
@@ -156,7 +158,7 @@ public class FeedFragment extends Fragment implements View.OnClickListener{
         timeAwayUnit=null;
         sortBy="";
 
-        ivApply.setVisibility(View.INVISIBLE);
+        ivApply.setVisibility(GONE);
 
     }
 
@@ -199,6 +201,7 @@ public class FeedFragment extends Fragment implements View.OnClickListener{
                 // apply the filters selected by user
 
                 filter(TypesToQueryBy,milesAway,timeAwayNumber,sortBy);
+                ivApply.setVisibility(GONE);
 
             }
         });
