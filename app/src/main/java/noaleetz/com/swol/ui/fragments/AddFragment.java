@@ -68,8 +68,6 @@ import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -85,8 +83,6 @@ import noaleetz.com.swol.models.Workout;
 import static android.Manifest.permission.CAMERA;
 import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
 import static android.support.constraint.Constraints.TAG;
-import static android.view.View.INVISIBLE;
-import static android.view.View.VISIBLE;
 
 
 /**
@@ -253,7 +249,7 @@ public class AddFragment extends Fragment implements AdapterView.OnItemSelectedL
         super.onViewCreated(view, savedInstanceState);
 
 
-        fab = (FloatingActionButton) getActivity().findViewById(R.id.fab);
+        fab = (FloatingActionButton) getActivity().findViewById(R.id.fabAdd);
 
         // show the post button
         postButton.setVisibility(View.VISIBLE);
