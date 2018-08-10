@@ -4,5 +4,5 @@
     android:layout_gravity="center"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    app:srcCompat="@drawable/swol_logo"
+    app:srcCompat="@drawable/ic_swol"
     android:contentDescription="@string/com_parse_ui_logo_content_description" />

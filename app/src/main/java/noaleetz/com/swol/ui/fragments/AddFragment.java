@@ -339,84 +339,84 @@ public class AddFragment extends Fragment implements AdapterView.OnItemSelectedL
         // Apply the adapter to the spinner
         workoutCategory.setAdapter(categoryAdapter);
 
-        tagItems = getResources().getStringArray(R.array.tag_types);
-        checkedItemsCategories = new boolean[tagItems.length];
-
-        tvTags.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-                AlertDialog.Builder mTypeBuilder = new AlertDialog.Builder(getActivity());
-                mTypeBuilder.setTitle("Filter by Categories");
-                mTypeBuilder.setMultiChoiceItems(tagItems, checkedItemsCategories, new DialogInterface.OnMultiChoiceClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int position, boolean isChecked) {
-                        if(isChecked){
-                            if(!mUserItems.contains(position)){
-                                mUserItems.add(position);
-                            }
-                            else{
-                                mUserItems.remove(position);
-                            }
-                        }
-                    }
-                });
-
-
-                mTypeBuilder.setCancelable(true);
-                mTypeBuilder.setPositiveButton("Apply", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int which) {
-                        String item = "";
-                        for(int i=0;i<mUserItems.size();i++){
-
-                            getTags.put(categoryItems[mUserItems.get(i)]);
-
-                            item = item + categoryItems[mUserItems.get(i)];
-                            if(i != mUserItems.size() -1 ){
-                                item = item + ", ";
-                            }
-                        }
-
-                        if(item.isEmpty()){
-                            Toast.makeText(getActivity(), "Workout must have a category.", Toast.LENGTH_SHORT).show();
-                        }
-
-                        tvTags.setText(item);
-
-
-                    }
-                });
-//                mTypeBuilder.setNeutralButton("Clear All", new DialogInterface.OnClickListener() {
+//        tagItems = getResources().getStringArray(R.array.tag_types);
+//        checkedItemsCategories = new boolean[tagItems.length];
+//
+//        tvTags.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//
+//                AlertDialog.Builder mTypeBuilder = new AlertDialog.Builder(getActivity());
+//                mTypeBuilder.setTitle("Filter by Categories");
+//                mTypeBuilder.setMultiChoiceItems(tagItems, checkedItemsCategories, new DialogInterface.OnMultiChoiceClickListener() {
 //                    @Override
-//                    public void onClick(DialogInterface dialogInterface, int which) {
-//                        if(mUserItems == null || tags == null) {
-//                            dialogInterface.dismiss();
-//                        }
-//                        else{
-//
-//                            for (int i=0;i< checkedItems.length;i++){
-//
-//                                checkedItems[i] = false;
-//
-//                                mUserItems.clear();
-//
-//                                // tags = new JSONArray();
-//                                Log.d(TAG,"clear all category filters");
+//                    public void onClick(DialogInterface dialogInterface, int position, boolean isChecked) {
+//                        if(isChecked){
+//                            if(!mUserItems.contains(position)){
+//                                mUserItems.add(position);
 //                            }
-//
+//                            else{
+//                                mUserItems.remove(position);
+//                            }
 //                        }
 //                    }
 //                });
-
-                AlertDialog mDialog = mTypeBuilder.create();
-                mDialog.getWindow().getAttributes().windowAnimations = R.style.DialogAnimation_2;
-
-                mDialog.show();
-
-                //mTypeBuilder.show();
-            }
-        });
+//
+//
+//                mTypeBuilder.setCancelable(true);
+//                mTypeBuilder.setPositiveButton("Add Tags", new DialogInterface.OnClickListener() {
+//                    @Override
+//                    public void onClick(DialogInterface dialogInterface, int which) {
+//                        String item = "";
+//                        for(int i=0;i<mUserItems.size();i++){
+//
+//                            getTags.put(categoryItems[mUserItems.get(i)]);
+//
+//                            item = item + categoryItems[mUserItems.get(i)];
+//                            if(i != mUserItems.size() -1 ){
+//                                item = item + ", ";
+//                            }
+//                        }
+//
+//                        if(item.isEmpty()){
+//                            Toast.makeText(getActivity(), "Workout must have a category.", Toast.LENGTH_SHORT).show();
+//                        }
+//
+//                        tvTags.setText(item);
+//
+//
+//                    }
+//                });
+////                mTypeBuilder.setNeutralButton("Clear All", new DialogInterface.OnClickListener() {
+////                    @Override
+////                    public void onClick(DialogInterface dialogInterface, int which) {
+////                        if(mUserItems == null || tags == null) {
+////                            dialogInterface.dismiss();
+////                        }
+////                        else{
+////
+////                            for (int i=0;i< checkedItems.length;i++){
+////
+////                                checkedItems[i] = false;
+////
+////                                mUserItems.clear();
+////
+////                                // tags = new JSONArray();
+////                                Log.d(TAG,"clear all category filters");
+////                            }
+////
+////                        }
+////                    }
+////                });
+//
+//                AlertDialog mDialog = mTypeBuilder.create();
+//                mDialog.getWindow().getAttributes().windowAnimations = R.style.DialogAnimation_2;
+//
+//                mDialog.show();
+//
+//                //mTypeBuilder.show();
+//            }
+//        });
 
 
 //        // create Array of tag categories
@@ -494,13 +494,13 @@ public class AddFragment extends Fragment implements AdapterView.OnItemSelectedL
                             if(i != mUserItems2.size() -1 ){
                                 item = item + ", ";
                             }
+                            tvTags.setText(item);
                         }
 
                         if(item.isEmpty()){
                             Toast.makeText(getActivity(), "Please add a least one tag to your workout.", Toast.LENGTH_SHORT).show();
                         }
 
-                        tvTags.setText(item);
 
 
                     }
