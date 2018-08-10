@@ -1,6 +1,7 @@
 package noaleetz.com.swol.ui.activities;
 
 
+import android.content.Context;
 import android.content.Intent;
 import android.Manifest;
 import android.content.pm.PackageManager;
@@ -30,6 +31,17 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.Cache;
+import com.android.volley.Network;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.BasicNetwork;
+import com.android.volley.toolbox.DiskBasedCache;
+import com.android.volley.toolbox.HurlStack;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -101,13 +113,16 @@ public class MainActivity extends AppCompatActivity implements AddFragment.NewMa
     public static final int MY_PERMISSIONS_REQUEST_CAMERA = 99;
     private static int RESULT_LOAD_IMAGE = 1;
 
+    Context context;
+
+
 
     @OnClick(R.id.fab)
     public void onClick(View view) {
         fab.hide();
-        AddFragment addfragment = new AddFragment();
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.flContent, addfragment).addToBackStack(null);
+        //TODO: update current location
+        transaction.replace(R.id.flContent, AddFragment.create(currentGeoPoint)).addToBackStack(null);
         transaction.commit();
 
     }
@@ -293,6 +308,47 @@ public class MainActivity extends AppCompatActivity implements AddFragment.NewMa
                                 ParseUser.getCurrentUser().put("currentLocation", currentGeoPoint);
                                 ParseUser.getCurrentUser().saveInBackground();
                                 Log.d(TAG, "geopoint posted to parse)");
+
+                                RequestQueue mRequestQueue;
+
+                                // Instantiate the cache
+                                Cache cache = new DiskBasedCache(getCacheDir(), 1024 * 1024); // 1MB cap
+
+                                // Set up the network to use HttpURLConnection as the HTTP client.
+                                Network network = new BasicNetwork(new HurlStack());
+
+                                // Instantiate the RequestQueue with the cache and network.
+                                mRequestQueue = new RequestQueue(cache, network);
+
+                                // Start the queue
+                                mRequestQueue.start();
+
+                                String url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=" + Double.toString(currentGeoPoint.getLatitude())
+                                        + "," + Double.toString(currentGeoPoint.getLongitude()) + "&radius=100" + "&key=" + getResources().getString(R.string.api_key);
+
+
+                                JsonObjectRequest currentLocationRequest = new JsonObjectRequest(Request.Method.GET, url, null,  new Response.Listener<JSONObject>() {
+                                    @Override
+                                    public void onResponse(JSONObject response) {
+                                        try {
+                                            ParseUser.getCurrentUser().put("currentLocationAddress",
+                                                    response.getJSONArray("results").getJSONObject(1).getString("vicinity"));
+                                            ParseUser.getCurrentUser().put("currentLocationName",
+                                                    response.getJSONArray("results").getJSONObject(1).getString("name"));
+                                            ParseUser.getCurrentUser().saveInBackground();
+
+                                        } catch (JSONException e) {
+                                            e.printStackTrace();
+                                        }
+                                    }
+                                }, new Response.ErrorListener() {
+                                    @Override
+                                    public void onErrorResponse(VolleyError error) {
+                                        error.printStackTrace();
+                                    }
+                                });
+
+                                mRequestQueue.add(currentLocationRequest);
 
 
                             } else {
