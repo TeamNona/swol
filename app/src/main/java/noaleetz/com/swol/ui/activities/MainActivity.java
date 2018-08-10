@@ -330,9 +330,9 @@ public class MainActivity extends AppCompatActivity implements AddFragment.NewMa
                                     public void onResponse(JSONObject response) {
                                         try {
                                             ParseUser.getCurrentUser().put("currentLocationAddress",
-                                                    response.getJSONArray("results").getJSONObject(1).getString("vicinity"));
+                                                    response.getJSONArray("results").getJSONObject(2).getString("vicinity"));
                                             ParseUser.getCurrentUser().put("currentLocationName",
-                                                    response.getJSONArray("results").getJSONObject(1).getString("name"));
+                                                    response.getJSONArray("results").getJSONObject(2).getString("name"));
                                             ParseUser.getCurrentUser().saveInBackground();
 
                                         } catch (JSONException e) {

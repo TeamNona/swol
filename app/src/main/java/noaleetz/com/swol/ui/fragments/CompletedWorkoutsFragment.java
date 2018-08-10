@@ -66,7 +66,7 @@ public class CompletedWorkoutsFragment extends Fragment {
         rvCompletedWorkouts.setNestedScrollingEnabled(false);
         posts = new ArrayList<>();
         this.adapter = new ProfileAdapter(posts);
-        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false);
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false);
         rvCompletedWorkouts.setLayoutManager(linearLayoutManager);
         rvCompletedWorkouts.setAdapter(adapter);
         loadCompletedWorkouts();

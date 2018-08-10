@@ -67,7 +67,7 @@ public class UpcomingWorkoutsFragment extends Fragment {
         rvUpcomingWorkouts.setNestedScrollingEnabled(false);
         posts = new ArrayList<>();
         this.adapter = new ProfileAdapter(posts);
-        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false);
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false);
         rvUpcomingWorkouts.setLayoutManager(linearLayoutManager);
         rvUpcomingWorkouts.setAdapter(adapter);
         loadUpcomingWorkouts();
