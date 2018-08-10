@@ -12,13 +12,13 @@ import android.graphics.Bitmap;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -64,6 +64,7 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import butterknife.Unbinder;
 import noaleetz.com.swol.ui.adapters.ClusterWindowAdapter;
 
@@ -89,7 +90,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
         ClusterManager.OnClusterItemInfoWindowClickListener<Workout>,
         ClusterWindowAdapter.itemClickListener {
 
-    FloatingActionButton fab;
 
 
     ArrayList<Marker> workoutMarkers;
@@ -132,6 +132,19 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
     @BindView(R.id.fab10mi)
     FloatingActionButton fab10mi;
 
+    FloatingActionButton oldFabAdd;
+    FloatingActionButton mapFabAdd;
+
+    @OnClick(R.id.mapFabAdd)
+    public void onClick(View view) {
+        mapFabAdd.hide();
+        AddFragment addfragment = new AddFragment();
+        FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.flContent, addfragment).addToBackStack(null);
+        transaction.commit();
+
+    }
+
     boolean init = true;
 
     boolean showNew;
@@ -158,6 +171,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
         return view;
     }
 
+    @SuppressLint("RestrictedApi")
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -170,11 +184,15 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
 
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.google_map_fragment);
 
-        fab = getActivity().findViewById(R.id.fab);
-        fab.setTranslationY(-1200);
+        oldFabAdd = getActivity().findViewById(R.id.fabAdd);
+        oldFabAdd.setVisibility(View.GONE);
+
         mapFragment.getMapAsync(this);
 
         hideZoomButtons();
+
+        mapFabAdd = getActivity().findViewById(R.id.mapFabAdd);
+        mapFabAdd.show();
 
         fabNearby.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -606,7 +624,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
 
     // TODO: animate this
     @SuppressLint("RestrictedApi")
-    void hideZoomButtons() {
+    public void hideZoomButtons() {
         fab1mi.setVisibility(View.GONE);
         fab5mi.setVisibility(View.GONE);
         fab10mi.setVisibility(View.GONE);
@@ -624,7 +642,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
     @Override public void onPause() {
         super.onPause();
 
-//        fab.setTranslationY(1200);
+//        oldFabAdd.setTranslationY(1200);
 
 
     }
