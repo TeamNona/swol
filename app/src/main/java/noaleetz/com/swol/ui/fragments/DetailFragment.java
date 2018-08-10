@@ -90,7 +90,6 @@ public class DetailFragment extends Fragment {
 
     String url;
     String url_post;
-    String url_addComment;
 
 
     private ParticipantAdapter participantAdapter;
@@ -202,6 +201,7 @@ public class DetailFragment extends Fragment {
                 .apply(requestOptions)
                 .into(ivImage);
 
+        tvCommentUsername.setText(ParseUser.getCurrentUser().getUsername());
 
         // get Likes Count from Parse
 
@@ -385,7 +385,7 @@ public class DetailFragment extends Fragment {
 //         get list of comment object ids
         Comments.Query commentQuery = new Comments.Query();
 
-        commentQuery.getTop().whereEqualTo("PostedTo", workout_event).findInBackground(new FindCallback<Comments>() {
+        commentQuery.getTop().whereEqualTo("postedTo", workout_event).findInBackground(new FindCallback<Comments>() {
             @Override
             public void done(List<Comments> objects, ParseException e) {
                 for (int i = 0; i < objects.size(); i++) {
