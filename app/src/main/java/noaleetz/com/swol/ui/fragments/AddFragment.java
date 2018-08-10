@@ -130,6 +130,7 @@ public class AddFragment extends Fragment implements AdapterView.OnItemSelectedL
     Date Date;
     ParseGeoPoint postLocation;
     ParseGeoPoint endLocation;
+    RequestQueue queue;
 
     // initialize time to midnight of current date
     int postYear = Calendar.getInstance().get(Calendar.YEAR);
@@ -210,10 +211,15 @@ public class AddFragment extends Fragment implements AdapterView.OnItemSelectedL
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        queue = Volley.newRequestQueue(getContext());
+
         if (getArguments() != null) {
             postLocation = getArguments().getParcelable("geoLoc");
-            locationAddress = currentUser.getString("currentLocationAddress");
-            locationName = currentUser.getString("currentLocationName");
+//            locationAddress = currentUser.getString("currentLocationAddress");
+//            locationName = currentUser.getString("currentLocationName");
+
+
         }
     }
 
@@ -253,6 +259,37 @@ public class AddFragment extends Fragment implements AdapterView.OnItemSelectedL
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        String url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=" + Double.toString(postLocation.getLatitude())
+                + "," + Double.toString(postLocation.getLongitude()) + "&radius=100" + "&key=" + getResources().getString(R.string.api_key);
+
+
+        JsonObjectRequest currentLocationRequest = new JsonObjectRequest(Request.Method.GET, url, null,  new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+
+
+                try {
+                    locationAddress = response.getJSONArray("results").getJSONObject(2).getString("vicinity");
+                    locationName = response.getJSONArray("results").getJSONObject(2).getString("name");
+
+
+                    ((EditText) pafBegin.getView().findViewById(R.id.place_autocomplete_search_input)).setHint("Choose Beginning Location");
+                    ((EditText) pafBegin.getView().findViewById(R.id.place_autocomplete_search_input)).setText(locationName);
+                    ((EditText) pafBegin.getView().findViewById(R.id.place_autocomplete_search_input)).setTextSize(18.0f);
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                error.printStackTrace();
+            }
+        });
+
+        queue.add(currentLocationRequest);
 
 
         fab = (FloatingActionButton) getActivity().findViewById(R.id.fabAdd);
@@ -522,12 +559,9 @@ public class AddFragment extends Fragment implements AdapterView.OnItemSelectedL
         pafBegin = (SupportPlaceAutocompleteFragment)
                 getChildFragmentManager().findFragmentById(R.id.pafBegin);
 
-        String address = currentUser.getString("currentLocationAddress");
-        String[] addresses = address.split(",");
+//        address = currentUser.getString("currentLocationAddress");
+//        String[] addresses = address.split(",");
 
-        ((EditText) pafBegin.getView().findViewById(R.id.place_autocomplete_search_input)).setHint("Hint: " + addresses[0]);
-        ((EditText) pafBegin.getView().findViewById(R.id.place_autocomplete_search_input)).setText(currentUser.getString("currentLocationName"));
-        ((EditText) pafBegin.getView().findViewById(R.id.place_autocomplete_search_input)).setTextSize(18.0f);
 
         pafBegin.setOnPlaceSelectedListener(new PlaceSelectionListener() {
             @Override
@@ -760,7 +794,6 @@ public class AddFragment extends Fragment implements AdapterView.OnItemSelectedL
                 });
 
                 if (endLocation != null && pafEnd.getView().getVisibility() == View.VISIBLE) {
-                    RequestQueue queue = Volley.newRequestQueue(getContext());
                     String url = "https://maps.googleapis.com/maps/api/directions/json?origin=" +
                             postLocation.getLatitude() + "," + postLocation.getLongitude() + "&destination=" +
                             endLocation.getLatitude() + "," + endLocation.getLongitude() + "&mode=" + modeOfTransit +
@@ -819,7 +852,7 @@ public class AddFragment extends Fragment implements AdapterView.OnItemSelectedL
         workout.setDescription(description);
         workout.setLocation(location);
         workout.setAddress(address);
-        workout.setLocationName(locationName);
+        workout.setLocationName(addressName);
         workout.setMedia(media);
         workout.setParticipants(participants);
         workout.setTime(time);

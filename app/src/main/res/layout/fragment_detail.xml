@@ -29,12 +29,14 @@
                 android:id="@+id/tvWorkoutTitle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
                 android:layout_marginStart="8dp"
                 android:layout_marginTop="8dp"
                 android:text="Workout Title"
                 android:textAlignment="textStart"
                 android:textSize="36sp"
                 android:textStyle="bold"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/ivDetailImage" />
 
@@ -42,11 +44,14 @@
                 android:id="@+id/tvBeginsIn"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
                 android:layout_marginStart="8dp"
                 android:layout_marginTop="8dp"
                 android:text="in 3 days"
                 android:textAlignment="center"
                 android:textSize="16dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.0"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/tvWorkoutTitle" />
 
@@ -55,13 +60,33 @@
                 android:id="@+id/tvDetailLocation"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
                 android:layout_marginStart="8dp"
                 android:layout_marginTop="8dp"
-                android:text="Show in Map"
+                android:text="address"
                 android:textAlignment="center"
                 android:textSize="16dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.0"
                 app:layout_constraintTop_toBottomOf="@+id/tvBeginsIn"
                 card_view:layout_constraintStart_toStartOf="parent" />
+
+            <fragment xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:map="http://schemas.android.com/apk/res-auto"
+                xmlns:tools="http://schemas.android.com/tools"
+                android:id="@+id/google_map_fragment"
+                android:name="com.google.android.gms.maps.SupportMapFragment"
+                android:layout_width="0dp"
+                android:layout_height="150dp"
+                android:layout_marginTop="8dp"
+                map:cameraTargetLat="47.6222833"
+                map:cameraTargetLng="-122.35217460000001"
+                map:cameraZoom="17"
+                map:layout_constraintEnd_toEndOf="parent"
+                map:layout_constraintStart_toStartOf="parent"
+                map:layout_constraintTop_toBottomOf="@+id/tvDetailLocation"
+                map:liteMode="true"
+                tools:context=".MapsActivity" />
 
             <ImageView
                 android:id="@+id/ivDetailImage"
@@ -97,8 +122,8 @@
                 android:layout_marginStart="8dp"
                 android:layout_marginTop="8dp"
                 android:scaleType="fitXY"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/tvDetailLocation"
+                app:layout_constraintStart_toEndOf="@+id/ivHeartIcon"
+                app:layout_constraintTop_toBottomOf="@+id/google_map_fragment"
                 app:srcCompat="@drawable/ic_directions_run_black_24dp" />
 
             <android.support.v7.widget.RecyclerView
@@ -110,7 +135,7 @@
                 android:isScrollContainer="true"
                 android:scrollbars="vertical"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/ivHeartIcon" />
+                app:layout_constraintTop_toBottomOf="@+id/rvParticipants" />
 
 
             <android.support.v7.widget.CardView
@@ -199,22 +224,27 @@
                 android:id="@+id/ivHeartIcon"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
+                android:layout_marginBottom="8dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="8dp"
                 android:minHeight="8dp"
                 android:minWidth="8dp"
                 android:paddingTop="2dp"
+                app:layout_constraintBottom_toBottomOf="@+id/ivDetailAvatar"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/rvParticipants"
+                app:layout_constraintTop_toTopOf="@+id/ivDetailAvatar"
                 app:srcCompat="@drawable/ic_heart" />
 
             <TextView
                 android:id="@+id/tvDescription"
                 android:layout_width="match_parent"
                 android:layout_height="21dp"
+                android:layout_marginEnd="8dp"
                 android:layout_marginStart="8dp"
                 android:layout_marginTop="8dp"
                 android:text="Workout Description"
                 android:textColor="#555"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/ivDetailAvatar" />
 
