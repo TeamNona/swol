@@ -202,6 +202,8 @@ public class DetailFragment extends Fragment {
 
         tvCommentUsername.setText(ParseUser.getCurrentUser().getUsername());
 
+        if (workout.getAddress() != null) tvDetailLocation.setText(workout.getAddress());
+
         // get Likes Count from Parse
 
 //        getLikesCount(workout);
