@@ -13,16 +13,9 @@
         android:name="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_margin="0dp"
         map:cameraTargetLat="47.6222833"
         map:cameraTargetLng="-122.35217460000001"
         map:cameraZoom="17"
-        map:layout_constraintBottom_toBottomOf="parent"
-        map:layout_constraintEnd_toEndOf="parent"
-        map:layout_constraintHorizontal_bias="0.0"
-        map:layout_constraintStart_toStartOf="parent"
-        map:layout_constraintTop_toTopOf="parent"
-        map:layout_constraintVertical_bias="0.0"
         tools:context=".MapsActivity" />
 
     <android.support.design.widget.FloatingActionButton
@@ -32,37 +25,43 @@
         android:layout_marginBottom="16dp"
         android:layout_marginEnd="16dp"
         android:clickable="true"
+        app:backgroundTint="@color/colorPrimaryDark"
         app:elevation="17dp"
         app:fabSize="normal"
         app:layout_constraintBottom_toTopOf="@+id/mapFabAdd"
         app:layout_constraintEnd_toEndOf="parent"
         app:rippleColor="@color/colorPrimary"
-        app:srcCompat="@android:drawable/ic_menu_mylocation" />
+        app:srcCompat="@android:drawable/ic_menu_view" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab1mi"
-        app:fabSize="normal"
         android:layout_width="117dp"
         android:layout_height="wrap_content"
         android:layout_marginEnd="20dp"
         android:layout_marginTop="16dp"
         android:clickable="true"
-        app:srcCompat="@drawable/ic_dashboard_black_24dp"
-        app:rippleColor="@color/colorPrimary"
+        android:scaleType="fitXY"
+        app:backgroundTint="@color/colorPrimaryDark"
+        app:fabSize="normal"
         app:layout_constraintEnd_toStartOf="@+id/fab10mi"
-        app:layout_constraintTop_toBottomOf="@+id/fab5mi" />
+        app:layout_constraintTop_toBottomOf="@+id/fab5mi"
+        app:rippleColor="@color/colorPrimary"
+        app:srcCompat="@drawable/ic_map1" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab5mi"
-        app:fabSize="normal"
         android:layout_width="117dp"
         android:layout_height="wrap_content"
+        android:scaleType="fitXY"
+
         android:layout_marginEnd="20dp"
         android:clickable="true"
-        app:srcCompat="@drawable/ic_directions_run_black_24dp"
-        app:rippleColor="@color/colorPrimary"
+        android:src="@drawable/ic_map5"
+        app:backgroundTint="@color/colorPrimaryDark"
+        app:fabSize="normal"
         app:layout_constraintBottom_toBottomOf="@+id/fab10mi"
-        app:layout_constraintEnd_toStartOf="@+id/fab10mi" />
+        app:layout_constraintEnd_toStartOf="@+id/fab10mi"
+        app:rippleColor="@color/colorPrimary" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab10mi"
@@ -70,11 +69,14 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
         android:clickable="true"
-        app:srcCompat="@drawable/ic_fitness_center_black_24dp"
+        android:scaleType="fitXY"
+
+        android:src="@drawable/ic_map10"
+        app:backgroundTint="@color/colorPrimaryDark"
         app:fabSize="normal"
-        app:rippleColor="@color/colorPrimary"
         app:layout_constraintBottom_toTopOf="@+id/fabNearby"
-        app:layout_constraintEnd_toEndOf="@+id/fabNearby" />
+        app:layout_constraintEnd_toEndOf="@+id/fabNearby"
+        app:rippleColor="@color/colorPrimary" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/mapFabAdd"
@@ -82,8 +84,8 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
         android:layout_marginEnd="16dp"
-        android:layout_marginRight="16dp"
         android:clickable="true"
+        app:backgroundTint="@color/colorPrimaryDark"
         app:elevation="17dp"
         app:fabSize="normal"
         app:layout_constraintBottom_toBottomOf="parent"
