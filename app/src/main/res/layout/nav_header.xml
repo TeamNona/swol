@@ -22,11 +22,12 @@
         android:id="@+id/tvNavName"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="name"
+        android:text="Name"
         android:textAlignment="center"
         android:textAppearance="@style/TextAppearance.AppCompat.Body1"
         android:textColor="@android:color/black"
-        android:textSize="30sp" />
+        android:textSize="36sp"
+        android:textStyle="bold" />
 
     <TextView
         android:id="@+id/tvNavUsername"
@@ -35,7 +36,7 @@
         android:text="username"
         android:textAlignment="center"
         android:textAppearance="@style/TextAppearance.AppCompat.Body1"
-        android:textColor="@android:color/darker_gray"
-        android:textSize="12sp"/>
+        android:textColor="@color/colorPrimary"
+        android:textSize="18sp" />
 
 </LinearLayout>
