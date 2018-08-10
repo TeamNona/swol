@@ -81,6 +81,9 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.ViewHold
         } catch (ParseException e) {
             e.printStackTrace();
             Log.d(TAG, "AvatarImage did not load");
+        } catch (NullPointerException e) {
+            e.printStackTrace();
+            Log.d(TAG, "There is no profile picture. Using temporary one...");
         }
 
         Glide.with(mcontext)

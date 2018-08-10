@@ -198,7 +198,6 @@ public class DetailFragment extends Fragment {
 
         Glide.with(DetailFragment.this)
                 .load(url_post)
-                .apply(requestOptions)
                 .into(ivImage);
 
         tvCommentUsername.setText(ParseUser.getCurrentUser().getUsername());
@@ -444,10 +443,15 @@ public class DetailFragment extends Fragment {
         newComment.saveInBackground(new SaveCallback() {
             @Override
             public void done(ParseException e) {
-                comments.clear();
-                loadComments(workout);
-                rvComments.scrollToPosition(comments.size() - 1);
-                tvComment.setText("");
+                if (e == null) {
+                    comments.clear();
+                    loadComments(workout);
+                    rvComments.scrollToPosition(comments.size() - 1);
+                    tvComment.setText("");
+                } else {
+                    Log.d(TAG, "there was an error saving the comment to parse");
+                    e.printStackTrace();
+                }
 
             }
         });
