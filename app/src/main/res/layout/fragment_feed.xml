@@ -4,6 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:shimmer="http://schemas.android.com/apk/res-auto"
+
     tools:context=".ui.fragments.FeedFragment">
 
     <LinearLayout
@@ -79,6 +81,24 @@
             </com.nex3z.flowlayout.FlowLayout>
 
         </FrameLayout>
+
+
+        <com.facebook.shimmer.ShimmerFrameLayout
+            android:id="@+id/shimmer_view_container"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="15dp"
+            android:orientation="vertical"
+            shimmer:duration="800">
+
+            <!-- Adding 7 rows of placeholders -->
+
+
+                <include layout="@layout/data_placeholder_layout" />
+
+
+        </com.facebook.shimmer.ShimmerFrameLayout>
 
         <android.support.v4.widget.SwipeRefreshLayout
             android:id="@+id/swipeContainer"
