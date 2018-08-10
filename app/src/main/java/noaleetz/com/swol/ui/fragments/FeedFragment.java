@@ -4,7 +4,10 @@ package noaleetz.com.swol.ui.fragments;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
@@ -23,6 +26,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 
+import com.facebook.shimmer.ShimmerFrameLayout;
 import com.parse.FindCallback;
 import com.parse.ParseException;
 import com.parse.ParseGeoPoint;
@@ -59,6 +63,12 @@ public class FeedFragment extends Fragment implements View.OnClickListener{
     RecyclerView rvPosts;
     @BindView(R.id.swipeContainer)
     SwipeRefreshLayout swipeContainer;
+
+
+    ImageView ivFilterOptions;
+    @BindView(R.id.shimmer_view_container)
+    ShimmerFrameLayout mShimmerViewContainer;
+
     @BindView(R.id.tvTimeFilter)
     TextView tvTimeFilter;
     @BindView(R.id.tvDistanceFilter)
@@ -185,6 +195,7 @@ public class FeedFragment extends Fragment implements View.OnClickListener{
         categories = new String[]{"Bike", "Cardio","Class","Dance","Game","Gym","High Intensity Interval Training","Hike","Meditation","Run","Swim","Weight"};
 
         categoryItems = getResources().getStringArray(R.array.workout_types);
+//        categoryItems = getResources().getStringArray(R.array.workout_categories);
         checkedItems = new boolean[categoryItems.length];
 
 
@@ -218,6 +229,13 @@ public class FeedFragment extends Fragment implements View.OnClickListener{
                 // Your code to refresh the list here.
                 // Make sure you call swipeContainer.setRefreshing(false)
                 // once the network request has completed successfully.
+                mShimmerViewContainer.setVisibility(View.VISIBLE);
+
+                mShimmerViewContainer.startShimmerAnimation();
+
+                loadTopPosts();
+//                svSearch.setQuery("",false);
+//                ivFilterOptions.setImageResource(R.drawable.ic_arrow);
                 FilterUIDefaultState();
 
                 fetchTimelineAsync(0);
@@ -704,7 +722,7 @@ public class FeedFragment extends Fragment implements View.OnClickListener{
 
         postQuery.findInBackground(new FindCallback<Workout>() {
             @Override
-            public void done(List<Workout> objects, ParseException e) {
+            public void done(final List<Workout> objects, ParseException e) {
                 if (e == null) {
                     Log.d(TAG, Integer.toString(objects.size()));
                     for (int i = 0; i < objects.size(); i++) {
@@ -712,8 +730,29 @@ public class FeedFragment extends Fragment implements View.OnClickListener{
 //                                + "\nusername: " + objects.get(i).getUser().getUsername());
                     }
                     posts.clear();
+
+                    // Stopping Shimmer Effect's animation after data is loaded to ListView
+
+                    final Handler handler = new Handler();
+                    handler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            // Do something after 5s = 5000ms
+                            mShimmerViewContainer.stopShimmerAnimation();
+                            mShimmerViewContainer.setVisibility(View.GONE);
+
+//                            posts.addAll(objects);
+//                            adapter.notifyDataSetChanged();
+                        }
+                    }, 3000);
+
+
                     posts.addAll(objects);
                     adapter.notifyDataSetChanged();
+
+                    if (swipeContainer.isRefreshing()) {
+                        swipeContainer.setRefreshing(false);
+                    }
                 } else {
                     e.printStackTrace();
                 }
@@ -727,6 +766,52 @@ public class FeedFragment extends Fragment implements View.OnClickListener{
         super.onDestroyView();
         unbinder.unbind();
     }
+
+
+
+
+
+    public void NullHourAlert(){
+        AlertDialog alertDialog = new AlertDialog.Builder(
+                this.getContext()).create();
+        alertDialog.setTitle("Wait a second!");
+        alertDialog.setMessage("Please enter a limit for how many hours away your available workouts should be");
+        alertDialog.setIcon(R.drawable.ic_pencil);
+        alertDialog.setButton("OK", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                // Write your code here to execute after dialog closed
+//                            Toast.makeText(getApplicationContext(), "You clicked on OK", Toast.LENGTH_SHORT).show();
+            }
+        });
+        // Showing Alert Message
+        alertDialog.show();
+    }
+    public void NullUserAlert(){
+        AlertDialog alertDialog = new AlertDialog.Builder(
+                this.getContext()).create();
+        alertDialog.setTitle("Wait a second!");
+        alertDialog.setMessage("Please enter a user to filter available workouts");
+        alertDialog.setIcon(R.drawable.ic_pencil);
+        alertDialog.setButton("OK", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                // Write your code here to execute after dialog closed
+//                            Toast.makeText(getApplicationContext(), "You clicked on OK", Toast.LENGTH_SHORT).show();
+            }
+        });
+        // Showing Alert Message
+        alertDialog.show();
+    }
+
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        mShimmerViewContainer.setVisibility(View.VISIBLE);
+
+        mShimmerViewContainer.startShimmerAnimation();
+    }
+
+
 
 
 }

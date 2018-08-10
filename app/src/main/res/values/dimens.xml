@@ -7,6 +7,18 @@
     // dimensions from google
     <dimen name="custom_profile_image">50dp</dimen>
     <dimen name="custom_profile_padding">2dp</dimen>
+    <dimen name="activityPadding">16dp</dimen>
+    <dimen name="placeholderImage">60dp</dimen>
+    <dimen name="placeholderTextHeight">8dp</dimen>
+    <dimen name="padding_10">10dp</dimen>
+
+
+
+
+
+
+
+
     <dimen name="numberpicker_textsize">16sp</dimen>
     <dimen name="fragment_appointment_width">16sp</dimen>
     <dimen name="fragment_appointment_height">16sp</dimen>
