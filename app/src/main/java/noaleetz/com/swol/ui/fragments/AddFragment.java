@@ -117,6 +117,7 @@ public class AddFragment extends Fragment implements AdapterView.OnItemSelectedL
     ImageView post;
     @BindView(R.id.spCategory)
     Spinner workoutCategory;
+
     @BindView(R.id.pbLoading)
     ProgressBar pbPost;
     SupportPlaceAutocompleteFragment pafBegin;
@@ -159,7 +160,7 @@ public class AddFragment extends Fragment implements AdapterView.OnItemSelectedL
 
     // variables for spinners
     String workoutCategoryPrompt = "Choose a Workout Category";
-    String tagsPrompt = "Choose a tag";
+//    String tagsPrompt = "Choose a tag";
 
     // maps api request stuff
     String modeOfTransit = "walking";
@@ -174,8 +175,11 @@ public class AddFragment extends Fragment implements AdapterView.OnItemSelectedL
     String locationAddress;
 
     String[] categoryItems;
-    boolean[] checkedItems;
+    boolean[] checkedItemsCategories;
+    String[] tagItems;
+    boolean[] checkedItemsTags;
     ArrayList<Integer> mUserItems = new ArrayList<>();
+    ArrayList<Integer> mUserItems2 = new ArrayList<>();
     JSONArray getTags = new JSONArray();
 
     public AddFragment() {
@@ -208,6 +212,8 @@ public class AddFragment extends Fragment implements AdapterView.OnItemSelectedL
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             postLocation = getArguments().getParcelable("geoLoc");
+            locationAddress = currentUser.getString("currentLocationAddress");
+            locationName = currentUser.getString("currentLocationName");
         }
     }
 
@@ -296,49 +302,8 @@ public class AddFragment extends Fragment implements AdapterView.OnItemSelectedL
         // Apply the adapter to the spinner
         workoutCategory.setAdapter(categoryAdapter);
 
-
-        // create Array of tag categories
-        String[] tagCategories;
-        tagCategories = getResources().getStringArray(R.array.tags);
-
-        // declare Adapter to populate tag category spinner
-        ArrayAdapter<CharSequence> tagsAdapter = new ArrayAdapter<CharSequence>(getActivity(),
-                android.R.layout.simple_spinner_dropdown_item, tagCategories) {
-            // Disable click item
-            @Override
-            public boolean isEnabled(int position) {
-                // TODO Auto-generated method stub
-                if (position == 0) {
-                    return false;
-                }
-                return true;
-            }
-
-            // Change color item
-            @Override
-            public View getDropDownView(int position, View convertView,
-                                        ViewGroup parent) {
-                // TODO Auto-generated method stub
-                View mView = super.getDropDownView(position, convertView, parent);
-                TextView mTextView = (TextView) mView;
-                if (position == 0) {
-                    mTextView.setTextColor(Color.GRAY);
-                } else {
-                    mTextView.setTextColor(Color.BLACK);
-                }
-                return mView;
-            }
-
-        };
-
-        // Specify the layout to use when the list of choices appears
-        tagsAdapter.setDropDownViewResource(android.R.layout.simple_list_item_multiple_choice);
-
-        // Apply the adapter to the spinner
-//        spTags.setAdapter(tagsAdapter);
-
-        categoryItems = getResources().getStringArray(R.array.workout_types);
-        checkedItems = new boolean[categoryItems.length];
+        tagItems = getResources().getStringArray(R.array.tag_types);
+        checkedItemsCategories = new boolean[tagItems.length];
 
         tvTags.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -346,7 +311,7 @@ public class AddFragment extends Fragment implements AdapterView.OnItemSelectedL
 
                 AlertDialog.Builder mTypeBuilder = new AlertDialog.Builder(getActivity());
                 mTypeBuilder.setTitle("Filter by Categories");
-                mTypeBuilder.setMultiChoiceItems(categoryItems, checkedItems, new DialogInterface.OnMultiChoiceClickListener() {
+                mTypeBuilder.setMultiChoiceItems(tagItems, checkedItemsCategories, new DialogInterface.OnMultiChoiceClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int position, boolean isChecked) {
                         if(isChecked){
@@ -377,7 +342,7 @@ public class AddFragment extends Fragment implements AdapterView.OnItemSelectedL
                         }
 
                         if(item.isEmpty()){
-                            Toast.makeText(getActivity(), "Please add a least one tag to your workout.", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getActivity(), "Workout must have a category.", Toast.LENGTH_SHORT).show();
                         }
 
                         tvTags.setText(item);
@@ -398,6 +363,124 @@ public class AddFragment extends Fragment implements AdapterView.OnItemSelectedL
 //                                checkedItems[i] = false;
 //
 //                                mUserItems.clear();
+//
+//                                // tags = new JSONArray();
+//                                Log.d(TAG,"clear all category filters");
+//                            }
+//
+//                        }
+//                    }
+//                });
+
+                AlertDialog mDialog = mTypeBuilder.create();
+                mDialog.getWindow().getAttributes().windowAnimations = R.style.DialogAnimation_2;
+
+                mDialog.show();
+
+                //mTypeBuilder.show();
+            }
+        });
+
+
+//        // create Array of tag categories
+//        String[] tagCategories;
+//        tagCategories = getResources().getStringArray(R.array.tags);
+//
+//        // declare Adapter to populate tag category spinner
+//        ArrayAdapter<CharSequence> tagsAdapter = new ArrayAdapter<CharSequence>(getActivity(),
+//                android.R.layout.simple_spinner_dropdown_item, tagCategories) {
+//            // Disable click item
+//            @Override
+//            public boolean isEnabled(int position) {
+//                if (position == 0) {
+//                    return false;
+//                }
+//                return true;
+//            }
+//
+//            // Change color item
+//            @Override
+//            public View getDropDownView(int position, View convertView,
+//                                        ViewGroup parent) {
+//                View mView = super.getDropDownView(position, convertView, parent);
+//                TextView mTextView = (TextView) mView;
+//                if (position == 0) {
+//                    mTextView.setTextColor(Color.GRAY);
+//                } else {
+//                    mTextView.setTextColor(Color.BLACK);
+//                }
+//                return mView;
+//            }
+//
+//        };
+//
+//        // Specify the layout to use when the list of choices appears
+//        tagsAdapter.setDropDownViewResource(android.R.layout.simple_list_item_multiple_choice);
+
+        // Apply the adapter to the spinner
+//        spTags.setAdapter(tagsAdapter);
+
+        tagItems = getResources().getStringArray(R.array.tags);
+        checkedItemsTags = new boolean[tagItems.length];
+
+        tvTags.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                AlertDialog.Builder mTypeBuilder = new AlertDialog.Builder(getActivity());
+                mTypeBuilder.setTitle("Choose Some Tags");
+                mTypeBuilder.setMultiChoiceItems(tagItems, checkedItemsTags, new DialogInterface.OnMultiChoiceClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int position, boolean isChecked) {
+                        if(isChecked){
+                            if(!mUserItems2.contains(position)){
+                                mUserItems2.add(position);
+                            }
+                            else{
+                                mUserItems2.remove(position);
+                            }
+                        }
+                    }
+                });
+
+
+                mTypeBuilder.setCancelable(true);
+                mTypeBuilder.setPositiveButton("Apply", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int which) {
+                        String item = "";
+                        for(int i=0;i<mUserItems2.size();i++){
+
+                            getTags.put(tagItems[mUserItems2.get(i)]);
+
+                            item = item + tagItems[mUserItems2.get(i)];
+                            if(i != mUserItems2.size() -1 ){
+                                item = item + ", ";
+                            }
+                        }
+
+                        if(item.isEmpty()){
+                            Toast.makeText(getActivity(), "Please add a least one tag to your workout.", Toast.LENGTH_SHORT).show();
+                        }
+
+                        tvTags.setText(item);
+
+
+                    }
+                });
+//                mTypeBuilder.setNeutralButton("Clear All", new DialogInterface.OnClickListener() {
+//                    @Override
+//                    public void onClick(DialogInterface dialogInterface, int which) {
+//                        if(mUserItems2 == null || tags == null) {
+//                            dialogInterface.dismiss();
+//                        }
+//                        else{
+//
+//                            for (int i=0;i< checkedItems.length;i++){
+//
+//                                checkedItems[i] = false;
+//
+//                                mUserItems2.clear();
 //
 //                                // tags = new JSONArray();
 //                                Log.d(TAG,"clear all category filters");
@@ -439,7 +522,11 @@ public class AddFragment extends Fragment implements AdapterView.OnItemSelectedL
         pafBegin = (SupportPlaceAutocompleteFragment)
                 getChildFragmentManager().findFragmentById(R.id.pafBegin);
 
-        ((EditText) pafBegin.getView().findViewById(R.id.place_autocomplete_search_input)).setHint("Choose Location");
+        String address = currentUser.getString("currentLocationAddress");
+        String[] addresses = address.split(",");
+
+        ((EditText) pafBegin.getView().findViewById(R.id.place_autocomplete_search_input)).setHint("Hint: " + addresses[0]);
+        ((EditText) pafBegin.getView().findViewById(R.id.place_autocomplete_search_input)).setText(currentUser.getString("currentLocationName"));
         ((EditText) pafBegin.getView().findViewById(R.id.place_autocomplete_search_input)).setTextSize(18.0f);
 
         pafBegin.setOnPlaceSelectedListener(new PlaceSelectionListener() {
@@ -645,10 +732,8 @@ public class AddFragment extends Fragment implements AdapterView.OnItemSelectedL
 
                 // get final location, with default location as current location
                 if (postLocation == null) {
-                    postLocation = currentUser.getParseGeoPoint("currentLocation");
-
-                    locationAddress = "Facebook Dexter";
-                    locationName = "1101 Dexter Ave N, Seattle, WA 98109";
+                    Toast.makeText(getActivity(), "Shit is going down", Toast.LENGTH_SHORT).show();
+                    return;
                 }
                 final ParseGeoPoint location = postLocation;
 
@@ -683,7 +768,7 @@ public class AddFragment extends Fragment implements AdapterView.OnItemSelectedL
 
                     Log.d("API Hit", "url: " + url);
 
-                    JsonObjectRequest polylineRequest = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
+                    JsonObjectRequest polylineRequest = new JsonObjectRequest(Request.Method.GET, url, null,  new Response.Listener<JSONObject>() {
                         @Override
                         public void onResponse(JSONObject response) {
                             JSONObject southwest;
