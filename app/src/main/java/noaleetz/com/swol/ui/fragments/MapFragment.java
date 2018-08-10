@@ -252,9 +252,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
 
         // Get the current location of the device and set the position of the map.
         getLocation();
-
-        // Set the slider to the right initial position
-        Toast.makeText(getContext(), "Current Zoom: " + map.getCameraPosition().zoom, Toast.LENGTH_SHORT).show();
     }
 
     protected void loadMap(GoogleMap googleMap) {
@@ -368,7 +365,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
                     map.clear();
                     clusterManager.clearItems();
                     Log.d(TAG, "Number of nearby workouts: " + Integer.toString(objects.size()));
-                    Toast.makeText(getContext(), "Workouts Size: " + objects.size(), Toast.LENGTH_SHORT).show();
                     LatLngBounds bounds = LatLngBounds.builder().include(currLoc).build();
                     for (int i = 0; i < objects.size(); i++) {
                         Workout workout = objects.get(i);
@@ -381,7 +377,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
                         Log.i("CalculateBounds", "added workout " + i + " to the bounds: " + workout.getLocation().distanceInMilesTo(currentGeoPoint));
                     }
                     clusterManager.cluster();
-                    showNearbyWorkouts(builder.build());
+                    showNearbyWorkouts(builder.build(), range);
 
                     Log.d("ArrayCheck(calcBounds)", "markers [" + workoutMarkers.size() + "]" +
                             "\nids " + "[" + workoutIDs.size() + "]:" + workoutIDs.toString());
@@ -425,7 +421,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
                     LatLng currLatLng = new LatLng(currentGeoPoint.getLatitude(), currentGeoPoint.getLongitude());
 
                     workoutBounds = new LatLngBounds(currLatLng, currLatLng);
-                    Toast.makeText(getContext(), "Workouts Size: " + objects.size(), Toast.LENGTH_SHORT).show();
                     for (int i = 0; i < objects.size(); i++) {
                         Workout workout = objects.get(i);
                         workoutIDs.add(workout.getObjectId());
@@ -586,12 +581,12 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
         });
     }
 
-    void showNearbyWorkouts(LatLngBounds bounds) {
+    void showNearbyWorkouts(LatLngBounds bounds, int range) {
         getLocation();
         if (currentGeoPoint == null) return;
         Log.i("MapView", "Showing workout bounds: " + bounds.northeast.toString() + " --> " + bounds.southwest.toString());
         map.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, convertDpToPixel(42)));
-        Toast.makeText(getContext(), "Showing Nearby Workouts", Toast.LENGTH_SHORT).show();
+        Toast.makeText(getContext(), "Showing all workouts within " + range + " mi.", Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -677,7 +672,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
             super.onBeforeClusterRendered(cluster, markerOptions);
 
             clusterIconGenerator.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.background_circle));
-            clusterIconGenerator.setTextAppearance(R.color.white);
+            clusterIconGenerator.setTextAppearance(R.style.AppTheme_WhiteTextAppearance);
             final Bitmap icon = clusterIconGenerator.makeIcon(String.valueOf(cluster.getSize()));
             markerOptions.icon(BitmapDescriptorFactory.fromBitmap(icon));
         }
