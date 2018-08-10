@@ -70,16 +70,14 @@
                 android:name="com.google.android.gms.maps.SupportMapFragment"
                 android:layout_width="0dp"
                 android:layout_height="150dp"
-                android:layout_marginEnd="8dp"
-                android:layout_marginStart="8dp"
                 android:layout_marginTop="8dp"
                 map:cameraTargetLat="47.6222833"
                 map:cameraTargetLng="-122.35217460000001"
                 map:cameraZoom="17"
-                map:liteMode="true"
                 map:layout_constraintEnd_toEndOf="parent"
                 map:layout_constraintStart_toStartOf="parent"
                 map:layout_constraintTop_toBottomOf="@+id/tvDetailLocation"
+                map:liteMode="true"
                 tools:context=".MapsActivity" />
 
             <ImageView

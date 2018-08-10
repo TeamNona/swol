@@ -19,8 +19,6 @@
     <item name="white" type="color">#FFFFFF</item>
     <item name="gray" type="color">#A3A3A3</item>
 
-    <color name="background">#dddddd</color>
-
     <item name="salmon" type="color">#FA8072</item>
     <color name="LightSalmon">#FFA07A</color>
     <color name="Azure">#F0FFFF</color>
