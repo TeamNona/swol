@@ -195,7 +195,7 @@ public class DetailFragment extends Fragment implements OnMapReadyCallback {
                     .into(ivAvatar);
 
             Glide.with(DetailFragment.this)
-                    .load(url)
+                    .load(ParseUser.getCurrentUser().getParseFile("profilePicture").getUrl())
                     .into(ivAddCommentAvatar);
         } catch (ParseException e) {
             e.printStackTrace();

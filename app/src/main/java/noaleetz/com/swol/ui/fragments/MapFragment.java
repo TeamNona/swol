@@ -677,7 +677,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
             super.onBeforeClusterRendered(cluster, markerOptions);
 
             clusterIconGenerator.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.background_circle));
-            clusterIconGenerator.setTextAppearance(R.style.AppTheme);
+            clusterIconGenerator.setTextAppearance(R.color.white);
             final Bitmap icon = clusterIconGenerator.makeIcon(String.valueOf(cluster.getSize()));
             markerOptions.icon(BitmapDescriptorFactory.fromBitmap(icon));
         }
