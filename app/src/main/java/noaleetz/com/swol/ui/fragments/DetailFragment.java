@@ -16,6 +16,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
@@ -88,6 +89,8 @@ public class DetailFragment extends Fragment implements OnMapReadyCallback {
     CardView cvJoin;
     @BindView(R.id.tvJoin)
     TextView tvJoin;
+    @BindView(R.id.svDetail)
+    ScrollView svDetail;
     // Add Comment holders
     @BindView(R.id.tvCommentUsername)
     TextView tvCommentUsername;
@@ -105,7 +108,6 @@ public class DetailFragment extends Fragment implements OnMapReadyCallback {
 
     // Map Stuff
     GoogleMap map;
-    String polyString;
     Polyline currentPolyline;
 
 
@@ -122,7 +124,6 @@ public class DetailFragment extends Fragment implements OnMapReadyCallback {
 
     private GoToMapListener listener;
     private Context context;
-
 
     public DetailFragment() {
         // Required empty public constructor
@@ -567,6 +568,4 @@ public class DetailFragment extends Fragment implements OnMapReadyCallback {
     public interface GoToMapListener {
         public void onLinkClicked(Workout workout);
     }
-
-
 }

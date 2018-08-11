@@ -9,7 +9,7 @@
     android:layout_height="match_parent">
 
     <ScrollView
-        android:id="@+id/scrollView2"
+        android:id="@+id/svDetail"
         android:layout_width="fill_parent"
         android:layout_height="0dp"
         android:isScrollContainer="true"
@@ -196,9 +196,9 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginEnd="4dp"
+                        android:clickable="true"
                         android:cropToPadding="false"
                         android:hapticFeedbackEnabled="true"
-                        android:clickable="true"
                         app:layout_constraintBottom_toTopOf="@+id/tvComment"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:srcCompat="@drawable/ic_add_comment" />
