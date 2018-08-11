@@ -352,6 +352,8 @@ public class DetailFragment extends Fragment implements OnMapReadyCallback {
                 listener.onLinkClicked(workout);
             }
         });
+
+
     }
 
     @Override

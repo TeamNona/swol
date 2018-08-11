@@ -135,6 +135,7 @@ public class ProfileFragment extends Fragment{
         setupViewPager(vpWorkouts);
         tbWorkouts.setupWithViewPager(vpWorkouts);
 
+
         return view;
     }
 
@@ -272,6 +273,7 @@ public class ProfileFragment extends Fragment{
             @Override
             public void run() {
                 svProfile.fullScroll(ScrollView.FOCUS_UP);
+                svProfile.scrollTo(0,0);
             }
         });
 
