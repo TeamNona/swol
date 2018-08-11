@@ -21,6 +21,7 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
@@ -79,10 +80,13 @@ import butterknife.ButterKnife;
 import butterknife.Unbinder;
 import noaleetz.com.swol.R;
 import noaleetz.com.swol.models.Workout;
+import noaleetz.com.swol.utils.AnimationUtils;
+import noaleetz.com.swol.utils.RevealAnimationSetting;
 
 import static android.Manifest.permission.CAMERA;
 import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
 import static android.support.constraint.Constraints.TAG;
+import static noaleetz.com.swol.ui.fragments.FeedFragment.ARG_REVEAL_SETTINGS;
 
 
 /**
@@ -117,6 +121,9 @@ public class AddFragment extends Fragment implements AdapterView.OnItemSelectedL
     ImageView post;
     @BindView(R.id.spCategory)
     Spinner workoutCategory;
+
+    @BindView(R.id.container)
+    ConstraintLayout constraintLayout;
 
     @BindView(R.id.pbLoading)
     ProgressBar pbPost;
@@ -260,6 +267,9 @@ public class AddFragment extends Fragment implements AdapterView.OnItemSelectedL
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        AnimationUtils.registerCircularRevealAnimation(getContext(), view, (RevealAnimationSetting) getArguments().getParcelable(ARG_REVEAL_SETTINGS), getResources().getColor(R.color.p                                                ));, getResources().getColor(R.color.white));
+
+
         String url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=" + Double.toString(postLocation.getLatitude())
                 + "," + Double.toString(postLocation.getLongitude()) + "&radius=100" + "&key=" + getResources().getString(R.string.api_key);
 
@@ -332,6 +342,14 @@ public class AddFragment extends Fragment implements AdapterView.OnItemSelectedL
             }
 
         };
+
+        private RevealAnimationSetting constructRevealSettings() {
+            return RevealAnimationSetting.with(
+                    (int) (fab.getX() + fab.getWidth() / 2),
+                    (int) (fab.getY() + fab.getHeight() / 2),
+                    constraintLayout.getWidth(),
+                    constraintLayout.getHeight());
+        }
 
         // Specify the layout to use when the list of choices appears
         categoryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
