@@ -85,7 +85,9 @@ public class User extends ParseObject {
         }
 
         public Query getUsername(String username) {
-            whereEqualTo(KEY_USERNAME, username);
+            //whereEqualTo(KEY_USERNAME, username);
+            whereMatches(KEY_USERNAME, username);
+            //whereContains(KEY_USERNAME, username);
             return this;
         }
 
