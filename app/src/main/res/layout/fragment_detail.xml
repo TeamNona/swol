@@ -124,7 +124,7 @@
                 android:scaleType="fitXY"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/google_map_fragment"
-                app:srcCompat="@drawable/ic_directions_run_black_24dp" />
+                app:srcCompat="@drawable/com_facebook_profile_picture_blank_square" />
 
             <android.support.v7.widget.RecyclerView
                 android:id="@+id/rvComments"
