@@ -328,17 +328,28 @@ public class ProfileFragment extends Fragment{
                     builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            String result = input.getText().toString();
+                            final String result = input.getText().toString();
                             final User.Query userQuery = new User.Query();
-                            if (userQuery.getUsername(result) == null) {
-                                user.setUsername(result);
-                                user.saveInBackground();
-                                tvProfileUsername.setText(result);
-                            } else {
-                                Toast.makeText(getActivity(), "Username already exists",
-                                        Toast.LENGTH_LONG).show();
-                            }
-
+//                            int usernames = 0;
+//                            try {
+//                                usernames = userQuery.getUsername(result).count();
+//                            } catch (ParseException e) {
+//                                e.printStackTrace();
+//                            }
+                            userQuery.getUsername(result);
+                            userQuery.findInBackground(new FindCallback<User>() {
+                                @Override
+                                public void done(List<User> objects, ParseException e) {
+                                    if (objects.isEmpty()) {
+                                        user.setUsername(result);
+                                        user.saveInBackground();
+                                        tvProfileUsername.setText("@" + result);
+                                    } else {
+                                        Toast.makeText(getActivity(), "Username already exists",
+                                                Toast.LENGTH_LONG).show();
+                                    }
+                                }
+                            });
 
                         }
                     });
