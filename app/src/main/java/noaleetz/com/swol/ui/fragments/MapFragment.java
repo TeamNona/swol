@@ -88,7 +88,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
         GoogleMap.OnMapClickListener,
         ClusterManager.OnClusterItemClickListener<Workout>,
         ClusterManager.OnClusterItemInfoWindowClickListener<Workout>,
-        ClusterWindowAdapter.itemClickListener {
+        ClusterWindowAdapter.itemClickListener, GoogleMap.OnCameraIdleListener {
 
 
 
@@ -406,7 +406,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
 
     public void loadTopWorkouts() {
         final Workout.Query postQuery = new Workout.Query();
-        postQuery.getTop().withUser().orderByLastCreated();
+        postQuery.withUser().orderByLastCreated();
 
         postQuery.findInBackground(new FindCallback<Workout>() {
             @Override
@@ -586,6 +586,11 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
         Log.i("MapView", "Showing workout bounds: " + bounds.northeast.toString() + " --> " + bounds.southwest.toString());
         map.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, convertDpToPixel(42)));
         Toast.makeText(getContext(), "Showing all workouts within " + range + " mi.", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onCameraIdle() {
+
     }
 
     @Override

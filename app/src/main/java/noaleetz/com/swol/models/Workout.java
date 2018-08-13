@@ -282,6 +282,7 @@ public class Workout extends ParseObject implements ClusterItem {
             whereWithinMiles("eventLocation", currentLocation, maxRange);
             return this;
         }
+
         public Query getWithinTimeRange(long maxHours){
 //            workout.isInTimeRange(maxHours);
             int maxHoursInt = (int) maxHours;

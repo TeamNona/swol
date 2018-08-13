@@ -274,7 +274,7 @@ public class AddFragment extends Fragment implements AdapterView.OnItemSelectedL
                     locationName = response.getJSONArray("results").getJSONObject(2).getString("name");
 
                     ((EditText) pafBegin.getView().findViewById(R.id.place_autocomplete_search_input)).setHint("Choose Beginning Location");
-                    ((EditText) pafBegin.getView().findViewById(R.id.place_autocomplete_search_input)).setText(locationName);
+                    ((EditText) pafBegin.getView().findViewById(R.id.place_autocomplete_search_input)).setText("Facebook Dexter");
                     ((EditText) pafBegin.getView().findViewById(R.id.place_autocomplete_search_input)).setTextSize(18.0f);
 
                 } catch (JSONException e) {

@@ -15,6 +15,13 @@
             app:srcCompat="@drawable/ic_sentiment_satisfied_black_24dp" />
 
         <item
+            android:id="@+id/nav_privacy_settings"
+            android:icon="@drawable/ic_lock_outline_black_24dp"
+            android:title="Privacy Settings"
+            android:checked="false"
+            app:srcCompat="@drawable/ic_lock_outline_black_24dp" />
+
+        <item
             android:id="@+id/nav_logout"
             android:icon="@drawable/ic_fitness_center_black_24dp"
             android:title="Logout"
