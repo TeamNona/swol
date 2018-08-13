@@ -20,6 +20,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.NumberPicker;
 import android.widget.RelativeLayout;
@@ -63,6 +64,8 @@ public class FeedFragment extends Fragment implements View.OnClickListener{
     RecyclerView rvPosts;
     @BindView(R.id.swipeContainer)
     SwipeRefreshLayout swipeContainer;
+    @BindView(R.id.frameEmpty)
+    FrameLayout frameEmpty;
 
 
     ImageView ivFilterOptions;
@@ -716,6 +719,8 @@ public class FeedFragment extends Fragment implements View.OnClickListener{
 
     public void loadTopPosts() {
 
+        frameEmpty.setVisibility(GONE);
+
 
         final Workout.Query postQuery = new Workout.Query();
         postQuery.getTop().withUser().orderByLastCreated();
@@ -747,8 +752,10 @@ public class FeedFragment extends Fragment implements View.OnClickListener{
                     }, 3000);
 
 
+
                     posts.addAll(objects);
                     adapter.notifyDataSetChanged();
+                    swipeContainer.setVisibility(View.VISIBLE);
 
                     if (swipeContainer.isRefreshing()) {
                         swipeContainer.setRefreshing(false);
@@ -756,6 +763,13 @@ public class FeedFragment extends Fragment implements View.OnClickListener{
                 } else {
                     e.printStackTrace();
                 }
+
+                if (frameEmpty != null && rvPosts.getAdapter() != null) {
+                    frameEmpty.setVisibility(View.VISIBLE);
+                    swipeContainer.setVisibility(View.INVISIBLE);
+                }
+
+
             }
         });
 

@@ -14,6 +14,7 @@
         android:orientation="vertical">
 
         <FrameLayout
+            android:id="@+id/flowFrame"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="right"
@@ -82,6 +83,23 @@
 
         </FrameLayout>
 
+
+        <FrameLayout
+            android:id="@+id/frameEmpty"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:id="@+id/textView2"
+                android:layout_width="357dp"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:background="@drawable/rect_empty"
+                android:fontFamily="@font/raleway_semibold"
+                android:gravity="center_vertical|center_horizontal"
+                android:text="We couldn't find any workouts to match your filters!"
+                android:visibility="gone" />
+        </FrameLayout>
 
         <com.facebook.shimmer.ShimmerFrameLayout
             android:id="@+id/shimmer_view_container"

@@ -80,8 +80,6 @@ import butterknife.ButterKnife;
 import butterknife.Unbinder;
 import noaleetz.com.swol.R;
 import noaleetz.com.swol.models.Workout;
-import noaleetz.com.swol.utils.AnimationUtils;
-import noaleetz.com.swol.utils.RevealAnimationSetting;
 
 import static android.Manifest.permission.CAMERA;
 import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
@@ -267,7 +265,6 @@ public class AddFragment extends Fragment implements AdapterView.OnItemSelectedL
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        AnimationUtils.registerCircularRevealAnimation(getContext(), view, (RevealAnimationSetting) getArguments().getParcelable(ARG_REVEAL_SETTINGS), getResources().getColor(R.color.p                                                ));, getResources().getColor(R.color.white));
 
 
         String url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=" + Double.toString(postLocation.getLatitude())
@@ -343,13 +340,14 @@ public class AddFragment extends Fragment implements AdapterView.OnItemSelectedL
 
         };
 
-        private RevealAnimationSetting constructRevealSettings() {
-            return RevealAnimationSetting.with(
-                    (int) (fab.getX() + fab.getWidth() / 2),
-                    (int) (fab.getY() + fab.getHeight() / 2),
-                    constraintLayout.getWidth(),
-                    constraintLayout.getHeight());
-        }
+//        private RevealAnimationSetting constructRevealSettings() {
+//            return RevealAnimationSetting.create(
+//                    (int) (fab.getX() + fab.getWidth() / 2),
+//                    (int) (fab.getY() + fab.getHeight() / 2),
+//                    Resources.getSystem().getDisplayMetrics().widthPixels,
+//                    Resources.getSystem().getDisplayMetrics().heightPixels);
+//
+//        }
 
         // Specify the layout to use when the list of choices appears
         categoryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
