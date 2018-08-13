@@ -235,7 +235,7 @@ public class ProfileFragment extends Fragment{
                                                Log.d("ProfileFragment", Integer.toString(objects.size()));
                                                posts.clear();
                                                posts.addAll(objects);
-                                               tvDoneWorkouts.setText("" + posts.size());
+                                               tvDoneWorkouts.setText("" + (posts.size() - 1));
                                            } else {
                                                e.printStackTrace();
                                            }
