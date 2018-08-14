@@ -24,7 +24,7 @@
         android:fontFamily="sans-serif"
         android:hint="@string/com_parse_ui_password_input_hint"
         android:inputType="textPassword"
-        android:drawableRight="@drawable/ic_lock_outline_black_24dp"
+        android:drawableRight="@drawable/ic_lock_outline_parse_24dp"
         android:selectAllOnFocus="true" />
 
     <LinearLayout
