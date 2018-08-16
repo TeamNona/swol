@@ -11,15 +11,17 @@ Swol gives people the ability to create workouts of their own, and broadcast tho
 * Location-based
 
 <img src=https://github.com/TeamNona/swol/blob/master/swol-map.jpg width="300">
+
 * Feed-based
 <img src=https://github.com/TeamNona/swol/blob/master/swol-feed.jpg width="300">
-* Add your own workout to map (will end up in feed as well)
-* Add your own workout to feed
 
-  * User should be able to:
-  * see upcoming workouts based on location
-  * create a new workout / post a workout and define tags to let other users access them
-  * scroll through a feed of posted exercise based on user-defined tags (equipment, duration, level, location, muscle group)
-  * create a profile containing past workouts, friends, interests
 
-## Additional Separate User Stories
+## Swol Functionality
+Swol gives users the ability to:
+* Create a new workout with defined tags and workout categories
+* See upcoming and past workouts of users in the area through the feed and through a map
+* Ssort through different workouts based on preference, time, location, workout category, etc.
+* Access detailed versions of posted workouts, joining them, leaving them, adding comments, accessig other participants
+* Access users' profiles and see their past workouts, upcoming workouts, interests, friends, stats, etc.
+* Adjust privacy settings and rate the application
+
