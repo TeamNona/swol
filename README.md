@@ -10,9 +10,9 @@ Swol gives people the ability to create workouts of their own, and broadcast tho
 
 * Location-based
 
-<img src=map-popup.png width="300"> <img src=Map-sidemenu.png width="300">
+<img src=https://github.com/TeamNona/swol/blob/master/swol-map.jpg width="300">
 * Feed-based
-<img src=feed_1.png width="300">
+<img src=https://github.com/TeamNona/swol/blob/master/swol-feed.jpg width="300">
 * Add your own workout to map (will end up in feed as well)
 * Add your own workout to feed
 
