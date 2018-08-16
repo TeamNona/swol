@@ -25,3 +25,5 @@ Swol gives users the ability to:
 * Access users' profiles and see their past workouts, upcoming workouts, interests, friends, stats, etc.
 * Adjust privacy settings and rate the application
 
+## Video Walkthrough
+<img src=https://github.com/TeamNona/swol/blob/master/swol-demo.mp4>
